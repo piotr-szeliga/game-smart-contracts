@@ -1,0 +1,12 @@
+[programs.devnet]
+example1 = "CuoRfidd1pucK52Qp6nDwhxMq7ov2vQ9X1J9ZioPQdzZ"
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "devnet"
+wallet = "/Users/kob/.config/solana/id4.json"
+
+[scripts]
+test = "mocha -t 1000000 tests/"

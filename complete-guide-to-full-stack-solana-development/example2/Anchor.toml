@@ -1,0 +1,12 @@
+[programs.localnet]
+example2 = "9V3jFkqCwyKGN8bhY8mFGdYRwtq6zgCJXnL63J3dBhKt"
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "localnet"
+wallet = "/Users/Koby/Game Projects/complete-guide-to-full-stack-solana-development/example2/target/deploy/example2-keypair.json"
+
+[scripts]
+test = "mocha -t 1000000 tests/"
