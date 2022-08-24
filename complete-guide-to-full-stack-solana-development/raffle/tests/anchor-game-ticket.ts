@@ -1,5 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
+// @ts-ignore
 import { AnchorGameTicket } from "../target/types/anchor_game_ticket";
 import {
   Keypair,
@@ -16,6 +17,7 @@ async function spawnMoney(
   const transaction = new anchor.web3.Transaction();
   transaction.add(
     anchor.web3.SystemProgram.transfer({
+      // @ts-ignore
       fromPubkey: program.provider.wallet.publicKey,
       lamports,
       toPubkey: to,
@@ -35,6 +37,7 @@ describe("anchor-game-ticket", () => {
   it("Is initialized!", async () =>
   {
     console.log("START");
+    // @ts-ignore
     console.log("Program Wallet: ", program.provider.wallet.publicKey.toString());
     // Fund me
     // const airdropSignature = await program.provider.connection.requestAirdrop(
@@ -59,6 +62,7 @@ describe("anchor-game-ticket", () => {
 
     if (!account)
     {
+      // @ts-ignore
       await program.rpc.initialize(5, {
         accounts: {
           payer: receiver.publicKey,
@@ -82,6 +86,7 @@ describe("anchor-game-ticket", () => {
       console.log("BuyEvent:", event.buyer.toString(), event.amount, event.soldTickets, event.totalTickets, event.remainingTickets, slot);
     })
 
+    // @ts-ignore
     await program.rpc.buyTicket(1, {
       accounts: {
         buyer: buyer.publicKey,
