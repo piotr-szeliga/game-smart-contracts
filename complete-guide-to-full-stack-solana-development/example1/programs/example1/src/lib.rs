@@ -6,7 +6,7 @@ declare_id!("CuoRfidd1pucK52Qp6nDwhxMq7ov2vQ9X1J9ZioPQdzZ");
 mod example1 {
     use super::*;
 
-    pub fn create(ctx: Context<Create>) -> ProgramResult {
+        pub fn create(ctx: Context<Create>) -> ProgramResult {
         let base_account = &mut ctx.accounts.base_account;
         base_account.count = 0;
         Ok(())

@@ -46,19 +46,22 @@ function App() {
     const program = new Program(idl, programID, provider);
     try {
       /* interact with the program via rpc */
-      await program.rpc.create({
-        accounts: {
-          baseAccount: baseAccount.publicKey,
-          user: provider.wallet.publicKey,
-          systemProgram: SystemProgram.programId,
-        },
-        signers: [baseAccount]
-      });
+      await program.methods
+            .create()
+            .accounts({
+              baseAccount: baseAccount.publicKey,
+              user: provider.wallet.publicKey,
+              systemProgram: SystemProgram.programId,
+            })
+            .signers([provider.wallet.payer])
+            .transaction();
 
       const account = await program.account.baseAccount.fetch(baseAccount.publicKey);
       console.log('account: ', account);
       setValue(account.count.toString());
-    } catch (err) {
+    }
+    catch (err)
+    {
       console.log("Transaction error: ", err);
     }
   }

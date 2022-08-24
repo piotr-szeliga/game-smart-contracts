@@ -1,0 +1,224 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Lato-Black";
+  src: url("./assets/fonts/Lato-Black.ttf");
+}
+
+@font-face {
+  font-family: "open-sans";
+  src: url("./assets/fonts/open-sans.semibold.ttf");
+}
+
+* {
+  font-family: Open Sans, sans-serif;
+  box-sizing: border-box;
+}
+
+button {
+  outline: none !important;
+}
+
+.unselectable {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.main-layout {
+  @apply flex justify-center w-full;
+}
+
+.main-container {
+  @apply xl:w-[1120px] w-11/12;
+}
+
+.nav-item {
+  @apply text-[#656565] text-[13px] xl:text-base font-bold transition-all duration-150 hover:text-[#ffd029] cursor-pointer;
+}
+
+.sweepers-back {
+  background: linear-gradient(180deg, #0a61b1, #161131 25%);
+}
+
+.overlay {
+  background: #00000083;
+  height: 100%;
+  left: 0;
+  opacity: 0.97;
+  position: fixed;
+  top: 0;
+  transition: opacity 0.3s ease 0s;
+  width: 100%;
+  z-index: 900;
+}
+
+.prize-border-line::before {
+  background-image: url("/public/images/border-line.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  content: "";
+  height: 520px;
+  position: absolute;
+  right: 0;
+  top: 85px;
+  width: 100%;
+  @apply hidden xl:block;
+}
+
+.lucky-winner-left::before {
+  -webkit-animation: spin-clock 24s linear infinite;
+  animation: spin-clock 24s linear infinite;
+  background-image: url("/public/images/bg-ray.png");
+  background-repeat: no-repeat;
+  background-size: 100%;
+  content: "";
+  position: absolute;
+  top: -10%;
+  @apply sm:w-[309px] sm:h-[309px] sm:top-0 md:w-[622px] md:h-[622px] lg:w-[460px] lg:h-[460px] xl:w-[550px] xl:h-[550px] xl:-left-[28px];
+}
+
+@media (min-width: 370px) and (max-width: 424px) {
+  .lucky-winner-left::before {
+    @apply w-[270px] h-[270px];
+  }
+}
+
+.left-btn {
+  background-image: url("/public/images/tab-img.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.sweep-label {
+  -webkit-text-fill-color: transparent;
+  background: -webkit-linear-gradient(80.26deg, #fff100 30.89%, #ff71ea 75.7%);
+  -webkit-background-clip: text;
+}
+
+.right-ray::before {
+  background-position: 50%;
+  background-repeat: no-repeat;
+  content: "";
+  position: absolute;
+  -webkit-animation: spin-clock 24s linear infinite;
+  animation: spin-clock 24s linear infinite;
+  background-image: url("/public/images/bg-ray.png");
+  background-size: 100%;
+  left: 12%;
+  top: -35%;
+  z-index: 20;
+  @apply sm:left-0 sm:w-full sm:h-full sm:-top-[40%] w-[400px] h-[400px];
+}
+
+@media (min-width: 320px) and (max-width: 369px) {
+  .right-ray::before {
+    @apply -left-[18%] -top-[20%];
+  }
+}
+
+.right-ray::after {
+  background-image: url("/public/images/ticket_glow.png");
+  background-size: contain;
+  height: 100%;
+  left: 12%;
+  top: -35%;
+  width: 391px;
+  background-position: 50%;
+  background-repeat: no-repeat;
+  content: "";
+  position: absolute;
+  z-index: 10;
+  @apply sm:-right-[10px] sm:left-0;
+}
+
+@media (min-width: 370px) and (max-width: 424px) {
+  .right-ray::after {
+    @apply -left-[19px];
+  }
+}
+
+@media (min-width: 320px) and (max-width: 369px) {
+  .right-ray::after {
+    @apply -left-[20%];
+  }
+}
+
+.lottery-btn {
+  background: linear-gradient(180deg, #ffd600, #ffab00);
+}
+
+.faq-title::before {
+  margin-left: -50%;
+  right: 1.5em;
+  border-top: 4px dashed #244e84;
+  content: "";
+  display: inline-block;
+  height: 1px;
+  position: relative;
+  vertical-align: middle;
+  width: 15%;
+}
+
+.faq-title::after {
+  left: 1.5em;
+  margin-right: -50%;
+  border-top: 4px dashed #244e84;
+  content: "";
+  display: inline-block;
+  height: 1px;
+  position: relative;
+  vertical-align: middle;
+  width: 15%;
+}
+
+.avatararea::after {
+  background: linear-gradient(180deg, #161131, #5ddf8f 200%);
+  bottom: 0;
+  content: "";
+  height: 140px;
+  left: 0;
+  position: absolute;
+  width: 100%;
+}
+
+@-moz-keyframes spin-clock {
+  100% {
+    -moz-transform: rotate(360deg);
+  }
+}
+
+@-webkit-keyframes spin-clock {
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-clock {
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
