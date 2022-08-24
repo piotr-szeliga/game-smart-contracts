@@ -1,13 +1,15 @@
 [features]
 seeds = false
-[programs.devnet]
-anchor_game_ticket = "AGyQHJtznL3WiqWzsV31Rxpvvk4qwZHnaUVn9LPdnjZj"
+#[programs.devnet]
+[programs.localnet]
+anchor_raffle_ticket = "AGyQHJtznL3WiqWzsV31Rxpvvk4qwZHnaUVn9LPdnjZj"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "devnet"
+#cluster = "devnet"
+cluster = "localnet"
 wallet = "/Users/kob/.config/solana/id5.json"
 
 [scripts]
