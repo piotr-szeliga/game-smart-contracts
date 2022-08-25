@@ -1,3 +1,4 @@
+#![feature(core_intrinsics)]
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{transfer, Transfer};
 //use anchor_spl::{self, associated_token::{AssociatedToken}, token::{self, Mint, TokenAccount, Token}};
@@ -11,16 +12,18 @@ pub const LAMPORTS_PER_SOL: u64 = 1000000000;
 pub mod anchor_raffle_ticket {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>, price: u64, amount: u32) -> Result<()> {
+    pub fn initialize(ctx: Context<Initialize>, token_type: Pubkey, price: u64, amount: u32) -> Result<()> {
         let raffle = &mut ctx.accounts.raffle;
         raffle.price_per_ticket = price;
         raffle.total_tickets = amount;
         raffle.sold_tickets = 0;
+        raffle.token_type = token_type;
 
         msg!("Program initialized successfully.");
         msg!("Total Tickets: {:?}", raffle.total_tickets);
         msg!("Sold Tickets: {:?}", raffle.sold_tickets);
         msg!("Price Per Ticket: {} {}", raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
+        msg!("Token Type: {:?}", raffle.token_type);
         msg!("New Raffle Account: {}", ctx.accounts.raffle.to_account_info().key());
 
         Ok(())
@@ -78,7 +81,7 @@ pub struct Initialize<'info> {
     #[account(mut)]
     payer: Signer<'info>,
     // raffle
-    #[account(init, payer = payer, space = Raffle::LEN + 8)]
+    #[account(init, payer = payer, space = Raffle::SPACE + 8)]
     raffle: Account<'info, Raffle>,
     // system program
     system_program: Program<'info, System>,
@@ -106,10 +109,11 @@ pub struct Raffle {
     pub total_tickets: u32,
     pub sold_tickets: u32,
     pub price_per_ticket: u64,
+    pub token_type: Pubkey
 }
 
 impl Raffle {
-    pub const LEN: usize = 4 + 4 + 8 + 8;
+    pub const SPACE: usize = std::mem::size_of::<Raffle>();
 }
 
 #[event]

@@ -58,24 +58,34 @@ describe("anchor-game-ticket", () => {
     //console.log(receiver.secretKey.toString());
     await spawnMoney(program, receiver.publicKey, 0.1);
 
+    const tokenType = PublicKey.default;
+    // const tokenType = new PublicKey("DUSTawucrTsGU8hcqRdHDCbuYhCPADMLM2VcCb8VnFnQ");
+    console.log('token type:', tokenType.toString());
+
     console.log("Step-1 DONE");
 
     // const raffle = Keypair.generate();
-    const raffle = Keypair.fromSecretKey(new Uint8Array([159,238,176,226,53,7,139,231,65,16,97,112,122,138,104,181,255,203,13,132,68,226,195,28,103,159,236,14,230,40,149,88,18,176,59,241,187,184,125,217,91,112,78,227,125,55,22,153,76,159,3,170,89,221,76,214,152,23,169,204,50,216,31,87]));
+    const raffle = Keypair.fromSecretKey(new Uint8Array([168,17,242,65,149,126,253,110,133,100,55,252,163,47,182,51,194,200,143,9,178,148,49,185,170,222,192,48,112,137,239,47,115,188,21,8,100,127,253,163,7,102,82,4,158,88,174,26,48,51,164,78,255,253,94,21,71,203,134,26,94,151,115,13]));
     console.log("raffle :", raffle.publicKey.toString());
     console.log(raffle.secretKey.toString());
 
     const account = await program.account.raffle.fetchNullable(raffle.publicKey);
-    // @ts-ignore
-    account.pricePerTicketSOL = account.pricePerTicket.toNumber() / anchor.web3.LAMPORTS_PER_SOL + " Sol";
+    if (account)
+    {
+      // @ts-ignore
+      account.pricePerTicket = account.pricePerTicket.toNumber() / anchor.web3.LAMPORTS_PER_SOL + " Sol";
+      // @ts-ignore
+      account.tokenType = account.tokenType.toString();
+    }
     console.log('account exists:', account);
 
     if (!account)
     {
       // @ts-ignore
-
       const price = 3.2;
-      await program.rpc.initialize(new anchor.BN(price * anchor.web3.LAMPORTS_PER_SOL), 7,
+      const priceBN = new anchor.BN(price * anchor.web3.LAMPORTS_PER_SOL);
+      const amount = 8;
+      await program.rpc.initialize(tokenType, priceBN, amount,
        {
         accounts: {
           payer: receiver.publicKey,
