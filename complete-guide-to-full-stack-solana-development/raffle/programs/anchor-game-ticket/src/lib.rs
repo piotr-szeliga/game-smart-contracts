@@ -21,6 +21,7 @@ pub mod anchor_raffle_ticket {
         msg!("Total Tickets: {:?}", raffle.total_tickets);
         msg!("Sold Tickets: {:?}", raffle.sold_tickets);
         msg!("Price Per Ticket: {} {}", raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
+        msg!("New Raffle Account: {}", ctx.accounts.raffle.to_account_info().key());
 
         Ok(())
     }
@@ -108,7 +109,7 @@ pub struct Raffle {
 }
 
 impl Raffle {
-    pub const LEN: usize = 4 + 4 + 8;
+    pub const LEN: usize = 4 + 4 + 8 + 8;
 }
 
 #[event]
