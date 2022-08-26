@@ -5,8 +5,11 @@ import { AnchorRaffleTicket } from "../target/types/anchor_raffle_ticket";
 import {
   Keypair,
   PublicKey,
-  SystemProgram
+  SystemProgram,
+  TransactionInstruction
 } from '@solana/web3.js';
+
+import {getOrCreateAssociatedTokenAccount, TOKEN_PROGRAM_ID} from "@solana/spl-token";
 
 async function spawnMoney(
   program: anchor.Program<AnchorRaffleTicket>,
@@ -27,17 +30,46 @@ async function spawnMoney(
   // @ts-ignore
   console.log(`Sending SOL: ${program.provider.wallet.publicKey.toString()} sent ${sol} to ${to.toString()} `);
 
-  return await program.provider.sendAndConfirm(transaction, [], {
+  const tx = await program.provider.sendAndConfirm(transaction, [], {
     commitment: "confirmed",
-  });
+  });;
+
+  console.log("DONE:", tx);
+  return tx;
 }
 
-describe("anchor-game-ticket", () => {
+describe("anchor-game-ticket", () =>
+{
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
+  const program = anchor.workspace.AnchorRaffleTicket as anchor.Program<AnchorRaffleTicket>;
 
-  const program = anchor.workspace.AnchorRaffleTicket as Program<AnchorRaffleTicket>;
+  it("Spl Token!", async () => {
+    const mint = new PublicKey("ASxC3n3smkcUkA7Z58EUKZ2NfHoQ8eZrkTRK7ergYr2a"); // $CRECK devnet
+    const sender = program.provider.publicKey;
+    console.log("Sender:", sender.toString());
+    // @ts-ignore
+    const senderWallet = program.provider.wallet;
+    const recipient = new PublicKey("3xeW8eLMunbmMW83n2wLqNkiEr4GsUFJjzM6h19fhwot"); // raffle bank
+    const senderATA = await getOrCreateAssociatedTokenAccount(program.provider.connection, senderWallet.payer, mint, sender);
+    console.log(senderATA.address.toString());
 
+    const recipientATA = await getOrCreateAssociatedTokenAccount(program.provider.connection, senderWallet.payer, mint, recipient);
+    console.log(recipientATA.address.toString());
+
+    const amount = 3 * anchor.web3.LAMPORTS_PER_SOL;
+
+    await program.rpc.transferTokens(new anchor.BN(amount), {
+      accounts: {
+        sender: sender,
+        senderTokens: senderATA.address,
+        recipientTokens: recipientATA.address,
+        tokenProgram: TOKEN_PROGRAM_ID
+      }
+    });
+  });
+
+  return;
   it("Is initialized!", async () =>
   {
     console.log("\n\nSTART:\n");
@@ -65,11 +97,11 @@ describe("anchor-game-ticket", () => {
     console.log("Step-1 DONE");
 
     // const raffle = Keypair.generate();
-    const raffle = Keypair.fromSecretKey(new Uint8Array([168,17,242,65,149,126,253,110,133,100,55,252,163,47,182,51,194,200,143,9,178,148,49,185,170,222,192,48,112,137,239,47,115,188,21,8,100,127,253,163,7,102,82,4,158,88,174,26,48,51,164,78,255,253,94,21,71,203,134,26,94,151,115,13]));
+    const raffle = Keypair.fromSecretKey(new Uint8Array([116,70,177,15,159,21,163,29,18,111,62,73,143,52,203,88,129,60,61,116,176,164,238,178,105,163,25,225,65,211,117,131,188,197,246,113,242,134,90,196,40,170,246,139,143,141,232,15,196,251,28,76,66,22,115,20,32,220,89,54,14,235,241,65]));
     console.log("raffle :", raffle.publicKey.toString());
     console.log(raffle.secretKey.toString());
 
-    const account = await program.account.raffle.fetchNullable(raffle.publicKey);
+    let account = await program.account.raffle.fetchNullable(raffle.publicKey);
     if (account)
     {
       // @ts-ignore
@@ -82,7 +114,7 @@ describe("anchor-game-ticket", () => {
     if (!account)
     {
       // @ts-ignore
-      const price = 3.2;
+      const price = 0.1;
       const priceBN = new anchor.BN(price * anchor.web3.LAMPORTS_PER_SOL);
       const amount = 8;
       await program.rpc.initialize(tokenType, priceBN, amount,
@@ -100,19 +132,22 @@ describe("anchor-game-ticket", () => {
     }
 
     console.log("Step-2 DONE");
-    return;
+    //return;
 
     const buyer = Keypair.generate();
-    console.log("buyer: ", buyer.publicKey.toString());
-    await spawnMoney(program, buyer.publicKey, .2);
+    console.log("buyer:", buyer.publicKey.toString());
+    await spawnMoney(program, buyer.publicKey, 1);
 
-    console.log("Step-3");
+    const ticketsAmountToBuy = 1;
+    console.log("wants to buy tickets:", ticketsAmountToBuy);
+
     const listener = program.addEventListener("BuyEvent", (event, slot) => {
       console.log("BuyEvent:", event.buyer.toString(), event.amount, event.soldTickets, event.totalTickets, event.remainingTickets, slot);
     })
 
+    console.log("Step-3 DONE");
     // @ts-ignore
-    await program.rpc.buyTicket(1, {
+    await program.rpc.buyTicket(ticketsAmountToBuy, {
       accounts: {
         buyer: buyer.publicKey,
         recipient: receiver.publicKey,
@@ -125,7 +160,8 @@ describe("anchor-game-ticket", () => {
       }
     });
 
-    await new Promise(f => setTimeout(f, 5000));
+    account = await program.account.raffle.fetchNullable(raffle.publicKey);
+    console.log(account);
 
     await program.removeEventListener(listener);
   });

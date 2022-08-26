@@ -1,15 +1,15 @@
 #![feature(core_intrinsics)]
 use anchor_lang::prelude::*;
-use anchor_lang::system_program::{transfer, Transfer};
-//use anchor_spl::{self, associated_token::{AssociatedToken}, token::{self, Mint, TokenAccount, Token}};
+use anchor_lang::system_program::{Transfer as TransferProgramSOL};
+use anchor_spl::token::{self, Token, TokenAccount, Transfer as TransferSPL};
 
 declare_id!("AGyQHJtznL3WiqWzsV31Rxpvvk4qwZHnaUVn9LPdnjZj");
 
-pub const PRICE_PER_TICKET: u64 = 150_000_000;
 pub const LAMPORTS_PER_SOL: u64 = 1000000000;
 
 #[program]
 pub mod anchor_raffle_ticket {
+    use anchor_lang::system_program;
     use super::*;
 
     pub fn initialize(ctx: Context<Initialize>, token_type: Pubkey, price: u64, amount: u32) -> Result<()> {
@@ -29,19 +29,24 @@ pub mod anchor_raffle_ticket {
         Ok(())
     }
 
-    pub fn buy_ticket(ctx: Context<BuyTicket>, amount: u32) -> Result<()> {
-        let cpi_context = CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
-            Transfer {
-                from: ctx.accounts.buyer.to_account_info().clone(),
-                to: ctx.accounts.recipient.to_account_info(),
-            },
-        );
-
+    pub fn buy_ticket(ctx: Context<BuyTicket>, amount: u32) -> Result<()>
+    {
         let raffle = &mut ctx.accounts.raffle;
+        let transaction_price = raffle.price_per_ticket * amount as u64;
 
-        //transfer(cpi_context, raffle.price_per_ticket * LAMPORTS_PER_SOL * amount as u64)?;
-        transfer(cpi_context, PRICE_PER_TICKET * amount as u64)?;
+        // transfer via SOL
+        system_program::transfer(
+            CpiContext::new(
+                ctx.accounts.system_program.to_account_info(),
+                TransferProgramSOL {
+                    from: ctx.accounts.buyer.to_account_info().clone(),
+                    to: ctx.accounts.recipient.to_account_info(),
+                },
+            ),
+            transaction_price,
+        )?;
+
+        // transfer via SPL-Token
 
         raffle.sold_tickets = raffle.sold_tickets.checked_add(amount).unwrap();
 
@@ -55,24 +60,42 @@ pub mod anchor_raffle_ticket {
             });
 
 
+        let remaining_tickets = raffle.total_tickets - raffle.sold_tickets;
         msg!("Buyer: {:?}", *ctx.accounts.buyer.to_account_info().key);
-        msg!("Buy Amount: {:?}", amount);
-        msg!("Total Tickets: {:?}", raffle.total_tickets);
-        msg!("Sold Tickets: {:?}", raffle.sold_tickets);
-        msg!("Remaining Tickets: {:?}", raffle.total_tickets - raffle.sold_tickets);
+        msg!("Total Tickets: {:?} | Sold {:?} | Remaining: {:?} | Price {:?}", raffle.total_tickets, raffle.sold_tickets, remaining_tickets, raffle.price_per_ticket);
+        msg!("Buy Amount: {:?} | Total Cost: {:?}", amount, transaction_price);
+
 
         Ok(())
     }
 
-    // pub fn create_mint_and_vault(ctx: Context<Initialize>, _decimals: u8, amount: u64) -> Result<T> {
-    //     msg!("create_mint_and_vault begin");
-    //     let mint_to_ctx = token::MintTo {
-    //         mint: ctx.accounts.mint.to_account_info(),
-    //         to: ctx.accounts.vault.to_account_info(),
-    //         authority: ctx.accounts.authority.to_account_info()
-    //     };
-    //     return token::mint_to(CpiContext::new(ctx.accounts.token_program.to_account_info(), mint_to_ctx), amount);
-    // }
+    pub fn transfer_tokens(ctx: Context<TransferTokens>, amount: u64) -> Result<()>
+    {
+        token::transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                TransferSPL {
+                    from: ctx.accounts.sender_tokens.to_account_info(),
+                    to: ctx.accounts.recipient_tokens.to_account_info(),
+                    authority: ctx.accounts.sender.to_account_info(),
+                },
+            ),
+            amount,
+        )?;
+
+        return Ok(());
+    }
+}
+
+#[derive(Accounts)]
+#[instruction(amount: u64)]
+pub struct TransferTokens<'info> {
+    pub sender: Signer<'info>,
+    #[account(mut)]
+    pub sender_tokens: Account<'info, TokenAccount>,
+    #[account(mut)]
+    pub recipient_tokens: Account<'info, TokenAccount>,
+    pub token_program: Program<'info, Token>,
 }
 
 #[derive(Accounts)]
@@ -88,7 +111,7 @@ pub struct Initialize<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(amount: u32)]
+#[instruction(amount: u32, xx: bool)]
 pub struct BuyTicket<'info> {
     // buyer account
     #[account(mut)]
@@ -98,7 +121,7 @@ pub struct BuyTicket<'info> {
     #[account(mut)]
     recipient: AccountInfo<'info>,
     // raffle
-    #[account(mut, constraint = amount + raffle.sold_tickets <= raffle.total_tickets)]
+    #[account(mut, constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft)]
     raffle: Account<'info, Raffle>,
     // system program
     system_program: Program<'info, System>,
@@ -109,7 +132,8 @@ pub struct Raffle {
     pub total_tickets: u32,
     pub sold_tickets: u32,
     pub price_per_ticket: u64,
-    pub token_type: Pubkey
+    pub token_type: Pubkey,
+    //pub is_sol: bool
 }
 
 impl Raffle {
@@ -123,4 +147,10 @@ pub struct BuyEvent {
     pub sold_tickets: u32,
     pub total_tickets: u32,
     pub remaining_tickets: u32
+}
+
+#[error_code]
+pub enum ErrorCode {
+    #[msg("No more tickets left for purchase.")]
+    NoTicketsLeft,
 }
