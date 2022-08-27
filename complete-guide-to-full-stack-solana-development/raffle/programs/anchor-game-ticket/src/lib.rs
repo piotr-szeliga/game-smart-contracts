@@ -2,17 +2,61 @@
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{Transfer as TransferProgramSOL};
 use anchor_spl::token::{self, Token, TokenAccount, Transfer as TransferSPL};
+// use solana_sdk::{
+//     signature::{Keypair, Signer},
+//     transaction::{Transaction, TransactionError},
+// };
+// use spl_memo::*;
 
 declare_id!("AGyQHJtznL3WiqWzsV31Rxpvvk4qwZHnaUVn9LPdnjZj");
 
 pub const LAMPORTS_PER_SOL: u64 = 1000000000;
 
 #[program]
-pub mod anchor_raffle_ticket {
+pub mod anchor_raffle_ticket
+{
+    //use std::str::FromStr;
     use anchor_lang::system_program;
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>, token_type: Pubkey, price: u64, amount: u32) -> Result<()> {
+    // use solana_program::{
+    //     account_info::IntoAccountInfo, program_error::ProgramError, pubkey::Pubkey,
+    // };
+    // use solana_sdk::account::Account;
+    // use spl_memo::processor::process_instruction;
+
+    // #[test]
+    // fn test_utf8_memo() {
+    //     let program_id = Pubkey::new(&[0; 32]);
+    //
+    //     let string = b"letters and such";
+    //     assert_eq!(Ok(()), process_instruction(&program_id, &[], string));
+    //
+    //     let emoji = "🐆".as_bytes();
+    //     let bytes = [0xF0, 0x9F, 0x90, 0x86];
+    //     assert_eq!(emoji, bytes);
+    //     assert_eq!(Ok(()), process_instruction(&program_id, &[], &emoji));
+    //
+    //     let mut bad_utf8 = bytes;
+    //     bad_utf8[3] = 0xFF; // Invalid UTF-8 byte
+    //     assert_eq!(
+    //         Err(ProgramError::InvalidInstructionData),
+    //         process_instruction(&program_id, &[], &bad_utf8)
+    //     );
+    // }
+
+    pub fn initialize(ctx: Context<Initialize>, token_type: Pubkey, price: u64, amount: u32) -> Result<()>
+    {
+        // let memo = "🐆".as_bytes();
+        // let keypairs = vec![Keypair::new(), Keypair::new(), Keypair::new()];
+        // let pubkeys: Vec<Pubkey> = keypairs.iter().map(|keypair| keypair.pubkey()).collect();
+        // let mut transaction = Transaction::new_with_payer(&[build_memo(memo, &signer_key_refs)], Some(&payer.pubkey()));
+        // let mut signers = vec![&payer];
+        // for keypair in keypairs.iter() {
+        //     signers.push(keypair);
+        // }
+        // transaction.sign(&signers, recent_blockhash);
+
         let raffle = &mut ctx.accounts.raffle;
         raffle.price_per_ticket = price;
         raffle.total_tickets = amount;
@@ -29,10 +73,13 @@ pub mod anchor_raffle_ticket {
         Ok(())
     }
 
-    pub fn buy_ticket(ctx: Context<BuyTicket>, amount: u32) -> Result<()>
+    pub fn buy_ticket_sol(ctx: Context<BuyTicketSOL>, amount: u32, _price: u64) -> Result<()>
     {
         let raffle = &mut ctx.accounts.raffle;
         let transaction_price = raffle.price_per_ticket * amount as u64;
+
+        //if raffle.token_type.key().to_string() == "11111111111111111111111111111111" // Paying with SOL
+        msg!("SOL Transfer: {:?}", raffle.token_type.key());
 
         // transfer via SOL
         system_program::transfer(
@@ -45,8 +92,6 @@ pub mod anchor_raffle_ticket {
             ),
             transaction_price,
         )?;
-
-        // transfer via SPL-Token
 
         raffle.sold_tickets = raffle.sold_tickets.checked_add(amount).unwrap();
 
@@ -65,12 +110,18 @@ pub mod anchor_raffle_ticket {
         msg!("Total Tickets: {:?} | Sold {:?} | Remaining: {:?} | Price {:?}", raffle.total_tickets, raffle.sold_tickets, remaining_tickets, raffle.price_per_ticket);
         msg!("Buy Amount: {:?} | Total Cost: {:?}", amount, transaction_price);
 
-
         Ok(())
     }
 
-    pub fn transfer_tokens(ctx: Context<TransferTokens>, amount: u64) -> Result<()>
+    pub fn buy_ticket_spl(ctx: Context<BuyTicketSPL>, amount: u32, _price: u64) -> Result<()>
     {
+        let raffle = &mut ctx.accounts.raffle;
+        let transaction_price = raffle.price_per_ticket * amount as u64;
+
+        //let dustPubKey = Pubkey::from_str("DUSTawucrTsGU8hcqRdHDCbuYhCPADMLM2VcCb8VnFnQ").unwrap(); // testing purposes
+
+        msg!("SPL-Token Transfer: {:?}", raffle.token_type.key());
+
         token::transfer(
             CpiContext::new(
                 ctx.accounts.token_program.to_account_info(),
@@ -80,26 +131,35 @@ pub mod anchor_raffle_ticket {
                     authority: ctx.accounts.sender.to_account_info(),
                 },
             ),
-            amount,
+            transaction_price,
         )?;
 
-        return Ok(());
+        msg!("Token Type: {:?}", raffle.token_type.key());
+
+        raffle.sold_tickets = raffle.sold_tickets.checked_add(amount).unwrap();
+
+        emit!(BuyEvent
+            {
+                buyer: *ctx.accounts.sender.to_account_info().key,
+                amount: amount,
+                sold_tickets: raffle.sold_tickets,
+                total_tickets: raffle.total_tickets,
+                remaining_tickets: raffle.total_tickets - raffle.sold_tickets
+            });
+
+
+        let remaining_tickets = raffle.total_tickets - raffle.sold_tickets;
+        msg!("Buyer: {:?}", *ctx.accounts.sender.to_account_info().key);
+        msg!("Total Tickets: {:?} | Sold {:?} | Remaining: {:?} | Price {:?}", raffle.total_tickets, raffle.sold_tickets, remaining_tickets, raffle.price_per_ticket);
+        msg!("Buy Amount: {:?} | Total Cost: {:?}", amount, transaction_price);
+
+        Ok(())
     }
 }
 
 #[derive(Accounts)]
-#[instruction(amount: u64)]
-pub struct TransferTokens<'info> {
-    pub sender: Signer<'info>,
-    #[account(mut)]
-    pub sender_tokens: Account<'info, TokenAccount>,
-    #[account(mut)]
-    pub recipient_tokens: Account<'info, TokenAccount>,
-    pub token_program: Program<'info, Token>,
-}
-
-#[derive(Accounts)]
-pub struct Initialize<'info> {
+pub struct Initialize<'info>
+{
     // payer
     #[account(mut)]
     payer: Signer<'info>,
@@ -111,8 +171,9 @@ pub struct Initialize<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(amount: u32, xx: bool)]
-pub struct BuyTicket<'info> {
+#[instruction(amount: u32, price: u64)]
+pub struct BuyTicketSOL<'info> // For SOL Transfers
+{
     // buyer account
     #[account(mut)]
     buyer: Signer<'info>,
@@ -121,10 +182,23 @@ pub struct BuyTicket<'info> {
     #[account(mut)]
     recipient: AccountInfo<'info>,
     // raffle
-    #[account(mut, constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft)]
+    #[account(mut, constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft, constraint = price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched)]
     raffle: Account<'info, Raffle>,
-    // system program
     system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(amount: u32, price: u64)]
+pub struct BuyTicketSPL<'info> // For SPL-Token Transfer
+{
+    sender: Signer<'info>,
+    #[account(mut)]
+    sender_tokens: Account<'info, TokenAccount>,
+    #[account(mut)]
+    recipient_tokens: Account<'info, TokenAccount>,
+    #[account(mut, constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft, constraint = price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched)]
+    raffle: Account<'info, Raffle>,
+    token_program: Program<'info, Token>,
 }
 
 #[account]
@@ -133,7 +207,6 @@ pub struct Raffle {
     pub sold_tickets: u32,
     pub price_per_ticket: u64,
     pub token_type: Pubkey,
-    //pub is_sol: bool
 }
 
 impl Raffle {
@@ -153,4 +226,6 @@ pub struct BuyEvent {
 pub enum ErrorCode {
     #[msg("No more tickets left for purchase.")]
     NoTicketsLeft,
+    #[msg("Raffle price mismatched.")]
+    RafflePriceMismatched,
 }
