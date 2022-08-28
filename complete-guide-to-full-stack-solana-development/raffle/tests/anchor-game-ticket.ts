@@ -55,7 +55,8 @@ async function spawnMoney(
   return tx;
 }
 
-describe("anchor-game-ticket", () => {
+describe("anchor-game-ticket", () =>
+{
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
     const program = anchor.workspace.AnchorRaffleTicket as anchor.Program<AnchorRaffleTicket>;
@@ -117,40 +118,7 @@ describe("anchor-game-ticket", () => {
                 });
         }
 
-        console.log("Step-2 DONE");
-        //return;
-
-        const buyer = Keypair.generate();
-        console.log("buyer:", buyer.publicKey.toString());
-        await spawnMoney(program, buyer.publicKey, 1);
-
-        const ticketsAmountToBuy = 1;
-        const ticketPrice = 0.1 * anchor.web3.LAMPORTS_PER_SOL;
-        console.log(`wants to buy tickets: ${ticketsAmountToBuy} price: ${ticketPrice}`);
-
-        const listener = program.addEventListener("BuyEvent", (event, slot) => {
-            console.log("BuyEvent:", event.buyer.toString(), event.amount, event.soldTickets, event.totalTickets, event.remainingTickets, slot);
-        })
-
-        console.log("Step-3 DONE");
-        // @ts-ignore
-        await program.rpc.buyTicket(ticketsAmountToBuy, new anchor.BN(ticketPrice),
-            {
-                accounts: {
-                    buyer: buyer.publicKey,
-                    recipient: receiver.publicKey,
-                    raffle: raffle.publicKey,
-                    systemProgram: SystemProgram.programId,
-                },
-                signers: [buyer],
-                options: {
-                    commitment: "confirmed"
-                }
-            });
-
-        account = await getAndPrintAccount(program, raffle.publicKey);
-
-        await program.removeEventListener(listener);
+        console.log("Init DONE");
     });
 
     it("Buy Ticket!", async () => {
@@ -185,7 +153,7 @@ describe("anchor-game-ticket", () => {
 
         const ticketsAmountToBuy = 1;
         const ticketsPrice = 0.1;
-        const ticketPriceLAMPORTS = ticketsAmountToBuy * ticketsPrice * anchor.web3.LAMPORTS_PER_SOL;
+        const ticketPriceLAMPORTS = ticketsPrice * anchor.web3.LAMPORTS_PER_SOL;
 
         console.log("\nStep-3:");
         console.log(`Wants to buy tickets: ${ticketsAmountToBuy} price: ${ticketsPrice}`);
@@ -216,8 +184,12 @@ describe("anchor-game-ticket", () => {
         await program.removeEventListener(listener);
     });
 
-    it("Spl Token!", async () => {
+    it("Spl Token!", async () =>
+    {
         if (!splTokenTestActive) return;
+
+        const raffle = new PublicKey("8UPURCNTsmTDZe1N3NjExgTf2B3Fi1RMeG79AWVLk77B");
+        console.log("Raffle :", raffle.toString());
 
         const mint = new PublicKey("ASxC3n3smkcUkA7Z58EUKZ2NfHoQ8eZrkTRK7ergYr2a"); // $CRECK devnet
         const sender = program.provider.publicKey;
@@ -233,12 +205,14 @@ describe("anchor-game-ticket", () => {
 
         const ticketsAmountToBuy = 3;
         const ticketsPrice = 0.1;
-        const ticketPriceLAMPORTS = ticketsAmountToBuy * ticketsPrice * anchor.web3.LAMPORTS_PER_SOL;
+        const ticketPriceLAMPORTS = ticketsPrice * anchor.web3.LAMPORTS_PER_SOL;
 
         // @ts-ignore
         await program.rpc.buyTicketSpl(ticketsAmountToBuy, new anchor.BN(ticketPriceLAMPORTS),
             {
-                accounts: {
+                accounts:
+                {
+                    raffle: raffle,
                     sender: sender,
                     senderTokens: senderATA.address,
                     recipientTokens: recipientATA.address,
