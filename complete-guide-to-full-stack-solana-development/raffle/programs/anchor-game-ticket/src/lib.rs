@@ -58,10 +58,10 @@ pub mod anchor_raffle_ticket
         // transaction.sign(&signers, recent_blockhash);
 
         let raffle = &mut ctx.accounts.raffle;
+        raffle.token_type = token_type;
         raffle.price_per_ticket = price;
         raffle.total_tickets = amount;
         raffle.sold_tickets = 0;
-        raffle.token_type = token_type;
 
         msg!("Program initialized successfully.");
         msg!("Total Tickets: {:?}", raffle.total_tickets);
