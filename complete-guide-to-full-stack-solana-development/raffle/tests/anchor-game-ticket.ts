@@ -135,9 +135,9 @@ describe("anchor-game-ticket", () =>
         //console.log(receiver.secretKey.toString());
         await spawnMoney(program, receiver.publicKey, 0.1);
 
-        const tokenType = PublicKey.default;
-        // const tokenType = new PublicKey("DUSTawucrTsGU8hcqRdHDCbuYhCPADMLM2VcCb8VnFnQ");
-        console.log('Token type:', tokenType.toString());
+        const tokenSPLAddress = PublicKey.default;
+        // const tokenSPLAddress = new PublicKey("DUSTawucrTsGU8hcqRdHDCbuYhCPADMLM2VcCb8VnFnQ");
+        console.log('Token type:', tokenSPLAddress.toString());
 
         // const raffle = Keypair.generate();
         const raffle = Keypair.fromSecretKey(new Uint8Array([116, 70, 177, 15, 159, 21, 163, 29, 18, 111, 62, 73, 143, 52, 203, 88, 129, 60, 61, 116, 176, 164, 238, 178, 105, 163, 25, 225, 65, 211, 117, 131, 188, 197, 246, 113, 242, 134, 90, 196, 40, 170, 246, 139, 143, 141, 232, 15, 196, 251, 28, 76, 66, 22, 115, 20, 32, 220, 89, 54, 14, 235, 241, 65]));
@@ -156,7 +156,7 @@ describe("anchor-game-ticket", () =>
         const ticketPriceLAMPORTS = ticketsPrice * anchor.web3.LAMPORTS_PER_SOL;
 
         console.log("\nStep-3:");
-        console.log(`Wants to buy tickets: ${ticketsAmountToBuy} price: ${ticketsPrice}`);
+        console.log(`Wants to buy tickets: ${ticketsAmountToBuy} price: ${ticketsPrice} tokenSPLAddress: ${tokenSPLAddress}`);
 
         const listener = program.addEventListener("BuyEvent", (event, slot) => {
             console.log("BuyEvent:", event.buyer.toString(), event.amount, event.soldTickets, event.totalTickets, event.remainingTickets, slot);
@@ -165,19 +165,19 @@ describe("anchor-game-ticket", () =>
         console.log("\nStep-4 Buying...");
 
         // @ts-ignore
-        await program.rpc.buyTicketSol(ticketsAmountToBuy, new anchor.BN(ticketPriceLAMPORTS),
-            {
-                accounts: {
-                    buyer: buyer.publicKey,
-                    recipient: receiver.publicKey,
-                    raffle: raffle.publicKey,
-                    systemProgram: SystemProgram.programId,
-                },
-                signers: [buyer],
-                options: {
-                    commitment: "confirmed"
-                }
-            });
+        await program.rpc.buyTicketSol(ticketsAmountToBuy, new anchor.BN(ticketPriceLAMPORTS), tokenSPLAddress,
+        {
+            accounts: {
+                buyer: buyer.publicKey,
+                recipient: receiver.publicKey,
+                raffle: raffle.publicKey,
+                systemProgram: SystemProgram.programId,
+            },
+            signers: [buyer],
+            options: {
+                commitment: "confirmed"
+            }
+        });
 
         let account = await getAndPrintAccount(program, raffle.publicKey);
 
@@ -191,16 +191,16 @@ describe("anchor-game-ticket", () =>
         const raffle = new PublicKey("8UPURCNTsmTDZe1N3NjExgTf2B3Fi1RMeG79AWVLk77B");
         console.log("Raffle :", raffle.toString());
 
-        const mint = new PublicKey("ASxC3n3smkcUkA7Z58EUKZ2NfHoQ8eZrkTRK7ergYr2a"); // $CRECK devnet
+        const tokenSPLAddress = new PublicKey("ASxC3n3smkcUkA7Z58EUKZ2NfHoQ8eZrkTRK7ergYr2a"); // $CRECK devnet
         const sender = program.provider.publicKey;
         console.log("Sender:", sender.toString());
         // @ts-ignore
         const senderWallet = program.provider.wallet;
         const recipient = new PublicKey("3xeW8eLMunbmMW83n2wLqNkiEr4GsUFJjzM6h19fhwot"); // raffle bank
-        const senderATA = await getOrCreateAssociatedTokenAccount(program.provider.connection, senderWallet.payer, mint, sender);
+        const senderATA = await getOrCreateAssociatedTokenAccount(program.provider.connection, senderWallet.payer, tokenSPLAddress, sender);
         console.log(senderATA.address.toString());
 
-        const recipientATA = await getOrCreateAssociatedTokenAccount(program.provider.connection, senderWallet.payer, mint, recipient);
+        const recipientATA = await getOrCreateAssociatedTokenAccount(program.provider.connection, senderWallet.payer, tokenSPLAddress, recipient);
         console.log(recipientATA.address.toString());
 
         const ticketsAmountToBuy = 3;
@@ -208,7 +208,7 @@ describe("anchor-game-ticket", () =>
         const ticketPriceLAMPORTS = ticketsPrice * anchor.web3.LAMPORTS_PER_SOL;
 
         // @ts-ignore
-        await program.rpc.buyTicketSpl(ticketsAmountToBuy, new anchor.BN(ticketPriceLAMPORTS),
+        await program.rpc.buyTicketSpl(ticketsAmountToBuy, new anchor.BN(ticketPriceLAMPORTS), tokenSPLAddress,
             {
                 accounts:
                 {

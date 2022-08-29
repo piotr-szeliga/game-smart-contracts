@@ -45,7 +45,7 @@ pub mod anchor_raffle_ticket
     //     );
     // }
 
-    pub fn initialize(ctx: Context<Initialize>, token_type: Pubkey, ticket_price: u64, amount: u32) -> Result<()>
+    pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32) -> Result<()>
     {
         // let memo = "🐆".as_bytes();
         // let keypairs = vec![Keypair::new(), Keypair::new(), Keypair::new()];
@@ -58,7 +58,7 @@ pub mod anchor_raffle_ticket
         // transaction.sign(&signers, recent_blockhash);
 
         let raffle = &mut ctx.accounts.raffle;
-        raffle.token_type = token_type;
+        raffle.token_spl_address = token_spl_address;
         raffle.price_per_ticket = ticket_price;
         raffle.total_tickets = amount;
         raffle.sold_tickets = 0;
@@ -67,19 +67,19 @@ pub mod anchor_raffle_ticket
         msg!("Total Tickets: {:?}", raffle.total_tickets);
         msg!("Sold Tickets: {:?}", raffle.sold_tickets);
         msg!("Price Per Ticket: {} {}", raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
-        msg!("Token Type: {:?}", raffle.token_type);
+        msg!("Token SPL Address: {:?}", raffle.token_spl_address);
         msg!("New Raffle Account: {}", ctx.accounts.raffle.to_account_info().key());
 
         Ok(())
     }
 
-    pub fn buy_ticket_sol(ctx: Context<BuyTicketSOL>, amount: u32, _ticket_price: u64) -> Result<()>
+    pub fn buy_ticket_sol(ctx: Context<BuyTicketSOL>, amount: u32, _ticket_price: u64, _token_spl_address: Pubkey) -> Result<()>
     {
         let raffle = &mut ctx.accounts.raffle;
         let transaction_price = raffle.price_per_ticket * amount as u64;
 
-        //if raffle.token_type.key().to_string() == "11111111111111111111111111111111" // Paying with SOL
-        msg!("SOL Transfer: {:?}", raffle.token_type.key());
+        //if raffle.token_spl_address.key().to_string() == "11111111111111111111111111111111" // Paying with SOL
+        msg!("SOL Transfer: {:?}", raffle.token_spl_address.key());
 
         // transfer via SOL
         system_program::transfer(
@@ -113,14 +113,14 @@ pub mod anchor_raffle_ticket
         Ok(())
     }
 
-    pub fn buy_ticket_spl(ctx: Context<BuyTicketSPL>, amount: u32, _ticket_price: u64) -> Result<()>
+    pub fn buy_ticket_spl(ctx: Context<BuyTicketSPL>, amount: u32, _ticket_price: u64, _token_spl_address: Pubkey) -> Result<()>
     {
         let raffle = &mut ctx.accounts.raffle;
         let transaction_price = raffle.price_per_ticket * amount as u64;
 
         //let dustPubKey = Pubkey::from_str("DUSTawucrTsGU8hcqRdHDCbuYhCPADMLM2VcCb8VnFnQ").unwrap(); // testing purposes
 
-        msg!("SPL-Token Transfer: {:?}", raffle.token_type.key());
+        msg!("SPL-Token Transfer: {:?}", raffle.token_spl_address.key());
 
         token::transfer(
             CpiContext::new(
@@ -134,7 +134,7 @@ pub mod anchor_raffle_ticket
             transaction_price,
         )?;
 
-        msg!("Token Type: {:?}", raffle.token_type.key());
+        msg!("Token Type: {:?}", raffle.token_spl_address.key());
 
         raffle.sold_tickets = raffle.sold_tickets.checked_add(amount).unwrap();
 
@@ -171,7 +171,7 @@ pub struct Initialize<'info>
 }
 
 #[derive(Accounts)]
-#[instruction(amount: u32, ticket_price: u64)]
+#[instruction(amount: u32, ticket_price: u64, token_spl_address: Pubkey)]
 pub struct BuyTicketSOL<'info> // For SOL Transfers
 {
     // buyer account
@@ -181,14 +181,15 @@ pub struct BuyTicketSOL<'info> // For SOL Transfers
     /// CHECK:
     #[account(mut)]
     recipient: AccountInfo<'info>,
-    // raffle
-    #[account(mut, constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft, constraint = ticket_price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched)]
+    #[account(mut, constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft,
+    constraint = ticket_price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched,
+    constraint = token_spl_address == raffle.token_spl_address @ ErrorCode::RaffleTokenSPLAddressMismatched)]
     raffle: Account<'info, Raffle>,
     system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
-#[instruction(amount: u32, ticket_price: u64)]
+#[instruction(amount: u32, ticket_price: u64, token_spl_address: Pubkey)]
 pub struct BuyTicketSPL<'info> // For SPL-Token Transfer
 {
     sender: Signer<'info>,
@@ -198,7 +199,8 @@ pub struct BuyTicketSPL<'info> // For SPL-Token Transfer
     recipient_tokens: Account<'info, TokenAccount>,
     #[account(mut,
     constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft,
-    constraint = ticket_price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched)]
+    constraint = ticket_price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched,
+    constraint = token_spl_address == raffle.token_spl_address @ ErrorCode::RaffleTokenSPLAddressMismatched)]
     raffle: Account<'info, Raffle>,
     token_program: Program<'info, Token>,
 }
@@ -208,7 +210,7 @@ pub struct Raffle {
     pub total_tickets: u32,
     pub sold_tickets: u32,
     pub price_per_ticket: u64,
-    pub token_type: Pubkey,
+    pub token_spl_address: Pubkey,
 }
 
 impl Raffle {
@@ -230,4 +232,6 @@ pub enum ErrorCode {
     NoTicketsLeft,
     #[msg("Raffle price mismatched.")]
     RafflePriceMismatched,
+    #[msg("Token Address mismatched.")]
+    RaffleTokenSPLAddressMismatched,
 }
