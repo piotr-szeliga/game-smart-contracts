@@ -196,7 +196,9 @@ pub struct BuyTicketSPL<'info> // For SPL-Token Transfer
     sender_tokens: Account<'info, TokenAccount>,
     #[account(mut)]
     recipient_tokens: Account<'info, TokenAccount>,
-    #[account(mut, constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft, constraint = ticket_price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched)]
+    #[account(mut,
+    constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft,
+    constraint = ticket_price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched)]
     raffle: Account<'info, Raffle>,
     token_program: Program<'info, Token>,
 }
