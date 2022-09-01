@@ -19,6 +19,7 @@ pub mod anchor_raffle_ticket
     use anchor_lang::system_program;
     use super::*;
 
+    /* TEMP CODE:
     // use solana_program::{
     //     account_info::IntoAccountInfo, program_error::ProgramError, pubkey::Pubkey,
     // };
@@ -44,25 +45,18 @@ pub mod anchor_raffle_ticket
     //         process_instruction(&program_id, &[], &bad_utf8)
     //     );
     // }
+    */
 
     pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32) -> Result<()>
     {
-        // let memo = "🐆".as_bytes();
-        // let keypairs = vec![Keypair::new(), Keypair::new(), Keypair::new()];
-        // let pubkeys: Vec<Pubkey> = keypairs.iter().map(|keypair| keypair.pubkey()).collect();
-        // let mut transaction = Transaction::new_with_payer(&[build_memo(memo, &signer_key_refs)], Some(&payer.pubkey()));
-        // let mut signers = vec![&payer];
-        // for keypair in keypairs.iter() {
-        //     signers.push(keypair);
-        // }
-        // transaction.sign(&signers, recent_blockhash);
-
         let raffle = &mut ctx.accounts.raffle;
         raffle.token_spl_address = token_spl_address;
         raffle.price_per_ticket = ticket_price;
         raffle.total_tickets = amount;
         raffle.sold_tickets = 0;
 
+        // Option A:
+        // =========
         // transfer_spl_token(
         //     Context::new
         //         (
@@ -79,6 +73,8 @@ pub mod anchor_raffle_ticket
         // )?;
         // //Default::default()
 
+        // Option B:
+        // =========
         token::transfer(
             CpiContext::new(
                 ctx.accounts.token_program.to_account_info(),
