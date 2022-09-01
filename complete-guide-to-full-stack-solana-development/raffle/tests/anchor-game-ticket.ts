@@ -99,11 +99,12 @@ describe("anchor-game-ticket", () =>
 
         let account = await getAndPrintAccount(program, raffle.publicKey);
 
-        if (!account) {
-            // @ts-ignore
+        if (!account)
+        {
             const price = 0.1;
             const priceBN = new anchor.BN(price * anchor.web3.LAMPORTS_PER_SOL);
             const amount = 8;
+            // @ts-ignore
             await program.rpc.initialize(tokenType, priceBN, amount,
                 {
                     accounts: {
