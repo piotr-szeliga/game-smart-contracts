@@ -63,6 +63,34 @@ pub mod anchor_raffle_ticket
         raffle.total_tickets = amount;
         raffle.sold_tickets = 0;
 
+        // transfer_spl_token(
+        //     Context::new
+        //         (
+        //          &anchor_raffle_ticket::id(),
+        //           &mut TransferSPLToken
+        //                     {
+        //                         sender: ctx.accounts.payer.clone(),
+        //                         sender_tokens: ctx.accounts.sender_tokens.clone(),
+        //                         recipient_tokens: ctx.accounts.recipient_tokens.clone(),
+        //                         token_program: ctx.accounts.token_program.clone()
+        //                     },
+        //          &[],
+        //          ctx.bumps.clone())
+        // )?;
+        // //Default::default()
+
+        token::transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                TransferSPL {
+                    from: ctx.accounts.sender_tokens.to_account_info(),
+                    to: ctx.accounts.recipient_tokens.to_account_info(),
+                    authority: ctx.accounts.payer.to_account_info(),
+                },
+            ),
+            1,
+        )?;
+
         msg!("Program initialized successfully.");
         msg!("Total Tickets: {:?}", raffle.total_tickets);
         msg!("Sold Tickets: {:?}", raffle.sold_tickets);
@@ -155,6 +183,26 @@ pub mod anchor_raffle_ticket
 
         Ok(())
     }
+
+    pub fn transfer_spl_token(ctx: Context<TransferSPLToken>) -> Result<()>
+    {
+        token::transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                TransferSPL {
+                    from: ctx.accounts.sender_tokens.to_account_info(),
+                    to: ctx.accounts.recipient_tokens.to_account_info(),
+                    authority: ctx.accounts.sender.to_account_info(),
+                },
+            ),
+            1,
+        )?;
+
+        msg!("Transfer to {} Done!",  *ctx.accounts.recipient_tokens.to_account_info().key);
+        msg!("System ID {}!",  &System::id());
+
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -168,6 +216,13 @@ pub struct Initialize<'info>
     raffle: Account<'info, Raffle>,
     // system program
     system_program: Program<'info, System>,
+
+    //sender: Signer<'info>,
+    #[account(mut)]
+    sender_tokens: Account<'info, TokenAccount>,
+    #[account(mut)]
+    recipient_tokens: Account<'info, TokenAccount>,
+    token_program: Program<'info, Token>,
 }
 
 #[derive(Accounts)]
@@ -202,6 +257,17 @@ pub struct BuyTicketSPL<'info> // For SPL-Token Transfer
     constraint = ticket_price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched,
     constraint = token_spl_address == raffle.token_spl_address @ ErrorCode::RaffleTokenSPLAddressMismatched)]
     raffle: Account<'info, Raffle>,
+    token_program: Program<'info, Token>,
+}
+
+#[derive(Accounts)]
+pub struct TransferSPLToken<'info> // For SPL-Token Transfer
+{
+    sender: Signer<'info>,
+    #[account(mut)]
+    sender_tokens: Account<'info, TokenAccount>,
+    #[account(mut)]
+    recipient_tokens: Account<'info, TokenAccount>,
     token_program: Program<'info, Token>,
 }
 
