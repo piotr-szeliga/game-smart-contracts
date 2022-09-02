@@ -290,10 +290,11 @@ pub struct BuyEvent {
 
 #[error_code]
 pub enum ErrorCode {
-    #[msg("No more tickets left for purchase.")]
+    #[msg("No more tickets left for purchase.")] // 0x1770
     NoTicketsLeft,
-    #[msg("Raffle price mismatched.")]
+    #[msg("Raffle price mismatched.")] // 0x1771
     RafflePriceMismatched,
-    #[msg("Token Address mismatched.")]
+    #[msg("Token Address mismatched.")] // 0x1772
     RaffleTokenSPLAddressMismatched,
 }
+
