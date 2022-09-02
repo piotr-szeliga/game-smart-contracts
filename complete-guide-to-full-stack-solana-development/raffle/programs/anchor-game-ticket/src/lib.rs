@@ -57,35 +57,34 @@ pub mod anchor_raffle_ticket
 
         // Option A:
         // =========
-        // transfer_spl_token(
-        //     Context::new
-        //         (
-        //          &anchor_raffle_ticket::id(),
-        //           &mut TransferSPLToken
-        //                     {
-        //                         sender: ctx.accounts.payer.clone(),
-        //                         sender_tokens: ctx.accounts.sender_tokens.clone(),
-        //                         recipient_tokens: ctx.accounts.recipient_tokens.clone(),
-        //                         token_program: ctx.accounts.token_program.clone()
-        //                     },
-        //          &[],
-        //          ctx.bumps.clone())
-        // )?;
-        // //Default::default()
+        transfer_spl_token(
+            Context::new
+                (
+                 &anchor_raffle_ticket::id(),
+                  &mut TransferSPLToken
+                            {
+                                sender: ctx.accounts.payer.clone(),
+                                sender_tokens: ctx.accounts.sender_tokens.clone(),
+                                recipient_tokens: ctx.accounts.recipient_tokens.clone(),
+                                token_program: ctx.accounts.token_program.clone()
+                            },
+                 &[],
+                 ctx.bumps.clone())
+        )?;
 
         // Option B:
         // =========
-        token::transfer(
-            CpiContext::new(
-                ctx.accounts.token_program.to_account_info(),
-                TransferSPL {
-                    from: ctx.accounts.sender_tokens.to_account_info(),
-                    to: ctx.accounts.recipient_tokens.to_account_info(),
-                    authority: ctx.accounts.payer.to_account_info(),
-                },
-            ),
-            1,
-        )?;
+        // token::transfer(
+        //     CpiContext::new(
+        //         ctx.accounts.token_program.to_account_info(),
+        //         TransferSPL {
+        //             from: ctx.accounts.sender_tokens.to_account_info(),
+        //             to: ctx.accounts.recipient_tokens.to_account_info(),
+        //             authority: ctx.accounts.payer.to_account_info(),
+        //         },
+        //     ),
+        //     1,
+        // )?;
 
         msg!("Program initialized successfully.");
         msg!("Total Tickets: {:?}", raffle.total_tickets);
@@ -194,7 +193,7 @@ pub mod anchor_raffle_ticket
             1,
         )?;
 
-        msg!("Transfer to {} Done!",  *ctx.accounts.recipient_tokens.to_account_info().key);
+        msg!("Transfer {} Done!",  ctx.accounts.recipient_tokens.mint);
         msg!("System ID {}!",  &System::id());
 
         Ok(())
@@ -204,16 +203,12 @@ pub mod anchor_raffle_ticket
 #[derive(Accounts)]
 pub struct Initialize<'info>
 {
-    // payer
     #[account(mut)]
     payer: Signer<'info>,
-    // raffle
     #[account(init, payer = payer, space = Raffle::SPACE + 8)]
     raffle: Account<'info, Raffle>,
-    // system program
     system_program: Program<'info, System>,
 
-    //sender: Signer<'info>,
     #[account(mut)]
     sender_tokens: Account<'info, TokenAccount>,
     #[account(mut)]
@@ -225,10 +220,8 @@ pub struct Initialize<'info>
 #[instruction(amount: u32, ticket_price: u64, token_spl_address: Pubkey)]
 pub struct BuyTicketSOL<'info> // For SOL Transfers
 {
-    // buyer account
     #[account(mut)]
     buyer: Signer<'info>,
-    // recipient
     /// CHECK:
     #[account(mut)]
     recipient: AccountInfo<'info>,
