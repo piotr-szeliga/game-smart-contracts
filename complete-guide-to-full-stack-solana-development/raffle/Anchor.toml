@@ -2,7 +2,7 @@
 seeds = false
 [programs.devnet]
 #[programs.localnet]
-anchor_raffle_ticket = "AGyQHJtznL3WiqWzsV31Rxpvvk4qwZHnaUVn9LPdnjZj"
+anchor_raffle_ticket = "4coTofX2WZBYv1EA4Gr4N35687MH7iQj1sJSXuMrk2bV"
 
 [registry]
 url = "https://anchor.projectserum.com"

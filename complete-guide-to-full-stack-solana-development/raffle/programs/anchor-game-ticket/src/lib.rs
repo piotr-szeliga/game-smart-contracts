@@ -1,14 +1,23 @@
 #![feature(core_intrinsics)]
+
+mod ins;
+mod state;
+
+// use fmt::Debug;
 use anchor_lang::prelude::*;
+use ins::*;
 use anchor_lang::system_program::{Transfer as TransferProgramSOL};
-use anchor_spl::token::{self, Token, TokenAccount, Transfer as TransferSPL};
+use anchor_spl::token::{self, Transfer as TransferSPL};
+use crate::state::{ErrorCode, BuyEvent};
+
+//use std::fmt;
 // use solana_sdk::{
 //     signature::{Keypair, Signer},
 //     transaction::{Transaction, TransactionError},
 // };
 // use spl_memo::*;
 
-declare_id!("AGyQHJtznL3WiqWzsV31Rxpvvk4qwZHnaUVn9LPdnjZj");
+declare_id!("4coTofX2WZBYv1EA4Gr4N35687MH7iQj1sJSXuMrk2bV");
 
 pub const LAMPORTS_PER_SOL: u64 = 1000000000;
 
@@ -17,6 +26,7 @@ pub mod anchor_raffle_ticket
 {
     //use std::str::FromStr;
     use anchor_lang::system_program;
+    use anchor_spl::associated_token::{Create, create};
     use super::*;
 
     /* TEMP CODE:
@@ -46,6 +56,61 @@ pub mod anchor_raffle_ticket
     //     );
     // }
     */
+
+    pub fn initialize_vault(ctx: Context<InitializeVault>, token_type: Pubkey, vault_bump: u8) -> Result<()>
+    {
+        if ctx.accounts.vault_pool.owner == &System::id()
+        {
+            let cpi_context = CpiContext::new(
+                ctx.accounts.associated_token.to_account_info(),
+                Create {
+                    payer: ctx.accounts.payer.to_account_info(),
+                    associated_token: ctx.accounts.vault_pool_skt_account.to_account_info(),
+                    authority: ctx.accounts.vault_pool.to_account_info(),
+                    mint: ctx.accounts.skt_mint.to_account_info(),
+                    rent: ctx.accounts.rent.to_account_info(),
+                    token_program: ctx.accounts.token_program.to_account_info(),
+                    system_program: ctx.accounts.system_program.to_account_info(),
+                },
+            );
+            create(cpi_context)?;
+        }
+
+        let vault = &mut ctx.accounts.vault;
+        vault.token_type = token_type;
+        vault.vault_bump = vault_bump;
+
+        msg!("Vault: {:?}", ctx.accounts.vault_pool.key);
+        msg!("Vault Owner: {:?}", ctx.accounts.vault_pool.owner);
+        msg!("System ID: {:?}", &System::id());
+
+        Ok(())
+    }
+
+    pub fn withdraw_vault(ctx: Context<WithdrawVault>) -> Result<()>
+    {
+        let vault = &ctx.accounts.vault;
+        let vault_address = vault.key().clone();
+
+        let cpi_context = CpiContext::new(
+            ctx.accounts.token_program.to_account_info().clone(),
+            token::Transfer
+            {
+                from: ctx.accounts.vault_pool_skt_account.to_account_info().clone(),
+                to: ctx.accounts.claimer_skt_account.to_account_info().clone(),
+                authority: ctx.accounts.vault_pool.to_account_info().clone(),
+            }
+        );
+
+        let seeds = [
+            VAULT_SKT_SEED_PREFIX.as_bytes(),
+            vault_address.as_ref(),
+            &[vault.vault_bump],
+        ];
+        token::transfer(cpi_context.with_signer(&[&seeds[..]]), 3)?;
+
+        Ok(())
+    }
 
     pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32) -> Result<()>
     {
@@ -204,99 +269,3 @@ pub mod anchor_raffle_ticket
         Ok(())
     }
 }
-
-#[derive(Accounts)]
-pub struct Initialize<'info>
-{
-    #[account(mut)]
-    payer: Signer<'info>,
-    #[account(init, payer = payer, space = Raffle::SPACE + 8)]
-    raffle: Account<'info, Raffle>,
-    system_program: Program<'info, System>,
-
-    #[account(mut)]
-    sender_tokens: Account<'info, TokenAccount>,
-    #[account(mut)]
-    recipient_tokens: Account<'info, TokenAccount>,
-    token_program: Program<'info, Token>,
-}
-
-#[derive(Accounts)]
-#[instruction(amount: u32, ticket_price: u64, token_spl_address: Pubkey)]
-pub struct BuyTicketSOL<'info> // For SOL Transfers
-{
-    #[account(mut)]
-    buyer: Signer<'info>,
-    /// CHECK:
-    #[account(mut)]
-    recipient: AccountInfo<'info>,
-    #[account(mut, constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft,
-    constraint = ticket_price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched,
-    constraint = token_spl_address == raffle.token_spl_address @ ErrorCode::RaffleTokenSPLAddressMismatched)]
-    raffle: Account<'info, Raffle>,
-    system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-#[instruction(amount: u32, ticket_price: u64, token_spl_address: Pubkey)]
-pub struct BuyTicketSPL<'info> // For SPL-Token Transfer
-{
-    sender: Signer<'info>,
-    #[account(mut)]
-    sender_tokens: Account<'info, TokenAccount>,
-    #[account(mut)]
-    recipient_tokens: Account<'info, TokenAccount>,
-    #[account(mut,
-    constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft,
-    constraint = ticket_price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched,
-    constraint = token_spl_address == raffle.token_spl_address @ ErrorCode::RaffleTokenSPLAddressMismatched)]
-    raffle: Account<'info, Raffle>,
-    token_program: Program<'info, Token>,
-}
-
-#[derive(Accounts)]
-pub struct TransferSPLToken<'info> // For SPL-Token Transfer
-{
-    sender: Signer<'info>,
-    #[account(mut)]
-    sender_tokens: Account<'info, TokenAccount>,
-    #[account(mut)]
-    recipient_tokens: Account<'info, TokenAccount>,
-    token_program: Program<'info, Token>,
-}
-
-#[account]
-pub struct Raffle {
-    pub total_tickets: u32,
-    pub sold_tickets: u32,
-    pub price_per_ticket: u64,
-    pub token_spl_address: Pubkey,
-}
-
-impl Raffle {
-    pub const SPACE: usize = std::mem::size_of::<Raffle>();
-}
-
-#[event]
-pub struct BuyEvent {
-    pub buyer: Pubkey,
-    pub amount: u32,
-    pub sold_tickets: u32,
-    pub total_tickets: u32,
-    pub remaining_tickets: u32
-}
-
-#[error_code]
-pub enum ErrorCode {
-    #[msg("No more tickets left for purchase.")] // 0x1770
-    NoTicketsLeft,
-    #[msg("Raffle price mismatched.")] // 0x1771
-    RafflePriceMismatched,
-    #[msg("Token Address mismatched.")] // 0x1772
-    RaffleTokenSPLAddressMismatched,
-    #[msg("Not Enough Tokens.")] // 0x1773
-    NotEnoughTokens,
-    #[msg("Custom Error.")] // 0x1774
-    ErrorCustom,
-}
-

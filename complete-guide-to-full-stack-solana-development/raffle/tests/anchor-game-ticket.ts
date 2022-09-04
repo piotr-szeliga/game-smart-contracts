@@ -5,7 +5,7 @@ import { AnchorRaffleTicket } from "../target/types/anchor_raffle_ticket";
 import {
     Keypair, LAMPORTS_PER_SOL,
     PublicKey,
-    SystemProgram, Transaction,
+    SystemProgram, SYSVAR_RENT_PUBKEY, Transaction,
     TransactionInstruction
 } from '@solana/web3.js';
 
@@ -17,7 +17,6 @@ import {
     mintTo,
     TOKEN_PROGRAM_ID
 } from "@solana/spl-token";
-import NodeWallet from "@project-serum/anchor/dist/browser/types/src/nodewallet";
 
 async function getAndPrintAccount(program: any, raffleAddress: PublicKey)
 {
@@ -92,9 +91,95 @@ describe("anchor-game-ticket", () =>
     anchor.setProvider(anchor.AnchorProvider.env());
     const program = anchor.workspace.AnchorRaffleTicket as anchor.Program<AnchorRaffleTicket>;
 
-    const initializedTestActive = true;
+    const initializedVaultTestActive = true;
+    const initializedAndWithdrawVaultTestActive = true;
+    const initializedTestActive = false;
     const buyTicketSOLTestActive = false;
     const buyTicketSPLTokenTestActive = false;
+
+    const VAULT_SKT_SEED_PREFIX = "skt_pool";
+
+    it("Program Init Vault and Withdraw!", async () =>
+    {
+        if (!initializedVaultTestActive) return;
+
+        const client = Keypair.generate();
+        await spawnMoney(program, client.publicKey, 0.01);
+
+        const payer = Keypair.generate();
+        await spawnMoney(program, payer.publicKey, 0.01);
+
+        const _vaultKeypair = Keypair.generate();
+        const [_vaultPool, bump] = await PublicKey.findProgramAddress([Buffer.from(VAULT_SKT_SEED_PREFIX), _vaultKeypair.publicKey.toBuffer()], program.programId);
+        console.log("Vault:", _vaultPool.toString(), bump);
+
+        const tokenSPLAddressKP = Keypair.generate();
+        const tokenSPLAddress = await createMint(program.provider.connection, payer, payer.publicKey, payer.publicKey, 9, tokenSPLAddressKP);
+        console.log("Vault SPL Token Mint:", tokenSPLAddress.toString());
+
+        // const _vaultPoolSktAccount = await getOrCreateAssociatedTokenAccount(program.provider.connection, payer, tokenSPLAddress, _vaultPool, true);
+        const _vaultPoolSktAccount = await getAssociatedTokenAddress(tokenSPLAddress, _vaultPool,true);
+        console.log("Vault ATA", _vaultPoolSktAccount.toString());
+
+        // Init Vault
+        {
+            await program.rpc.initializeVault(SystemProgram.programId, bump,
+                {
+                    accounts:
+                        {
+                            payer: payer.publicKey,
+                            vault: _vaultKeypair.publicKey,
+                            vaultPool: _vaultPool,
+                            vaultPoolSktAccount: _vaultPoolSktAccount,
+                            sktMint: tokenSPLAddress,
+                            rent: SYSVAR_RENT_PUBKEY,
+                            tokenProgram: TOKEN_PROGRAM_ID,
+                            associatedToken: ASSOCIATED_TOKEN_PROGRAM_ID,
+                            systemProgram: SystemProgram.programId,
+                        },
+                    signers: [payer, _vaultKeypair]
+                });
+        }
+
+        let vault = await program.account.vault.fetchNullable(_vaultKeypair.publicKey);
+        console.log(vault.tokenType.toString());
+        console.log(vault.vaultBump);
+
+        await getSPLTokensBalance(_vaultPool);
+
+        await mintTo(program.provider.connection, payer, tokenSPLAddress, _vaultPoolSktAccount, payer.publicKey, 100);
+
+        await getSPLTokensBalance(_vaultPool);
+
+        if (!initializedAndWithdrawVaultTestActive) return;
+
+        const _clientATA = await getOrCreateAssociatedTokenAccount(program.provider.connection, client, tokenSPLAddress, client.publicKey);
+        console.log("Client ATA", _clientATA.address.toString());
+
+        await program.rpc.withdrawVault(
+        {
+            accounts:
+            {
+                claimer: client.publicKey,
+                claimerSktAccount: _clientATA.address,
+                vault: _vaultKeypair.publicKey,
+                vaultPool: _vaultPool,
+                vaultPoolSktAccount: _vaultPoolSktAccount,
+                sktMint: tokenSPLAddress,
+                rent: SYSVAR_RENT_PUBKEY,
+                tokenProgram: TOKEN_PROGRAM_ID,
+                associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+                systemProgram: SystemProgram.programId,
+            },
+            signers: [client],
+        });
+
+        console.log("--> Client:");
+        await getSPLTokensBalance(client.publicKey);
+
+        console.log("--> Vault:");
+        await getSPLTokensBalance(_vaultPool);
+    });
 
     it("Program Init!", async () =>
     {
