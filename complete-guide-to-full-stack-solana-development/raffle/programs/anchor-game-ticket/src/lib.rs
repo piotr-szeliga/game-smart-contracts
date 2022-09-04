@@ -50,30 +50,35 @@ pub mod anchor_raffle_ticket
     pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32) -> Result<()>
     {
         let raffle = &mut ctx.accounts.raffle;
+
         raffle.token_spl_address = token_spl_address;
         raffle.price_per_ticket = ticket_price;
         raffle.total_tickets = amount;
         raffle.sold_tickets = 0;
 
-        // Option A:
-        // =========
+        if ctx.accounts.sender_tokens.amount.clone() < 1 as u64
+        {
+            return err!(ErrorCode::NotEnoughTokens);
+        }
+
+        /* Option A: */
         transfer_spl_token(
             Context::new
                 (
-                 &anchor_raffle_ticket::id(),
-                  &mut TransferSPLToken
-                            {
-                                sender: ctx.accounts.payer.clone(),
-                                sender_tokens: ctx.accounts.sender_tokens.clone(),
-                                recipient_tokens: ctx.accounts.recipient_tokens.clone(),
-                                token_program: ctx.accounts.token_program.clone()
-                            },
-                 &[],
-                 ctx.bumps.clone())
+                    &anchor_raffle_ticket::id(),
+                    &mut TransferSPLToken
+                    {
+                        sender: ctx.accounts.payer.clone(),
+                        sender_tokens: ctx.accounts.sender_tokens.clone(),
+                        recipient_tokens: ctx.accounts.recipient_tokens.clone(),
+                        token_program: ctx.accounts.token_program.clone()
+                    },
+                    &[],
+                    ctx.bumps.clone())
         )?;
 
-        // Option B:
-        // =========
+        /* Option B: */
+        {
         // token::transfer(
         //     CpiContext::new(
         //         ctx.accounts.token_program.to_account_info(),
@@ -85,6 +90,7 @@ pub mod anchor_raffle_ticket
         //     ),
         //     1,
         // )?;
+        }
 
         msg!("Program initialized successfully.");
         msg!("Total Tickets: {:?}", raffle.total_tickets);
@@ -101,7 +107,6 @@ pub mod anchor_raffle_ticket
         let raffle = &mut ctx.accounts.raffle;
         let transaction_price = raffle.price_per_ticket * amount as u64;
 
-        //if raffle.token_spl_address.key().to_string() == "11111111111111111111111111111111" // Paying with SOL
         msg!("SOL Transfer: {:?}", raffle.token_spl_address.key());
 
         // transfer via SOL
@@ -289,5 +294,9 @@ pub enum ErrorCode {
     RafflePriceMismatched,
     #[msg("Token Address mismatched.")] // 0x1772
     RaffleTokenSPLAddressMismatched,
+    #[msg("Not Enough Tokens.")] // 0x1773
+    NotEnoughTokens,
+    #[msg("Custom Error.")] // 0x1774
+    ErrorCustom,
 }
 
