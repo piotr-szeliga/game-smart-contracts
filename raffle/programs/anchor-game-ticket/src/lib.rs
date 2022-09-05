@@ -59,7 +59,6 @@ pub mod anchor_raffle_ticket
 
     pub fn initialize_vault(ctx: Context<InitializeVault>, token_type: Pubkey, vault_bump: u8) -> Result<()>
     {
-        if ctx.accounts.vault_pool.owner == &System::id()
         {
             let cpi_context = CpiContext::new(
                 ctx.accounts.associated_token.to_account_info(),
@@ -165,6 +164,10 @@ pub mod anchor_raffle_ticket
         msg!("New Raffle Account: {}", ctx.accounts.raffle.to_account_info().key());
 
         Ok(())
+    }
+
+    fn add_buyers(raffle: Raffle, buyer: Pubkey, amount: u32) {
+        
     }
 
     pub fn buy_ticket_sol(ctx: Context<BuyTicketSOL>, amount: u32, _ticket_price: u64, _token_spl_address: Pubkey) -> Result<()>
