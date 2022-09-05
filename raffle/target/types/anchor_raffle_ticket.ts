@@ -17,7 +17,7 @@ export type AnchorRaffleTicket = {
         },
         {
           "name": "vaultPool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -431,7 +431,7 @@ export const IDL: AnchorRaffleTicket = {
         },
         {
           "name": "vaultPool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
