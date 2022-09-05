@@ -166,10 +166,6 @@ pub mod anchor_raffle_ticket
         Ok(())
     }
 
-    fn add_buyers(raffle: Raffle, buyer: Pubkey, amount: u32) {
-        
-    }
-
     pub fn buy_ticket_sol(ctx: Context<BuyTicketSOL>, amount: u32, _ticket_price: u64, _token_spl_address: Pubkey) -> Result<()>
     {
         let raffle = &mut ctx.accounts.raffle;
