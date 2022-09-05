@@ -19,12 +19,20 @@ pub struct Raffle
     pub sold_tickets: u32,
     pub price_per_ticket: u64,
     pub token_spl_address: Pubkey,
+    pub buyers: Vec<Buyer>,
 }
 
 impl Raffle
 {
     pub const SPACE: usize = std::mem::size_of::<Raffle>();
 }
+
+#[derive(Debug, AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
+pub struct Buyer {
+    pub key: Pubkey,
+    pub tickets: u32,
+}
+
 
 #[event]
 pub struct BuyEvent

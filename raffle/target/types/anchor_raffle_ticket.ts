@@ -60,7 +60,8 @@ export type AnchorRaffleTicket = {
           "name": "vaultBump",
           "type": "u8"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "withdrawVault",
@@ -116,7 +117,8 @@ export type AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     },
     {
       "name": "initialize",
@@ -165,7 +167,8 @@ export type AnchorRaffleTicket = {
           "name": "amount",
           "type": "u32"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "buyTicketSol",
@@ -204,7 +207,8 @@ export type AnchorRaffleTicket = {
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "buyTicketSpl",
@@ -248,7 +252,8 @@ export type AnchorRaffleTicket = {
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "transferSplToken",
@@ -274,7 +279,8 @@ export type AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     }
   ],
   "accounts": [
@@ -314,6 +320,32 @@ export type AnchorRaffleTicket = {
           {
             "name": "tokenSplAddress",
             "type": "publicKey"
+          },
+          {
+            "name": "buyers",
+            "type": {
+              "vec": {
+                "defined": "Buyer"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "Buyer",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": "publicKey"
+          },
+          {
+            "name": "tickets",
+            "type": "u32"
           }
         ]
       }
@@ -442,7 +474,8 @@ export const IDL: AnchorRaffleTicket = {
           "name": "vaultBump",
           "type": "u8"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "withdrawVault",
@@ -498,7 +531,8 @@ export const IDL: AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     },
     {
       "name": "initialize",
@@ -547,7 +581,8 @@ export const IDL: AnchorRaffleTicket = {
           "name": "amount",
           "type": "u32"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "buyTicketSol",
@@ -586,7 +621,8 @@ export const IDL: AnchorRaffleTicket = {
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "buyTicketSpl",
@@ -630,7 +666,8 @@ export const IDL: AnchorRaffleTicket = {
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "transferSplToken",
@@ -656,7 +693,8 @@ export const IDL: AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     }
   ],
   "accounts": [
@@ -696,6 +734,32 @@ export const IDL: AnchorRaffleTicket = {
           {
             "name": "tokenSplAddress",
             "type": "publicKey"
+          },
+          {
+            "name": "buyers",
+            "type": {
+              "vec": {
+                "defined": "Buyer"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "Buyer",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": "publicKey"
+          },
+          {
+            "name": "tickets",
+            "type": "u32"
           }
         ]
       }

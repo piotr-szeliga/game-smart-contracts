@@ -8,7 +8,7 @@ use anchor_lang::prelude::*;
 use ins::*;
 use anchor_lang::system_program::{Transfer as TransferProgramSOL};
 use anchor_spl::token::{self, Transfer as TransferSPL};
-use crate::state::{ErrorCode, BuyEvent};
+use crate::state::{ErrorCode, BuyEvent, Buyer};
 
 //use std::fmt;
 // use solana_sdk::{
@@ -199,6 +199,19 @@ pub mod anchor_raffle_ticket
 
 
         let remaining_tickets = raffle.total_tickets - raffle.sold_tickets;
+
+        let index = raffle.buyers.iter().position(|x| x.key == ctx.accounts.buyer.key());
+        if let Some(index) = index {
+            let item = &mut raffle.buyers[index];
+            item.tickets = item.tickets.checked_add(amount).unwrap();
+        } else {
+            let item = Buyer {
+                key: ctx.accounts.buyer.key(),
+                tickets: amount,
+            };
+            raffle.buyers.push(item);
+        }
+
         msg!("Buyer: {:?}", *ctx.accounts.buyer.to_account_info().key);
         msg!("Total Tickets: {:?} | Sold {:?} | Remaining: {:?} | Price {:?} ({})", raffle.total_tickets, raffle.sold_tickets, remaining_tickets, raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
         msg!("Buy Amount: {:?} | Total Cost: {:?} ({})", amount, transaction_price, transaction_price as f64 / LAMPORTS_PER_SOL as f64);
@@ -242,6 +255,19 @@ pub mod anchor_raffle_ticket
 
 
         let remaining_tickets = raffle.total_tickets - raffle.sold_tickets;
+
+        let index = raffle.buyers.iter().position(|x| x.key == ctx.accounts.sender.key());
+        if let Some(index) = index {
+            let item = &mut raffle.buyers[index];
+            item.tickets = item.tickets.checked_add(amount).unwrap();
+        } else {
+            let item = Buyer {
+                key: ctx.accounts.sender.key(),
+                tickets: amount,
+            };
+            raffle.buyers.push(item);
+        }
+
         msg!("Buyer: {:?}", *ctx.accounts.sender.to_account_info().key);
         msg!("Total Tickets: {:?} | Sold {:?} | Remaining: {:?} | Price {:?} ({})", raffle.total_tickets, raffle.sold_tickets, remaining_tickets, raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
         msg!("Buy Amount: {:?} | Total Cost: {:?} ({})", amount, transaction_price, transaction_price as f64 / LAMPORTS_PER_SOL as f64);

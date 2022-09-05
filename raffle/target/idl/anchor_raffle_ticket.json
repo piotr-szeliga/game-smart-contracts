@@ -60,7 +60,8 @@
           "name": "vaultBump",
           "type": "u8"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "withdrawVault",
@@ -116,7 +117,8 @@
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     },
     {
       "name": "initialize",
@@ -165,7 +167,8 @@
           "name": "amount",
           "type": "u32"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "buyTicketSol",
@@ -204,7 +207,8 @@
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "buyTicketSpl",
@@ -248,7 +252,8 @@
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "transferSplToken",
@@ -274,7 +279,8 @@
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     }
   ],
   "accounts": [
@@ -314,6 +320,32 @@
           {
             "name": "tokenSplAddress",
             "type": "publicKey"
+          },
+          {
+            "name": "buyers",
+            "type": {
+              "vec": {
+                "defined": "Buyer"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "Buyer",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": "publicKey"
+          },
+          {
+            "name": "tickets",
+            "type": "u32"
           }
         ]
       }
