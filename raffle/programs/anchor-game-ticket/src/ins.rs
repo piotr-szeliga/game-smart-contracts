@@ -22,7 +22,7 @@ pub struct InitializeVault<'info>
     // vault pool $skt token account owned by vault
     /// CHECK:
     #[account(mut)]
-    pub vault_pool_skt_account: UncheckedAccount<'info>,
+    pub vault_pool_skt_account: Account<'info, TokenAccount>,
     // $skt mint
     pub skt_mint: Account<'info, Mint>,
     pub rent: Sysvar<'info, Rent>,
