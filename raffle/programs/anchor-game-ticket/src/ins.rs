@@ -7,7 +7,8 @@ pub const VAULT_SKT_SEED_PREFIX: &str = "skt_pool";
 
 #[derive(Accounts)]
 pub struct Memo<'info> {
-    
+    /// CHECK:
+    pub memo: AccountInfo<'info>
 }
 
 #[derive(Accounts)]

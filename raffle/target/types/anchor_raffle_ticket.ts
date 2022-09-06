@@ -4,7 +4,13 @@ export type AnchorRaffleTicket = {
   "instructions": [
     {
       "name": "memo",
-      "accounts": [],
+      "accounts": [
+        {
+          "name": "memo",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
       "args": [],
       "returns": null
     },
@@ -490,7 +496,13 @@ export const IDL: AnchorRaffleTicket = {
   "instructions": [
     {
       "name": "memo",
-      "accounts": [],
+      "accounts": [
+        {
+          "name": "memo",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
       "args": [],
       "returns": null
     },

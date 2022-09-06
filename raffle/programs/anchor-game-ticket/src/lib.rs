@@ -59,10 +59,15 @@ pub mod anchor_raffle_ticket
     // }
     */
     pub fn memo(ctx: Context<Memo>) -> Result<()> {
+        let account_info = vec![
+            ctx.accounts.memo.to_account_info()
+        ];
+
         invoke(
             &build_memo("Hello world".as_bytes(), &[]),
-            &[]
+            account_info.as_slice()
         )?;
+
         Ok(())
     }
 

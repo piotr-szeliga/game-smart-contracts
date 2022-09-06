@@ -17,6 +17,7 @@ import {
     mintTo,
     TOKEN_PROGRAM_ID
 } from "@solana/spl-token";
+const MEMO_PROGRAM_ID: PublicKey = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
 
 async function getAndPrintAccount(program: any, raffleAddress: PublicKey)
 {
@@ -100,7 +101,11 @@ describe("anchor-game-ticket", () =>
     const VAULT_SKT_SEED_PREFIX = "skt_pool";
 
     it("Memo", async () => {
-        await program.rpc.memo();
+        await program.rpc.memo({
+            accounts: {
+                memo: MEMO_PROGRAM_ID
+            }
+        });
     });
 
     it("Program Init Vault and Withdraw!", async () =>

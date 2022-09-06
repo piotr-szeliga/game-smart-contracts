@@ -4,7 +4,13 @@
   "instructions": [
     {
       "name": "memo",
-      "accounts": [],
+      "accounts": [
+        {
+          "name": "memo",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
       "args": [],
       "returns": null
     },
