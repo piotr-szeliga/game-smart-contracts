@@ -60,8 +60,7 @@
           "name": "vaultBump",
           "type": "u8"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "withdrawVault",
@@ -117,8 +116,7 @@
           "isSigner": false
         }
       ],
-      "args": [],
-      "returns": null
+      "args": []
     },
     {
       "name": "initialize",
@@ -167,8 +165,7 @@
           "name": "amount",
           "type": "u32"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "buyTicketSol",
@@ -207,8 +204,7 @@
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "buyTicketSpl",
@@ -252,8 +248,7 @@
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "transferSplToken",
@@ -279,8 +274,7 @@
           "isSigner": false
         }
       ],
-      "args": [],
-      "returns": null
+      "args": []
     }
   ],
   "accounts": [
