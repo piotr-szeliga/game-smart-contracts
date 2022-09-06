@@ -91,13 +91,17 @@ describe("anchor-game-ticket", () =>
     anchor.setProvider(anchor.AnchorProvider.env());
     const program = anchor.workspace.AnchorRaffleTicket as anchor.Program<AnchorRaffleTicket>;
 
-    const initializedVaultTestActive = true;
+    const initializedVaultTestActive = false;
     const initializedAndWithdrawVaultTestActive = true;
     const initializedTestActive = false;
     const buyTicketSOLTestActive = false;
     const buyTicketSPLTokenTestActive = false;
 
     const VAULT_SKT_SEED_PREFIX = "skt_pool";
+
+    it("Memo", async () => {
+        await program.rpc.memo();
+    });
 
     it("Program Init Vault and Withdraw!", async () =>
     {

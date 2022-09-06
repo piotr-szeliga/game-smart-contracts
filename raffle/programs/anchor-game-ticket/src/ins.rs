@@ -6,6 +6,11 @@ use crate::state::{Raffle, Vault, ErrorCode};
 pub const VAULT_SKT_SEED_PREFIX: &str = "skt_pool";
 
 #[derive(Accounts)]
+pub struct Memo<'info> {
+    
+}
+
+#[derive(Accounts)]
 #[instruction(vault_bump: u8)]
 pub struct InitializeVault<'info>
 {
@@ -22,7 +27,7 @@ pub struct InitializeVault<'info>
     // vault pool $skt token account owned by vault
     /// CHECK:
     #[account(mut)]
-    pub vault_pool_skt_account: Account<'info, TokenAccount>,
+    pub vault_pool_skt_account: AccountInfo<'info>,
     // $skt mint
     pub skt_mint: Account<'info, Mint>,
     pub rent: Sysvar<'info, Rent>,
@@ -124,4 +129,36 @@ pub struct TransferSPLToken<'info> // For SPL-Token Transfer
     #[account(mut)]
     pub recipient_tokens: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
+}
+
+#[derive(Accounts)]
+pub struct Convert<'info> {
+    // claimer authority
+    #[account(mut)]
+    pub claimer: Signer<'info>,
+    // claimer skt account
+    #[account(mut)]
+    pub claimer_skt_account: Account<'info, TokenAccount>,
+    // skt mint
+    #[account(mut)]
+    pub skt_mint: Account<'info, Mint>,
+    /// CHECK:
+    #[account(mut)]
+    pub vault: Account<'info, Vault>,
+    // skt pool account
+    /// CHECK:
+    #[account(mut, seeds = [VAULT_SKT_SEED_PREFIX.as_bytes(), vault.key().as_ref()], bump = vault.vault_bump)]
+    pub vault_pool: AccountInfo<'info>,
+    // vault pool skt token account
+    #[account(mut)]
+    pub vault_pool_skt_account: Account<'info, TokenAccount>,
+    // associated token program 
+    #[account(address = anchor_spl::associated_token::ID)]
+    pub  associated_token_program: Program<'info, AssociatedToken>,
+    // rent
+    pub rent: Sysvar<'info, Rent>,
+    // token program
+    pub token_program: Program<'info, Token>,
+    // system program
+    pub system_program: Program<'info, System>,
 }

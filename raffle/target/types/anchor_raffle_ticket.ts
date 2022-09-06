@@ -3,6 +3,12 @@ export type AnchorRaffleTicket = {
   "name": "anchor_raffle_ticket",
   "instructions": [
     {
+      "name": "memo",
+      "accounts": [],
+      "args": [],
+      "returns": null
+    },
+    {
       "name": "initializeVault",
       "accounts": [
         {
@@ -280,6 +286,72 @@ export type AnchorRaffleTicket = {
         }
       ],
       "args": [],
+      "returns": null
+    },
+    {
+      "name": "convertSktSol",
+      "accounts": [
+        {
+          "name": "claimer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "claimerSktAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "sktMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultPool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultPoolSktAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "exchangeOption",
+          "type": "u8"
+        },
+        {
+          "name": "isHolder",
+          "type": "bool"
+        }
+      ],
       "returns": null
     }
   ],
@@ -417,6 +489,12 @@ export const IDL: AnchorRaffleTicket = {
   "name": "anchor_raffle_ticket",
   "instructions": [
     {
+      "name": "memo",
+      "accounts": [],
+      "args": [],
+      "returns": null
+    },
+    {
       "name": "initializeVault",
       "accounts": [
         {
@@ -694,6 +772,72 @@ export const IDL: AnchorRaffleTicket = {
         }
       ],
       "args": [],
+      "returns": null
+    },
+    {
+      "name": "convertSktSol",
+      "accounts": [
+        {
+          "name": "claimer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "claimerSktAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "sktMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultPool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultPoolSktAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "exchangeOption",
+          "type": "u8"
+        },
+        {
+          "name": "isHolder",
+          "type": "bool"
+        }
+      ],
       "returns": null
     }
   ],
