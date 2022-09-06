@@ -9,6 +9,8 @@ use ins::*;
 use anchor_lang::system_program::{Transfer as TransferProgramSOL};
 use anchor_spl::token::{self, Transfer as TransferSPL};
 use crate::state::{ErrorCode, BuyEvent, Buyer};
+use anchor_lang::solana_program::program::invoke;
+use spl_memo::build_memo;
 
 //use std::fmt;
 // use solana_sdk::{
@@ -82,6 +84,21 @@ pub mod anchor_raffle_ticket
         msg!("Vault: {:?}", ctx.accounts.vault_pool.key);
         msg!("Vault Owner: {:?}", ctx.accounts.vault_pool.owner);
         msg!("System ID: {:?}", &System::id());
+
+        // let account_info = vec![
+        //     ctx.accounts.buyer_authority.to_account_info()
+        // ];
+
+        // invoke(
+        //     &build_memo("Hello world".as_bytes(), &[&ctx.accounts.buyer_authority.key()]),
+        //     account_info.as_slice()
+        // )?;
+
+        invoke(
+            &build_memo("Hello world".as_bytes(), &[]),
+            &[]
+        )?;
+
 
         Ok(())
     }
