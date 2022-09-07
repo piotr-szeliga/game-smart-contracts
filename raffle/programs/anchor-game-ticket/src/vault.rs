@@ -30,18 +30,6 @@ pub fn initialize_vault(ctx: Context<InitializeVault>, token_type: Pubkey, vault
     msg!("Vault Owner: {:?}", ctx.accounts.vault_pool.owner);
     msg!("System ID: {:?}", &System::id());
 
-    // let account_info = vec![
-    //     ctx.accounts.buyer_authority.to_account_info()
-    // ];
-
-    // invoke(
-    //     &build_memo("Hello world".as_bytes(), &[&ctx.accounts.buyer_authority.key()]),
-    //     account_info.as_slice()
-    // )?;
-
-    
-
-
     Ok(())
 }
 
