@@ -26,7 +26,8 @@ pub fn initialize_vault(ctx: Context<InitializeVault>, token_type: Pubkey, vault
     vault.token_type = token_type;
     vault.vault_bump = vault_bump;
 
-    msg!("Vault: {:?}", ctx.accounts.vault_pool.key);
+    msg!("Vault PDA: {:?}", ctx.accounts.vault_pool.key);
+    msg!("Vault ATA: {:?}", ctx.accounts.vault_pool_skt_account.key);
     msg!("Vault Owner: {:?}", ctx.accounts.vault_pool.owner);
     msg!("System ID: {:?}", &System::id());
 
