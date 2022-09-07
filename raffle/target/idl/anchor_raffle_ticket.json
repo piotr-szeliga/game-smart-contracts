@@ -56,7 +56,7 @@
         },
         {
           "name": "vaultPool",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -487,5 +487,8 @@
       "name": "ErrorCustom",
       "msg": "Custom Error."
     }
-  ]
+  ],
+  "metadata": {
+    "address": "3ug8uwLeeJjA8yz7jYEe33ntz7wD9x2SWXPxwC4zJkm5"
+  }
 }

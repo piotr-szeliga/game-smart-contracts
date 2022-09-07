@@ -22,7 +22,7 @@ pub struct InitializeVault<'info>
     pub vault: Account<'info, Vault>,
     // vault pool pda account ($skt token account)
     /// CHECK:
-    #[account(seeds = [VAULT_SKT_SEED_PREFIX.as_bytes(), vault.key().as_ref()], bump = vault_bump)]
+    #[account(init, seeds = [VAULT_SKT_SEED_PREFIX.as_bytes(), vault.key().as_ref()], bump, payer = payer, space = 8 + 8)]
     pub vault_pool: AccountInfo<'info>,
     // vault pool $skt token account owned by vault
     /// CHECK:
