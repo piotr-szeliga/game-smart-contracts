@@ -18,6 +18,7 @@ import {
     TOKEN_PROGRAM_ID
 } from "@solana/spl-token";
 const MEMO_PROGRAM_ID: PublicKey = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
+const VAULT_SKT_SEED_PREFIX = "skt_pool";
 
 async function getAndPrintAccount(program: any, raffleAddress: PublicKey)
 {
@@ -98,16 +99,6 @@ describe("anchor-game-ticket", () =>
     const buyTicketSOLTestActive = false;
     const buyTicketSPLTokenTestActive = false;
 
-    const VAULT_SKT_SEED_PREFIX = "skt_pool";
-
-    it("Memo", async () => {
-        await program.rpc.memo({
-            accounts: {
-                memo: MEMO_PROGRAM_ID
-            }
-        });
-    });
-
     it("Program Init Vault and Withdraw!", async () =>
     {
         if (!initializedVaultTestActive) return;
@@ -118,14 +109,17 @@ describe("anchor-game-ticket", () =>
         const payer = Keypair.generate();
         await spawnMoney(program, payer.publicKey, 0.01);
 
+        const tokenSPLAddressKP = Keypair.generate();
+        await spawnMoney(program, payer.publicKey, 0.01);
+
         const _vaultKeypair = Keypair.generate();
         const [_vaultPool, bump] = await PublicKey.findProgramAddress([Buffer.from(VAULT_SKT_SEED_PREFIX), _vaultKeypair.publicKey.toBuffer()], program.programId);
         console.log("Vault:", _vaultKeypair.publicKey.toString());
         console.log("Vault Pool:", _vaultPool.toString(), bump);
 
         //const tokenSPLAddressKP = Keypair.generate();
-        //const tokenSPLAddress = await createMint(program.provider.connection, payer, payer.publicKey, payer.publicKey, 9, tokenSPLAddressKP);
-        const tokenSPLAddress = new PublicKey("SKTsW8KvzopQPdamXsPhvkPfwzTenegv3c3PEX4DT1o");
+        const tokenSPLAddress = await createMint(program.provider.connection, payer, payer.publicKey, payer.publicKey, 9, tokenSPLAddressKP);
+        //const tokenSPLAddress = new PublicKey("SKTsW8KvzopQPdamXsPhvkPfwzTenegv3c3PEX4DT1o");
         console.log("Vault SPL Token Mint:", tokenSPLAddress.toString());
 
         // const _vaultPoolSktAccount = await getOrCreateAssociatedTokenAccount(program.provider.connection, payer, tokenSPLAddress, _vaultPool, true);
@@ -153,15 +147,17 @@ describe("anchor-game-ticket", () =>
         }
 
         console.log("Init Vault DONE!");
-        return;
+
         let vault = await program.account.vault.fetchNullable(_vaultKeypair.publicKey);
         console.log(vault.tokenType.toString());
         console.log(vault.vaultBump);
 
+        console.log("--> Vault Balance Current:");
         await getSPLTokensBalance(_vaultPool);
 
         await mintTo(program.provider.connection, payer, tokenSPLAddress, _vaultPoolSktAccount, payer.publicKey, 100);
 
+        console.log("--> Vault Balance After Mint:");
         await getSPLTokensBalance(_vaultPool);
 
         if (!initializedAndWithdrawVaultTestActive) return;
@@ -187,10 +183,10 @@ describe("anchor-game-ticket", () =>
             signers: [client],
         });
 
-        console.log("--> Client:");
+        console.log("--> Client Balance:");
         await getSPLTokensBalance(client.publicKey);
 
-        console.log("--> Vault:");
+        console.log("--> Vault Balance:");
         await getSPLTokensBalance(_vaultPool);
     });
 
@@ -415,5 +411,13 @@ describe("anchor-game-ticket", () =>
 
         await getAndPrintAccount(program, raffle);
         await getSPLTokensBalance(senderWallet.publicKey);
+    });
+
+    it("Memo", async () => {
+        await program.rpc.memo({
+            accounts: {
+                memo: MEMO_PROGRAM_ID
+            }
+        });
     });
 });
