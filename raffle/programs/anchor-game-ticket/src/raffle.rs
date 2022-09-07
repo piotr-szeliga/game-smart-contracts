@@ -3,9 +3,10 @@ use anchor_lang::system_program::{self, Transfer as TransferProgramSOL};
 use anchor_spl::token::{self, Transfer as TransferSPL};
 use crate::ins::*;
 use crate::state::{ErrorCode, BuyEvent, Buyer};
-pub const LAMPORTS_PER_SOL: u64 = 1000000000;
 use crate::utils::*;
 use crate::id;
+
+pub const LAMPORTS_PER_SOL: u64 = 1000000000;
 
 pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32) -> Result<()>
 {
