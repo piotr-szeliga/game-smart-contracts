@@ -29,7 +29,7 @@
         },
         {
           "name": "vaultPool",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {

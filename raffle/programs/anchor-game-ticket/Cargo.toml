@@ -21,7 +21,4 @@ overflow-checks = true
 [dependencies]
 anchor-lang = "0.25.0"
 anchor-spl = "0.25.0"
-#solana-program = "1.5.11"
-#solana-sdk = "1.5.11"
-#spl-memo = "3.0.1"
 spl-memo = { version = "3.0.1", features = ["no-entrypoint"] }

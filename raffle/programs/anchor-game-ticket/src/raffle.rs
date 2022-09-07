@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::system_program::{self, Transfer as TransferProgramSOL};
 use anchor_spl::token::{self, Transfer as TransferSPL};
 use crate::ins::*;
-use crate::state::{ErrorCode, BuyEvent, Buyer};
+use crate::state::{ErrorCode};
 use crate::utils::*;
 use crate::id;
 
@@ -39,21 +39,6 @@ pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_pr
             )
     )?;
 
-    /* Option B: */
-    {
-    // token::transfer(
-    //     CpiContext::new(
-    //         ctx.accounts.token_program.to_account_info(),
-    //         TransferSPL {
-    //             from: ctx.accounts.sender_tokens.to_account_info(),
-    //             to: ctx.accounts.recipient_tokens.to_account_info(),
-    //             authority: ctx.accounts.payer.to_account_info(),
-    //         },
-    //     ),
-    //     1,
-    // )?;
-    }
-
     msg!("Program initialized successfully.");
     msg!("Total Tickets: {:?}", raffle.total_tickets);
     msg!("Sold Tickets: {:?}", raffle.sold_tickets);
@@ -83,45 +68,13 @@ pub fn buy_ticket_sol(ctx: Context<BuyTicketSOL>, amount: u32, _ticket_price: u6
         transaction_price,
     )?;
 
-    raffle.sold_tickets = raffle.sold_tickets.checked_add(amount).unwrap();
-
-    emit!(BuyEvent
-        {
-            buyer: *ctx.accounts.buyer.to_account_info().key,
-            amount: amount,
-            sold_tickets: raffle.sold_tickets,
-            total_tickets: raffle.total_tickets,
-            remaining_tickets: raffle.total_tickets - raffle.sold_tickets
-        });
-
-
-    let remaining_tickets = raffle.total_tickets - raffle.sold_tickets;
-
-    let index = raffle.buyers.iter().position(|x| x.key == ctx.accounts.buyer.key());
-    if let Some(index) = index {
-        let item = &mut raffle.buyers[index];
-        item.tickets = item.tickets.checked_add(amount).unwrap();
-    } else {
-        let item = Buyer {
-            key: ctx.accounts.buyer.key(),
-            tickets: amount,
-        };
-        raffle.buyers.push(item);
-    }
-
-    msg!("Buyer: {:?}", *ctx.accounts.buyer.to_account_info().key);
-    msg!("Total Tickets: {:?} | Sold {:?} | Remaining: {:?} | Price {:?} ({})", raffle.total_tickets, raffle.sold_tickets, remaining_tickets, raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
-    msg!("Buy Amount: {:?} | Total Cost: {:?} ({})", amount, transaction_price, transaction_price as f64 / LAMPORTS_PER_SOL as f64);
-
-    Ok(())
+    update_raffle(raffle, ctx.accounts.buyer.key(), amount)
 }
 
 pub fn buy_ticket_spl(ctx: Context<BuyTicketSPL>, amount: u32, _ticket_price: u64, _token_spl_address: Pubkey) -> Result<()>
 {
     let raffle = &mut ctx.accounts.raffle;
     let transaction_price = raffle.price_per_ticket * amount as u64;
-
-    //let dustPubKey = Pubkey::from_str("DUSTawucrTsGU8hcqRdHDCbuYhCPADMLM2VcCb8VnFnQ").unwrap(); // testing purposes
 
     msg!("SPL-Token Transfer: {:?}", raffle.token_spl_address.key());
 
@@ -139,35 +92,5 @@ pub fn buy_ticket_spl(ctx: Context<BuyTicketSPL>, amount: u32, _ticket_price: u6
 
     msg!("Token Type: {:?}", raffle.token_spl_address.key());
 
-    raffle.sold_tickets = raffle.sold_tickets.checked_add(amount).unwrap();
-
-    emit!(BuyEvent
-        {
-            buyer: *ctx.accounts.sender.to_account_info().key,
-            amount: amount,
-            sold_tickets: raffle.sold_tickets,
-            total_tickets: raffle.total_tickets,
-            remaining_tickets: raffle.total_tickets - raffle.sold_tickets
-        });
-
-
-    let remaining_tickets = raffle.total_tickets - raffle.sold_tickets;
-
-    let index = raffle.buyers.iter().position(|x| x.key == ctx.accounts.sender.key());
-    if let Some(index) = index {
-        let item = &mut raffle.buyers[index];
-        item.tickets = item.tickets.checked_add(amount).unwrap();
-    } else {
-        let item = Buyer {
-            key: ctx.accounts.sender.key(),
-            tickets: amount,
-        };
-        raffle.buyers.push(item);
-    }
-
-    msg!("Buyer: {:?}", *ctx.accounts.sender.to_account_info().key);
-    msg!("Total Tickets: {:?} | Sold {:?} | Remaining: {:?} | Price {:?} ({})", raffle.total_tickets, raffle.sold_tickets, remaining_tickets, raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
-    msg!("Buy Amount: {:?} | Total Cost: {:?} ({})", amount, transaction_price, transaction_price as f64 / LAMPORTS_PER_SOL as f64);
-
-    Ok(())
+    update_raffle(raffle, ctx.accounts.sender.key(), amount)
 }
