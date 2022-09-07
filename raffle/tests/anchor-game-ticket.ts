@@ -92,7 +92,7 @@ describe("anchor-game-ticket", () =>
     anchor.setProvider(anchor.AnchorProvider.env());
     const program = anchor.workspace.AnchorRaffleTicket as anchor.Program<AnchorRaffleTicket>;
 
-    const initializedVaultTestActive = false;
+    const initializedVaultTestActive = true;
     const initializedAndWithdrawVaultTestActive = true;
     const initializedTestActive = false;
     const buyTicketSOLTestActive = false;

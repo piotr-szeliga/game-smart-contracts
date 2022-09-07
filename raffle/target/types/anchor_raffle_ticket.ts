@@ -15,6 +15,33 @@ export type AnchorRaffleTicket = {
       "returns": null
     },
     {
+      "name": "transferSplToken",
+      "accounts": [
+        {
+          "name": "sender",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "senderTokens",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "recipientTokens",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
       "name": "initializeVault",
       "accounts": [
         {
@@ -472,6 +499,33 @@ export const IDL: AnchorRaffleTicket = {
       "accounts": [
         {
           "name": "memo",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
+      "name": "transferSplToken",
+      "accounts": [
+        {
+          "name": "sender",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "senderTokens",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "recipientTokens",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         }

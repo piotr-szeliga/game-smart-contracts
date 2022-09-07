@@ -21,13 +21,13 @@ pub struct InitializeVault<'info>
     #[account(init, payer = payer, space = Vault::LEN + 8)]
     pub vault: Account<'info, Vault>,
     // vault pool pda account ($skt token account)
-
     /// CHECK:
     #[account(seeds = [VAULT_SKT_SEED_PREFIX.as_bytes(), vault.key().as_ref()], bump = vault_bump)]
     pub vault_pool: AccountInfo<'info>,
     // vault pool $skt token account owned by vault
+    /// CHECK:
     #[account(mut)]
-    pub vault_pool_skt_account: Account<'info, TokenAccount>,
+    pub vault_pool_skt_account: AccountInfo<'info>,
     // $skt mint
     pub skt_mint: Account<'info, Mint>,
     pub rent: Sysvar<'info, Rent>,
