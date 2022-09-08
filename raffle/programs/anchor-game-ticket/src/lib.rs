@@ -27,7 +27,11 @@ pub mod anchor_raffle_ticket
         utils::transfer_spl_token(ctx)
     }
 
-    pub fn initialize_vault(ctx: Context<InitializeVault>, token_type: Pubkey, vault_bump: u8) -> Result<()>
+    pub fn test(_ctx: Context<Test>, vault_bump: u8) -> Result<()> {
+        Ok(())
+    }
+
+    pub fn initialize_vault(ctx: Context<InitializeVault>, vault_bump: u8, token_type: Pubkey) -> Result<()>
     {
         vault::initialize_vault(ctx, token_type, vault_bump)
     }

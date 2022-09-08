@@ -1,5 +1,5 @@
 import * as anchor from "@project-serum/anchor";
-import {AnchorProvider, IdlTypes, Program, Provider, Wallet} from "@project-serum/anchor";
+import { AnchorProvider, IdlTypes, Program, Provider, Wallet } from "@project-serum/anchor";
 // @ts-ignore
 import { AnchorRaffleTicket } from "../target/types/anchor_raffle_ticket";
 import {
@@ -20,30 +20,26 @@ import {
 const MEMO_PROGRAM_ID: PublicKey = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
 const VAULT_SKT_SEED_PREFIX = "skt_pool";
 
-async function getAndPrintAccount(program: any, raffleAddress: PublicKey)
-{
-  let account = await program.account.raffle.fetchNullable(raffleAddress);
+async function getAndPrintAccount(program: any, raffleAddress: PublicKey) {
+    let account = await program.account.raffle.fetchNullable(raffleAddress);
 
-  if (account)
-  {
+    if (account) {
         account.pricePerTicketNum = account.pricePerTicket.toNumber();
         account.pricePerTicketFloat = account.pricePerTicket.toNumber() / anchor.web3.LAMPORTS_PER_SOL;
         account.tokenSplAddress = account.tokenSplAddress.toString();
-  }
+    }
 
-  console.log('Account details:', account);
+    console.log('Account details:', account);
 
-  return account;
+    return account;
 }
 
-async function getSPLTokensBalance(account: PublicKey)
-{
+async function getSPLTokensBalance(account: PublicKey) {
     const program = anchor.workspace.AnchorRaffleTicket as anchor.Program<AnchorRaffleTicket>;
 
     const balance = await program.provider.connection.getParsedTokenAccountsByOwner(account, { programId: TOKEN_PROGRAM_ID });
 
-    if (balance.value)
-    {
+    if (balance.value) {
         console.log(`=========================================================================`);
         console.log(`SPL Tokens Balance for ${account.toString()}:`);
         balance.value.forEach((accountInfo) => {
@@ -60,35 +56,34 @@ async function getSPLTokensBalance(account: PublicKey)
 }
 
 async function spawnMoney(
-  program: anchor.Program<AnchorRaffleTicket>,
-  to: PublicKey,
-  sol: number
+    program: anchor.Program<AnchorRaffleTicket>,
+    to: PublicKey,
+    sol: number
 ): Promise<anchor.web3.TransactionSignature> {
-  const lamports = sol * anchor.web3.LAMPORTS_PER_SOL;
-  const transaction = new anchor.web3.Transaction();
-  transaction.add(
-      anchor.web3.SystemProgram.transfer({
-        // @ts-ignore
-        fromPubkey: program.provider.wallet.publicKey,
-        lamports,
-        toPubkey: to,
-      })
-  );
+    const lamports = sol * anchor.web3.LAMPORTS_PER_SOL;
+    const transaction = new anchor.web3.Transaction();
+    transaction.add(
+        anchor.web3.SystemProgram.transfer({
+            // @ts-ignore
+            fromPubkey: program.provider.wallet.publicKey,
+            lamports,
+            toPubkey: to,
+        })
+    );
 
-  // @ts-ignore
-  console.log(`Sending SOL: ${program.provider.wallet.publicKey.toString()} sent ${sol} to ${to.toString()} `);
+    // @ts-ignore
+    console.log(`Sending SOL: ${program.provider.wallet.publicKey.toString()} sent ${sol} to ${to.toString()} `);
 
-  const tx = await program.provider.sendAndConfirm(transaction, [], {
-    commitment: "confirmed",
-  });
-  ;
+    const tx = await program.provider.sendAndConfirm(transaction, [], {
+        commitment: "confirmed",
+    });
+    ;
 
-  console.log("DONE:", tx);
-  return tx;
+    console.log("DONE:", tx);
+    return tx;
 }
 
-describe("anchor-game-ticket", () =>
-{
+describe("anchor-game-ticket", () => {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
     const program = anchor.workspace.AnchorRaffleTicket as anchor.Program<AnchorRaffleTicket>;
@@ -99,8 +94,7 @@ describe("anchor-game-ticket", () =>
     const buyTicketSOLTestActive = false;
     const buyTicketSPLTokenTestActive = false;
 
-    it("Program Init Vault and Withdraw!", async () =>
-    {
+    it("Program Init Vault and Withdraw!", async () => {
         if (!initializedVaultTestActive) return;
 
         const client = Keypair.generate();
@@ -117,31 +111,43 @@ describe("anchor-game-ticket", () =>
         console.log("Vault:", _vaultKeypair.publicKey.toString());
         console.log("Vault Pool:", _vaultPool.toString(), bump);
 
+        // await program.rpc.test(bump, {
+        //     accounts: {
+        //         authority: payer.publicKey,
+        //         vault: _vaultKeypair.publicKey,
+        //         vaultPool: _vaultPool,
+        //         systemProgram: SystemProgram.programId
+        //     },
+        //     signers: [payer, _vaultKeypair]
+        // });
+
+        console.log('Successfully tested!');
+
         //const tokenSPLAddressKP = Keypair.generate();
         const tokenSPLAddress = await createMint(program.provider.connection, payer, payer.publicKey, payer.publicKey, 9, tokenSPLAddressKP);
         //const tokenSPLAddress = new PublicKey("SKTsW8KvzopQPdamXsPhvkPfwzTenegv3c3PEX4DT1o");
         console.log("Vault SPL Token Mint:", tokenSPLAddress.toString());
 
         // const _vaultPoolSktAccount = await getOrCreateAssociatedTokenAccount(program.provider.connection, payer, tokenSPLAddress, _vaultPool, true);
-        const _vaultPoolSktAccount = await getAssociatedTokenAddress(tokenSPLAddress, _vaultPool,true);
+        const _vaultPoolSktAccount = await getAssociatedTokenAddress(tokenSPLAddress, _vaultPool, true);
         console.log("Vault ATA", _vaultPoolSktAccount.toString());
 
         // Init Vault
         {
-            await program.rpc.initializeVault(SystemProgram.programId, bump,
+            await program.rpc.initializeVault(bump, SystemProgram.programId,
                 {
                     accounts:
-                        {
-                            payer: payer.publicKey,
-                            vault: _vaultKeypair.publicKey,
-                            vaultPool: _vaultPool,
-                            vaultPoolSktAccount: _vaultPoolSktAccount,
-                            sktMint: tokenSPLAddress,
-                            rent: SYSVAR_RENT_PUBKEY,
-                            tokenProgram: TOKEN_PROGRAM_ID,
-                            associatedToken: ASSOCIATED_TOKEN_PROGRAM_ID,
-                            systemProgram: SystemProgram.programId,
-                        },
+                    {
+                        payer: payer.publicKey,
+                        vault: _vaultKeypair.publicKey,
+                        vaultPool: _vaultPool,
+                        vaultPoolSktAccount: _vaultPoolSktAccount,
+                        sktMint: tokenSPLAddress,
+                        rent: SYSVAR_RENT_PUBKEY,
+                        tokenProgram: TOKEN_PROGRAM_ID,
+                        associatedToken: ASSOCIATED_TOKEN_PROGRAM_ID,
+                        systemProgram: SystemProgram.programId,
+                    },
                     signers: [payer, _vaultKeypair]
                 });
         }
@@ -149,7 +155,7 @@ describe("anchor-game-ticket", () =>
         console.log("Init Vault DONE!");
 
         let vault = await program.account.vault.fetchNullable(_vaultKeypair.publicKey);
-        console.log(vault.tokenType.toString());
+        console.log(vault.tokenType, vault.tokenType?.toString());
         console.log(vault.vaultBump);
 
         console.log("--> Vault Balance Current:");
@@ -166,22 +172,22 @@ describe("anchor-game-ticket", () =>
         console.log("Client ATA", _clientATA.address.toString());
 
         await program.rpc.withdrawVault(
-        {
-            accounts:
             {
-                claimer: client.publicKey,
-                claimerSktAccount: _clientATA.address,
-                vault: _vaultKeypair.publicKey,
-                vaultPool: _vaultPool,
-                vaultPoolSktAccount: _vaultPoolSktAccount,
-                sktMint: tokenSPLAddress,
-                rent: SYSVAR_RENT_PUBKEY,
-                tokenProgram: TOKEN_PROGRAM_ID,
-                associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-                systemProgram: SystemProgram.programId,
-            },
-            signers: [client],
-        });
+                accounts:
+                {
+                    claimer: client.publicKey,
+                    claimerSktAccount: _clientATA.address,
+                    vault: _vaultKeypair.publicKey,
+                    vaultPool: _vaultPool,
+                    vaultPoolSktAccount: _vaultPoolSktAccount,
+                    sktMint: tokenSPLAddress,
+                    rent: SYSVAR_RENT_PUBKEY,
+                    tokenProgram: TOKEN_PROGRAM_ID,
+                    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+                    systemProgram: SystemProgram.programId,
+                },
+                signers: [client],
+            });
 
         console.log("--> Client Balance:");
         await getSPLTokensBalance(client.publicKey);
@@ -190,8 +196,7 @@ describe("anchor-game-ticket", () =>
         await getSPLTokensBalance(_vaultPool);
     });
 
-    it("Program Init!", async () =>
-    {
+    it("Program Init!", async () => {
         if (!initializedTestActive) return;
 
         const isLocalNet = program.provider.connection.rpcEndpoint.includes("localhost");
@@ -218,12 +223,11 @@ describe("anchor-game-ticket", () =>
         console.log("Raffle Key:", raffle.secretKey.toString());
 
         //const tokenSPLKP = Keypair.generate();
-        const tokenSPLKP = Keypair.fromSecretKey(new Uint8Array([49,126,59,3,106,46,22,87,188,63,0,238,192,16,55,75,177,173,142,218,56,96,93,143,170,249,239,112,251,48,162,219,2,49,81,147,24,20,128,249,157,159,165,51,122,99,64,51,129,48,26,141,193,94,225,33,234,172,105,92,112,94,134,168]));
+        const tokenSPLKP = Keypair.fromSecretKey(new Uint8Array([49, 126, 59, 3, 106, 46, 22, 87, 188, 63, 0, 238, 192, 16, 55, 75, 177, 173, 142, 218, 56, 96, 93, 143, 170, 249, 239, 112, 251, 48, 162, 219, 2, 49, 81, 147, 24, 20, 128, 249, 157, 159, 165, 51, 122, 99, 64, 51, 129, 48, 26, 141, 193, 94, 225, 33, 234, 172, 105, 92, 112, 94, 134, 168]));
         console.log("Token SPL :", tokenSPLKP.publicKey.toString());
         console.log("Token SPL Key:", tokenSPLKP.secretKey.toString());
 
-        if (isLocalNet)
-        {
+        if (isLocalNet) {
             console.log("localnet...\n");
 
             tokenSPLAddress = await createMint(program.provider.connection, senderWallet, senderWallet.publicKey, null, 9, tokenSPLKP);
@@ -249,16 +253,14 @@ describe("anchor-game-ticket", () =>
         // Make sure receiver has a token account active
         const receiverAccount = await program.provider.connection.getAccountInfo(recipientATA.address);
         let transaction = new Transaction();
-        if (receiverAccount === null)
-        {
+        if (receiverAccount === null) {
             console.log("Creating recipientATA:", recipientATA.toString());
             transaction.add(createAssociatedTokenAccountInstruction(tokenSPLAddress, recipientATA.address, destPublicKey, sourcePublicKey));
         }
 
         let account = await getAndPrintAccount(program, raffle.publicKey);
 
-        if (!account)
-        {
+        if (!account) {
             const price = 1;
             const priceBN = new anchor.BN(price * anchor.web3.LAMPORTS_PER_SOL);
             const amount = 8;
@@ -332,18 +334,18 @@ describe("anchor-game-ticket", () =>
 
         // @ts-ignore
         await program.rpc.buyTicketSol(ticketsAmountToBuy, new anchor.BN(ticketPriceLAMPORTS), tokenSPLAddress,
-        {
-            accounts: {
-                buyer: buyer.publicKey,
-                recipient: receiver.publicKey,
-                raffle: raffle.publicKey,
-                systemProgram: SystemProgram.programId,
-            },
-            signers: [buyer],
-            options: {
-                commitment: "confirmed"
-            }
-        });
+            {
+                accounts: {
+                    buyer: buyer.publicKey,
+                    recipient: receiver.publicKey,
+                    raffle: raffle.publicKey,
+                    systemProgram: SystemProgram.programId,
+                },
+                signers: [buyer],
+                options: {
+                    commitment: "confirmed"
+                }
+            });
 
         let account = await getAndPrintAccount(program, raffle.publicKey);
 
@@ -352,8 +354,7 @@ describe("anchor-game-ticket", () =>
         await program.removeEventListener(listener);
     });
 
-    it("Buy ticket with Spl Token!", async () =>
-    {
+    it("Buy ticket with Spl Token!", async () => {
         if (!buyTicketSPLTokenTestActive) return;
 
         const isLocalNet = program.provider.connection.rpcEndpoint.includes("localhost");
@@ -366,9 +367,8 @@ describe("anchor-game-ticket", () =>
 
         let tokenSPLAddress = new PublicKey("ASxC3n3smkcUkA7Z58EUKZ2NfHoQ8eZrkTRK7ergYr2a"); // $CRECK devnet
 
-        if (isLocalNet)
-        {
-            const tokenSPLKP = Keypair.fromSecretKey(new Uint8Array([49,126,59,3,106,46,22,87,188,63,0,238,192,16,55,75,177,173,142,218,56,96,93,143,170,249,239,112,251,48,162,219,2,49,81,147,24,20,128,249,157,159,165,51,122,99,64,51,129,48,26,141,193,94,225,33,234,172,105,92,112,94,134,168]));
+        if (isLocalNet) {
+            const tokenSPLKP = Keypair.fromSecretKey(new Uint8Array([49, 126, 59, 3, 106, 46, 22, 87, 188, 63, 0, 238, 192, 16, 55, 75, 177, 173, 142, 218, 56, 96, 93, 143, 170, 249, 239, 112, 251, 48, 162, 219, 2, 49, 81, 147, 24, 20, 128, 249, 157, 159, 165, 51, 122, 99, 64, 51, 129, 48, 26, 141, 193, 94, 225, 33, 234, 172, 105, 92, 112, 94, 134, 168]));
             tokenSPLAddress = tokenSPLKP.publicKey; //await createMint(program.provider.connection, senderWallet.payer, senderWallet.publicKey, null, 9);
 
             const senderATA = await getOrCreateAssociatedTokenAccount(program.provider.connection, senderWallet, tokenSPLAddress, senderWallet.publicKey);
@@ -395,17 +395,17 @@ describe("anchor-game-ticket", () =>
 
         // @ts-ignore
         await program.rpc.buyTicketSpl(ticketsAmountToBuy, new anchor.BN(ticketPriceLAMPORTS), tokenSPLAddress,
-        {
-            accounts:
             {
-                raffle: raffle,
-                sender: senderWallet.publicKey,
-                senderTokens: senderATA.address,
-                recipientTokens: recipientATA.address,
-                tokenProgram: TOKEN_PROGRAM_ID
-            },
-            signers: [senderWallet]
-        });
+                accounts:
+                {
+                    raffle: raffle,
+                    sender: senderWallet.publicKey,
+                    senderTokens: senderATA.address,
+                    recipientTokens: recipientATA.address,
+                    tokenProgram: TOKEN_PROGRAM_ID
+                },
+                signers: [senderWallet]
+            });
 
         console.log("Ticket Purchase DONE!");
 

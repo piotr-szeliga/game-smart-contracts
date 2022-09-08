@@ -42,6 +42,38 @@
       "returns": null
     },
     {
+      "name": "test",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vaultPool",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "vaultBump",
+          "type": "u8"
+        }
+      ],
+      "returns": null
+    },
+    {
       "name": "initializeVault",
       "accounts": [
         {
@@ -56,7 +88,7 @@
         },
         {
           "name": "vaultPool",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -92,12 +124,12 @@
       ],
       "args": [
         {
-          "name": "tokenType",
-          "type": "publicKey"
-        },
-        {
           "name": "vaultBump",
           "type": "u8"
+        },
+        {
+          "name": "tokenType",
+          "type": "publicKey"
         }
       ],
       "returns": null

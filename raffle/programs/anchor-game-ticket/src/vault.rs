@@ -6,7 +6,7 @@ use crate::ins::*;
 
 pub fn initialize_vault(ctx: Context<InitializeVault>, token_type: Pubkey, vault_bump: u8) -> Result<()>
 {
-    {
+    if ctx.accounts.vault_pool.owner == &System::id() {
         let cpi_context = CpiContext::new(
             ctx.accounts.associated_token.to_account_info(),
             Create {
@@ -98,7 +98,7 @@ pub fn convert_skt_sol(ctx: Context<Convert>, exchange_option: u8, is_holder: bo
     }
    
     {
-        {
+        if ctx.accounts.claimer_skt_account.owner == &System::id() {
             let cpi_context = CpiContext::new(
                 ctx.accounts.associated_token_program.to_account_info().clone(),
                 Create {

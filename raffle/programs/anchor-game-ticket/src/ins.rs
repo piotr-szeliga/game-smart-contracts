@@ -13,6 +13,19 @@ pub struct Memo<'info> {
 
 #[derive(Accounts)]
 #[instruction(vault_bump: u8)]
+pub struct Test<'info>
+{
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    #[account(init, payer = authority, space = Vault::LEN + 8)]
+    pub vault: Account<'info, Vault>,
+    #[account(seeds = [VAULT_SKT_SEED_PREFIX.as_bytes(), vault.key().as_ref()], bump = vault_bump)]
+    pub vault_pool: SystemAccount<'info>,
+    pub system_program: Program<'info, System>
+}
+
+#[derive(Accounts)]
+#[instruction(vault_bump: u8)]
 pub struct InitializeVault<'info>
 {
     #[account(mut)]
@@ -21,13 +34,12 @@ pub struct InitializeVault<'info>
     #[account(init, payer = payer, space = Vault::LEN + 8)]
     pub vault: Account<'info, Vault>,
     // vault pool pda account ($skt token account)
-    /// CHECK:
-    #[account(init, seeds = [VAULT_SKT_SEED_PREFIX.as_bytes(), vault.key().as_ref()], bump, payer = payer, space = 8 + 8)]
-    pub vault_pool: AccountInfo<'info>,
+    #[account(seeds = [VAULT_SKT_SEED_PREFIX.as_bytes(), vault.key().as_ref()], bump = vault_bump)]
+    pub vault_pool: SystemAccount<'info>,
     // vault pool $skt token account owned by vault
     /// CHECK:
     #[account(mut)]
-    pub vault_pool_skt_account: AccountInfo<'info>,
+    pub vault_pool_skt_account: UncheckedAccount<'info>,
     // $skt mint
     pub skt_mint: Account<'info, Mint>,
     pub rent: Sysvar<'info, Rent>,
@@ -137,8 +149,9 @@ pub struct Convert<'info> {
     #[account(mut)]
     pub claimer: Signer<'info>,
     // claimer skt account
+    /// CHECK:
     #[account(mut)]
-    pub claimer_skt_account: Account<'info, TokenAccount>,
+    pub claimer_skt_account: AccountInfo<'info>,
     // skt mint
     #[account(mut)]
     pub skt_mint: Account<'info, Mint>,
