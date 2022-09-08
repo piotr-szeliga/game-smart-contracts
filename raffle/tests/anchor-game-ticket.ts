@@ -143,6 +143,7 @@ describe("anchor-game-ticket", () => {
                         vaultPool: _vaultPool,
                         vaultPoolSktAccount: _vaultPoolSktAccount,
                         sktMint: tokenSPLAddress,
+                        memo: MEMO_PROGRAM_ID,
                         rent: SYSVAR_RENT_PUBKEY,
                         tokenProgram: TOKEN_PROGRAM_ID,
                         associatedToken: ASSOCIATED_TOKEN_PROGRAM_ID,

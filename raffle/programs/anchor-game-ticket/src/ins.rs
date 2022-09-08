@@ -13,19 +13,6 @@ pub struct Memo<'info> {
 
 #[derive(Accounts)]
 #[instruction(vault_bump: u8)]
-pub struct Test<'info>
-{
-    #[account(mut)]
-    pub authority: Signer<'info>,
-    #[account(init, payer = authority, space = Vault::LEN + 8)]
-    pub vault: Account<'info, Vault>,
-    #[account(seeds = [VAULT_SKT_SEED_PREFIX.as_bytes(), vault.key().as_ref()], bump = vault_bump)]
-    pub vault_pool: SystemAccount<'info>,
-    pub system_program: Program<'info, System>
-}
-
-#[derive(Accounts)]
-#[instruction(vault_bump: u8)]
 pub struct InitializeVault<'info>
 {
     #[account(mut)]
@@ -44,6 +31,8 @@ pub struct InitializeVault<'info>
     pub skt_mint: Account<'info, Mint>,
     pub rent: Sysvar<'info, Rent>,
 
+    /// CHECK:
+    pub memo: AccountInfo<'info>,
     #[account(address = anchor_spl::associated_token::ID)]
     pub associated_token: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token>,

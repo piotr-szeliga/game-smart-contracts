@@ -42,38 +42,6 @@ export type AnchorRaffleTicket = {
       "returns": null
     },
     {
-      "name": "test",
-      "accounts": [
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "vaultPool",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "vaultBump",
-          "type": "u8"
-        }
-      ],
-      "returns": null
-    },
-    {
       "name": "initializeVault",
       "accounts": [
         {
@@ -103,6 +71,11 @@ export type AnchorRaffleTicket = {
         },
         {
           "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "memo",
           "isMut": false,
           "isSigner": false
         },
@@ -566,38 +539,6 @@ export const IDL: AnchorRaffleTicket = {
       "returns": null
     },
     {
-      "name": "test",
-      "accounts": [
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "vault",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "vaultPool",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "vaultBump",
-          "type": "u8"
-        }
-      ],
-      "returns": null
-    },
-    {
       "name": "initializeVault",
       "accounts": [
         {
@@ -627,6 +568,11 @@ export const IDL: AnchorRaffleTicket = {
         },
         {
           "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "memo",
           "isMut": false,
           "isSigner": false
         },

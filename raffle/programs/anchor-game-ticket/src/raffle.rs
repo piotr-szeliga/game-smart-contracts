@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{self, Transfer as TransferProgramSOL};
 use anchor_spl::token::{self, Transfer as TransferSPL};
+use crate::state::{Raffle, BuyEvent, Buyer};
 use crate::ins::*;
 use crate::state::{ErrorCode};
 use crate::utils::*;
@@ -45,6 +46,41 @@ pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_pr
     msg!("Price Per Ticket: {} {}", raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
     msg!("Token SPL Address: {:?}", raffle.token_spl_address);
     msg!("New Raffle Account: {}", ctx.accounts.raffle.to_account_info().key());
+
+    Ok(())
+}
+
+pub fn update_raffle(raffle: &mut Raffle, buyer: Pubkey, amount: u32) -> Result<()> {
+    raffle.sold_tickets = raffle.sold_tickets.checked_add(amount).unwrap();
+    let transaction_price = raffle.price_per_ticket * amount as u64;
+
+    emit!(BuyEvent
+        {
+            buyer: buyer,
+            amount: amount,
+            sold_tickets: raffle.sold_tickets,
+            total_tickets: raffle.total_tickets,
+            remaining_tickets: raffle.total_tickets.checked_sub(raffle.sold_tickets).unwrap()
+        });
+
+
+    let remaining_tickets = raffle.total_tickets.checked_sub(raffle.sold_tickets).unwrap();
+
+    let index = raffle.buyers.iter().position(|x| x.key == buyer);
+    if let Some(index) = index {
+        let item = &mut raffle.buyers[index];
+        item.tickets = item.tickets.checked_add(amount).unwrap();
+    } else {
+        let item = Buyer {
+            key: buyer,
+            tickets: amount,
+        };
+        raffle.buyers.push(item);
+    }
+
+    msg!("Buyer: {:?}", buyer);
+    msg!("Total Tickets: {:?} | Sold {:?} | Remaining: {:?} | Price {:?} ({})", raffle.total_tickets, raffle.sold_tickets, remaining_tickets, raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
+    msg!("Buy Amount: {:?} | Total Cost: {:?} ({})", amount, transaction_price, transaction_price as f64 / LAMPORTS_PER_SOL as f64);
 
     Ok(())
 }

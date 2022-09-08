@@ -2,6 +2,8 @@ use anchor_lang::prelude::*;
 use anchor_lang::system_program;
 use anchor_spl::associated_token::{Create, create};
 use anchor_spl::token;
+use anchor_lang::solana_program::program::invoke;
+use spl_memo::build_memo;
 use crate::ins::*;
 
 pub fn initialize_vault(ctx: Context<InitializeVault>, token_type: Pubkey, vault_bump: u8) -> Result<()>
@@ -30,6 +32,15 @@ pub fn initialize_vault(ctx: Context<InitializeVault>, token_type: Pubkey, vault
     msg!("Vault ATA: {:?}", ctx.accounts.vault_pool_skt_account.key);
     msg!("Vault Owner: {:?}", ctx.accounts.vault_pool.owner);
     msg!("System ID: {:?}", &System::id());
+
+    let account_info = vec![
+        ctx.accounts.memo.to_account_info()
+    ];
+
+    invoke(
+        &build_memo("Vault Created".as_bytes(), &[]),
+        account_info.as_slice()
+    )?;
 
     Ok(())
 }
