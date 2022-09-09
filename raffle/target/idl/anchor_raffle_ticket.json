@@ -405,6 +405,10 @@
             "type": "publicKey"
           },
           {
+            "name": "numberOfByers",
+            "type": "u32"
+          },
+          {
             "name": "buyers",
             "type": {
               "array": [
@@ -413,12 +417,6 @@
                 },
                 5000
               ]
-            }
-          },
-          {
-            "name": "numberOfByers",
-            "type": {
-              "defined": "usize"
             }
           }
         ]

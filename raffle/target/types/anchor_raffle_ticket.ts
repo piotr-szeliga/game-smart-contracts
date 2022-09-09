@@ -405,6 +405,10 @@ export type AnchorRaffleTicket = {
             "type": "publicKey"
           },
           {
+            "name": "numberOfByers",
+            "type": "u32"
+          },
+          {
             "name": "buyers",
             "type": {
               "array": [
@@ -413,12 +417,6 @@ export type AnchorRaffleTicket = {
                 },
                 5000
               ]
-            }
-          },
-          {
-            "name": "numberOfByers",
-            "type": {
-              "defined": "usize"
             }
           }
         ]
@@ -911,6 +909,10 @@ export const IDL: AnchorRaffleTicket = {
             "type": "publicKey"
           },
           {
+            "name": "numberOfByers",
+            "type": "u32"
+          },
+          {
             "name": "buyers",
             "type": {
               "array": [
@@ -919,12 +921,6 @@ export const IDL: AnchorRaffleTicket = {
                 },
                 5000
               ]
-            }
-          },
-          {
-            "name": "numberOfByers",
-            "type": {
-              "defined": "usize"
             }
           }
         ]
