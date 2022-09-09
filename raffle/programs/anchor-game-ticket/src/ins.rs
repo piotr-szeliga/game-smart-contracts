@@ -76,8 +76,8 @@ pub struct Initialize<'info>
 {
     #[account(mut)]
     pub payer: Signer<'info>,
-    #[account(init, payer = payer, space = Raffle::SPACE + 8)]
-    pub raffle: Account<'info, Raffle>,
+    #[account(zero)]
+    pub raffle: AccountLoader<'info, Raffle>,
     #[account(address = anchor_lang::system_program::ID)]
     pub system_program: Program<'info, System>,
 
@@ -97,10 +97,10 @@ pub struct BuyTicketSOL<'info> // For SOL Transfers
     /// CHECK:
     #[account(mut)]
     pub recipient: AccountInfo<'info>,
-    #[account(mut, constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft,
-    constraint = ticket_price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched,
-    constraint = token_spl_address == raffle.token_spl_address @ ErrorCode::RaffleTokenSPLAddressMismatched)]
-    pub raffle: Account<'info, Raffle>,
+    #[account(mut, constraint = amount + raffle.load()?.sold_tickets <= raffle.load()?.total_tickets @ ErrorCode::NoTicketsLeft,
+    constraint = ticket_price == raffle.load()?.price_per_ticket @ ErrorCode::RafflePriceMismatched,
+    constraint = token_spl_address == raffle.load()?.token_spl_address @ ErrorCode::RaffleTokenSPLAddressMismatched)]
+    pub raffle: AccountLoader<'info, Raffle>,
     pub system_program: Program<'info, System>,
 }
 
@@ -114,10 +114,10 @@ pub struct BuyTicketSPL<'info> // For SPL-Token Transfer
     #[account(mut)]
     pub recipient_tokens: Account<'info, TokenAccount>,
     #[account(mut,
-    constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft,
-    constraint = ticket_price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched,
-    constraint = token_spl_address == raffle.token_spl_address @ ErrorCode::RaffleTokenSPLAddressMismatched)]
-    pub raffle: Account<'info, Raffle>,
+    constraint = amount + raffle.load()?.sold_tickets <= raffle.load()?.total_tickets @ ErrorCode::NoTicketsLeft,
+    constraint = ticket_price == raffle.load()?.price_per_ticket @ ErrorCode::RafflePriceMismatched,
+    constraint = token_spl_address == raffle.load()?.token_spl_address @ ErrorCode::RaffleTokenSPLAddressMismatched)]
+    pub raffle: AccountLoader<'info, Raffle>,
     pub token_program: Program<'info, Token>,
 }
 

@@ -11,7 +11,7 @@ pub const LAMPORTS_PER_SOL: u64 = 1000000000;
 
 pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32) -> Result<()>
 {
-    let raffle = &mut ctx.accounts.raffle;
+    let raffle = &mut ctx.accounts.raffle.load_init()?;
 
     raffle.token_spl_address = token_spl_address;
     raffle.price_per_ticket = ticket_price;
@@ -75,7 +75,8 @@ pub fn update_raffle(raffle: &mut Raffle, buyer: Pubkey, amount: u32) -> Result<
             key: buyer,
             tickets: amount,
         };
-        raffle.buyers.push(item);
+        raffle.buyers[raffle.number_of_byers] = item;
+        raffle.number_of_byers = raffle.number_of_byers.checked_add(1).unwrap();
     }
 
     msg!("Buyer: {:?}", buyer);
@@ -87,7 +88,7 @@ pub fn update_raffle(raffle: &mut Raffle, buyer: Pubkey, amount: u32) -> Result<
 
 pub fn buy_ticket_sol(ctx: Context<BuyTicketSOL>, amount: u32, _ticket_price: u64, _token_spl_address: Pubkey) -> Result<()>
 {
-    let raffle = &mut ctx.accounts.raffle;
+    let raffle = &mut ctx.accounts.raffle.load_mut()?;
     let transaction_price = raffle.price_per_ticket * amount as u64;
 
     msg!("SOL Transfer: {:?}", raffle.token_spl_address.key());
@@ -109,7 +110,7 @@ pub fn buy_ticket_sol(ctx: Context<BuyTicketSOL>, amount: u32, _ticket_price: u6
 
 pub fn buy_ticket_spl(ctx: Context<BuyTicketSPL>, amount: u32, _ticket_price: u64, _token_spl_address: Pubkey) -> Result<()>
 {
-    let raffle = &mut ctx.accounts.raffle;
+    let raffle = &mut ctx.accounts.raffle.load_mut()?;
     let transaction_price = raffle.price_per_ticket * amount as u64;
 
     msg!("SPL-Token Transfer: {:?}", raffle.token_spl_address.key());

@@ -90,7 +90,7 @@ describe("anchor-game-ticket", () => {
 
     const initializedVaultTestActive = true;
     const initializedAndWithdrawVaultTestActive = true;
-    const initializedTestActive = false;
+    const initializedTestActive = true;
     const buyTicketSOLTestActive = false;
     const buyTicketSPLTokenTestActive = false;
 

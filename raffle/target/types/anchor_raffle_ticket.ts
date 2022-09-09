@@ -241,7 +241,7 @@ export type AnchorRaffleTicket = {
         {
           "name": "raffle",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "systemProgram",
@@ -407,9 +407,18 @@ export type AnchorRaffleTicket = {
           {
             "name": "buyers",
             "type": {
-              "vec": {
-                "defined": "Buyer"
-              }
+              "array": [
+                {
+                  "defined": "Buyer"
+                },
+                5000
+              ]
+            }
+          },
+          {
+            "name": "numberOfByers",
+            "type": {
+              "defined": "usize"
             }
           }
         ]
@@ -738,7 +747,7 @@ export const IDL: AnchorRaffleTicket = {
         {
           "name": "raffle",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "systemProgram",
@@ -904,9 +913,18 @@ export const IDL: AnchorRaffleTicket = {
           {
             "name": "buyers",
             "type": {
-              "vec": {
-                "defined": "Buyer"
-              }
+              "array": [
+                {
+                  "defined": "Buyer"
+                },
+                5000
+              ]
+            }
+          },
+          {
+            "name": "numberOfByers",
+            "type": {
+              "defined": "usize"
             }
           }
         ]

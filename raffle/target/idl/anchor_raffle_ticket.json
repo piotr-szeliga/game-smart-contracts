@@ -241,7 +241,7 @@
         {
           "name": "raffle",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "systemProgram",
@@ -407,9 +407,18 @@
           {
             "name": "buyers",
             "type": {
-              "vec": {
-                "defined": "Buyer"
-              }
+              "array": [
+                {
+                  "defined": "Buyer"
+                },
+                5000
+              ]
+            }
+          },
+          {
+            "name": "numberOfByers",
+            "type": {
+              "defined": "usize"
             }
           }
         ]

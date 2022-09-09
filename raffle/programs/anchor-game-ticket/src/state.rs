@@ -12,22 +12,23 @@ impl Vault
     pub const LEN: usize = std::mem::size_of::<Vault>();
 }
 
-#[account]
+#[account(zero_copy)]
 pub struct Raffle
 {
     pub total_tickets: u32,
     pub sold_tickets: u32,
     pub price_per_ticket: u64,
     pub token_spl_address: Pubkey,
-    pub buyers: Vec<Buyer>,
+    pub buyers: [Buyer; 5000],
+    pub number_of_byers: usize,
 }
 
 impl Raffle
 {
-    pub const SPACE: usize = std::mem::size_of::<Raffle>();
+    pub const SPACE: usize =  std::mem::size_of::<Raffle>();
 }
 
-#[derive(Debug, AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, Copy)]
 pub struct Buyer {
     pub key: Pubkey,
     pub tickets: u32,
