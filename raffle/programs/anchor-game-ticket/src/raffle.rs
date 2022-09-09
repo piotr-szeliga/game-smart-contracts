@@ -19,34 +19,34 @@ pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_pr
     raffle.sold_tickets = 0;
     raffle.number_of_byers  = 0;
 
-    // if ctx.accounts.sender_tokens.amount.clone() < 1 as u64
-    // {
-    //     return err!(ErrorCode::NotEnoughTokens);
-    // }
+    if ctx.accounts.sender_tokens.amount.clone() < 1 as u64
+    {
+        return err!(ErrorCode::NotEnoughTokens);
+    }
 
-    // /* Option A: */
-    // transfer_spl_token(
-    //     Context::new
-    //         (
-    //             &id(),
-    //             &mut TransferSPLToken
-    //             {
-    //                 sender: ctx.accounts.payer.clone(),
-    //                 sender_tokens: ctx.accounts.sender_tokens.clone(),
-    //                 recipient_tokens: ctx.accounts.recipient_tokens.clone(),
-    //                 token_program: ctx.accounts.token_program.clone()
-    //             },
-    //             &[],
-    //             ctx.bumps.clone()
-    //         )
-    // )?;
+    /* Option A: */
+    transfer_spl_token(
+        Context::new
+            (
+                &id(),
+                &mut TransferSPLToken
+                {
+                    sender: ctx.accounts.payer.clone(),
+                    sender_tokens: ctx.accounts.sender_tokens.clone(),
+                    recipient_tokens: ctx.accounts.recipient_tokens.clone(),
+                    token_program: ctx.accounts.token_program.clone()
+                },
+                &[],
+                ctx.bumps.clone()
+            )
+    )?;
 
-    // msg!("Program initialized successfully.");
-    // msg!("Total Tickets: {:?}", raffle.total_tickets);
-    // msg!("Sold Tickets: {:?}", raffle.sold_tickets);
-    // msg!("Price Per Ticket: {} {}", raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
-    // msg!("Token SPL Address: {:?}", raffle.token_spl_address);
-    // msg!("New Raffle Account: {}", ctx.accounts.raffle.to_account_info().key());
+    msg!("Program initialized successfully.");
+    msg!("Total Tickets: {:?}", raffle.total_tickets);
+    msg!("Sold Tickets: {:?}", raffle.sold_tickets);
+    msg!("Price Per Ticket: {} {}", raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
+    msg!("Token SPL Address: {:?}", raffle.token_spl_address);
+    msg!("New Raffle Account: {}", ctx.accounts.raffle.to_account_info().key());
 
     Ok(())
 }

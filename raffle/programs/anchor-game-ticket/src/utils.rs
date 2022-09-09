@@ -25,13 +25,13 @@ pub fn transfer_spl_token(ctx: Context<TransferSPLToken>) -> Result<()>
     Ok(())
 }
 
-pub fn memo(ctx: Context<Memo>) -> Result<()> {
+pub fn memo(ctx: Context<Memo>, text: &str) -> Result<()> {
     let account_info = vec![
         ctx.accounts.memo.to_account_info()
     ];
 
     invoke(
-        &build_memo("Hello world".as_bytes(), &[]),
+        &build_memo(text.as_bytes(), &[]),
         account_info.as_slice()
     )?;
 

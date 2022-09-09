@@ -20,7 +20,7 @@ pub mod anchor_raffle_ticket
 
     
     pub fn memo(ctx: Context<Memo>) -> Result<()> {
-        utils::memo(ctx)
+        utils::memo(ctx, "Hello world")
     }
 
     pub fn transfer_spl_token(ctx: Context<TransferSPLToken>) -> Result<()> {
