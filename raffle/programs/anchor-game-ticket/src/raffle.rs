@@ -17,7 +17,7 @@ pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_pr
     raffle.price_per_ticket = ticket_price;
     raffle.total_tickets = amount;
     raffle.sold_tickets = 0;
-    raffle.number_of_byers  = 0;
+    raffle.number_of_buyers  = 0;
 
     if ctx.accounts.sender_tokens.amount.clone() < 1 as u64
     {
@@ -76,8 +76,8 @@ pub fn update_raffle(raffle: &mut Raffle, buyer: Pubkey, amount: u32) -> Result<
             key: buyer,
             tickets: amount,
         };
-        raffle.buyers[raffle.number_of_byers as usize] = item;
-        raffle.number_of_byers = raffle.number_of_byers.checked_add(1).unwrap();
+        raffle.buyers[raffle.number_of_buyers as usize] = item;
+        raffle.number_of_buyers = raffle.number_of_buyers.checked_add(1).unwrap();
     }
 
     msg!("Buyer: {:?}", buyer);

@@ -405,7 +405,7 @@
             "type": "publicKey"
           },
           {
-            "name": "numberOfByers",
+            "name": "numberOfBuyers",
             "type": "u32"
           },
           {

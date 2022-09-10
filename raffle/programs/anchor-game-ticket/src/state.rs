@@ -19,7 +19,7 @@ pub struct Raffle
     pub sold_tickets: u32,
     pub price_per_ticket: u64,
     pub token_spl_address: Pubkey,
-    pub number_of_byers: u32,
+    pub number_of_buyers: u32,
     pub buyers: [Buyer; 5000],
 }
 
@@ -36,7 +36,7 @@ impl Default for Raffle {
             sold_tickets: 0,
             price_per_ticket: 0,
             token_spl_address: Pubkey::default(),
-            number_of_byers: 0,
+            number_of_buyers: 0,
             buyers: [Buyer::default(); 5000]
         }
     }

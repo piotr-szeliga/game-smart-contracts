@@ -405,7 +405,7 @@ export type AnchorRaffleTicket = {
             "type": "publicKey"
           },
           {
-            "name": "numberOfByers",
+            "name": "numberOfBuyers",
             "type": "u32"
           },
           {
@@ -909,7 +909,7 @@ export const IDL: AnchorRaffleTicket = {
             "type": "publicKey"
           },
           {
-            "name": "numberOfByers",
+            "name": "numberOfBuyers",
             "type": "u32"
           },
           {
