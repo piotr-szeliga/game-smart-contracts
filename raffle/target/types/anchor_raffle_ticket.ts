@@ -403,21 +403,6 @@ export type AnchorRaffleTicket = {
           {
             "name": "tokenSplAddress",
             "type": "publicKey"
-          },
-          {
-            "name": "numberOfBuyers",
-            "type": "u32"
-          },
-          {
-            "name": "buyers",
-            "type": {
-              "array": [
-                {
-                  "defined": "Buyer"
-                },
-                5000
-              ]
-            }
           }
         ]
       }
@@ -907,21 +892,6 @@ export const IDL: AnchorRaffleTicket = {
           {
             "name": "tokenSplAddress",
             "type": "publicKey"
-          },
-          {
-            "name": "numberOfBuyers",
-            "type": "u32"
-          },
-          {
-            "name": "buyers",
-            "type": {
-              "array": [
-                {
-                  "defined": "Buyer"
-                },
-                5000
-              ]
-            }
           }
         ]
       }
