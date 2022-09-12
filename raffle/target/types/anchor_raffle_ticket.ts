@@ -231,6 +231,82 @@ export type AnchorRaffleTicket = {
       "returns": null
     },
     {
+      "name": "initializeGlobal",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "globalBump",
+          "type": "u8"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "authroizeAdmin",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
+      "name": "unauthorizeAdmin",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
       "name": "initialize",
       "accounts": [
         {
@@ -241,7 +317,7 @@ export type AnchorRaffleTicket = {
         {
           "name": "raffle",
           "isMut": true,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "systemProgram",
@@ -384,6 +460,28 @@ export type AnchorRaffleTicket = {
       }
     },
     {
+      "name": "global",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "globalBump",
+            "type": "u8"
+          },
+          {
+            "name": "authorizedAdmins",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "raffle",
       "type": {
         "kind": "struct",
@@ -483,6 +581,16 @@ export type AnchorRaffleTicket = {
       "code": 6004,
       "name": "ErrorCustom",
       "msg": "Custom Error."
+    },
+    {
+      "code": 6005,
+      "name": "AlreadyAuthorizedAdmin",
+      "msg": "Already authorized amin"
+    },
+    {
+      "code": 6006,
+      "name": "NotAuthorizedAdmin",
+      "msg": "Not authorized admin"
     }
   ]
 };
@@ -720,6 +828,82 @@ export const IDL: AnchorRaffleTicket = {
       "returns": null
     },
     {
+      "name": "initializeGlobal",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "globalBump",
+          "type": "u8"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "authroizeAdmin",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
+      "name": "unauthorizeAdmin",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
       "name": "initialize",
       "accounts": [
         {
@@ -730,7 +914,7 @@ export const IDL: AnchorRaffleTicket = {
         {
           "name": "raffle",
           "isMut": true,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "systemProgram",
@@ -873,6 +1057,28 @@ export const IDL: AnchorRaffleTicket = {
       }
     },
     {
+      "name": "global",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "globalBump",
+            "type": "u8"
+          },
+          {
+            "name": "authorizedAdmins",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "raffle",
       "type": {
         "kind": "struct",
@@ -972,6 +1178,16 @@ export const IDL: AnchorRaffleTicket = {
       "code": 6004,
       "name": "ErrorCustom",
       "msg": "Custom Error."
+    },
+    {
+      "code": 6005,
+      "name": "AlreadyAuthorizedAdmin",
+      "msg": "Already authorized amin"
+    },
+    {
+      "code": 6006,
+      "name": "NotAuthorizedAdmin",
+      "msg": "Not authorized admin"
     }
   ]
 };

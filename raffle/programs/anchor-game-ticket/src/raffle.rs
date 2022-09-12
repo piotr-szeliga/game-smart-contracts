@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{self, Transfer as TransferProgramSOL};
 use anchor_spl::token::{self, Transfer as TransferSPL};
-use crate::state::{Raffle, BuyEvent, Buyer};
+use crate::state::{Raffle, BuyEvent};
 use crate::ins::*;
 use crate::state::{ErrorCode};
 use crate::utils::*;
@@ -11,7 +11,8 @@ pub const LAMPORTS_PER_SOL: u64 = 1000000000;
 
 pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32) -> Result<()>
 {
-    let raffle = &mut ctx.accounts.raffle.load_init()?;
+    // let raffle = &mut ctx.accounts.raffle.load_init()?;
+    let raffle = &mut ctx.accounts.raffle;
 
     raffle.token_spl_address = token_spl_address;
     raffle.price_per_ticket = ticket_price;
@@ -89,7 +90,8 @@ pub fn update_raffle(raffle: &mut Raffle, buyer: Pubkey, amount: u32) -> Result<
 
 pub fn buy_ticket_sol(ctx: Context<BuyTicketSOL>, amount: u32, _ticket_price: u64, _token_spl_address: Pubkey) -> Result<()>
 {
-    let raffle = &mut ctx.accounts.raffle.load_mut()?;
+    // let raffle = &mut ctx.accounts.raffle.load_mut()?;
+    let raffle = &mut ctx.accounts.raffle;
     let transaction_price = raffle.price_per_ticket * amount as u64;
 
     msg!("SOL Transfer: {:?}", raffle.token_spl_address.key());
@@ -111,7 +113,8 @@ pub fn buy_ticket_sol(ctx: Context<BuyTicketSOL>, amount: u32, _ticket_price: u6
 
 pub fn buy_ticket_spl(ctx: Context<BuyTicketSPL>, amount: u32, _ticket_price: u64, _token_spl_address: Pubkey) -> Result<()>
 {
-    let raffle = &mut ctx.accounts.raffle.load_mut()?;
+    // let raffle = &mut ctx.accounts.raffle.load_mut()?;
+    let raffle = &mut ctx.accounts.raffle;
     let transaction_price = raffle.price_per_ticket * amount as u64;
 
     msg!("SPL-Token Transfer: {:?}", raffle.token_spl_address.key());

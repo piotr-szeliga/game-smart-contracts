@@ -231,6 +231,82 @@
       "returns": null
     },
     {
+      "name": "initializeGlobal",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "globalBump",
+          "type": "u8"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "authroizeAdmin",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
+      "name": "unauthorizeAdmin",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
+    },
+    {
       "name": "initialize",
       "accounts": [
         {
@@ -241,7 +317,7 @@
         {
           "name": "raffle",
           "isMut": true,
-          "isSigner": false
+          "isSigner": true
         },
         {
           "name": "systemProgram",
@@ -384,6 +460,28 @@
       }
     },
     {
+      "name": "Global",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "globalBump",
+            "type": "u8"
+          },
+          {
+            "name": "authorizedAdmins",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Raffle",
       "type": {
         "kind": "struct",
@@ -483,9 +581,16 @@
       "code": 6004,
       "name": "ErrorCustom",
       "msg": "Custom Error."
+    },
+    {
+      "code": 6005,
+      "name": "AlreadyAuthorizedAdmin",
+      "msg": "Already authorized amin"
+    },
+    {
+      "code": 6006,
+      "name": "NotAuthorizedAdmin",
+      "msg": "Not authorized admin"
     }
-  ],
-  "metadata": {
-    "address": "3ug8uwLeeJjA8yz7jYEe33ntz7wD9x2SWXPxwC4zJkm5"
-  }
+  ]
 }

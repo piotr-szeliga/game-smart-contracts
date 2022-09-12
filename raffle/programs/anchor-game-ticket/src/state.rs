@@ -12,7 +12,19 @@ impl Vault
     pub const LEN: usize = std::mem::size_of::<Vault>();
 }
 
-#[account(zero_copy)]
+#[account]
+pub struct Global {
+    pub authority: Pubkey,
+    pub global_bump: u8,
+    pub authorized_admins: Vec<Pubkey>,
+}
+
+impl Global {
+    pub const LEN: usize = 1 + 32 * 10;
+}
+
+// #[account(zero_copy)]
+#[account]
 pub struct Raffle
 {
     pub total_tickets: u32,
@@ -82,4 +94,8 @@ pub enum ErrorCode
     NotEnoughTokens,
     #[msg("Custom Error.")] // 0x1774
     ErrorCustom,
+    #[msg("Already authorized amin")]
+    AlreadyAuthorizedAdmin,
+    #[msg("Not authorized admin")]
+    NotAuthorizedAdmin,
 }

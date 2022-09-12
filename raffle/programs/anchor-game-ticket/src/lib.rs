@@ -5,6 +5,7 @@ mod state;
 mod raffle;
 mod utils;
 mod vault;
+mod global;
 
 use anchor_lang::prelude::*;
 
@@ -39,6 +40,18 @@ pub mod anchor_raffle_ticket
 
     pub fn convert_skt_sol(ctx: Context<Convert>, exchange_option: u8, is_holder: bool) -> Result<()> {
         vault::convert_skt_sol(ctx, exchange_option, is_holder)
+    }
+
+    pub fn initialize_global(ctx: Context<InitializeGlobal>, global_bump: u8) -> Result<()> {
+        global::initialize_global(ctx, global_bump)
+    }
+
+    pub fn authroize_admin(ctx: Context<ControlAdmins>) -> Result<()> {
+        global::authroize_admin(ctx)
+    }
+
+    pub fn unauthorize_admin(ctx: Context<ControlAdmins>) -> Result<()> {
+        global::unauthorize_admin(ctx)
     }
 
     pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32) -> Result<()>
