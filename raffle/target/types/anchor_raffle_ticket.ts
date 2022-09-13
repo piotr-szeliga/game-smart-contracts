@@ -320,11 +320,6 @@ export type AnchorRaffleTicket = {
           "isSigner": true
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "senderTokens",
           "isMut": true,
           "isSigner": false
@@ -338,9 +333,68 @@ export type AnchorRaffleTicket = {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
+        {
+          "name": "tokenSplAddress",
+          "type": "publicKey"
+        },
+        {
+          "name": "ticketPrice",
+          "type": "u64"
+        },
+        {
+          "name": "amount",
+          "type": "u32"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "initializeWithPda",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "raffle",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "senderAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rafflePoolAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "poolBump",
+          "type": "u8"
+        },
         {
           "name": "tokenSplAddress",
           "type": "publicKey"
@@ -486,6 +540,10 @@ export type AnchorRaffleTicket = {
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "poolBump",
+            "type": "u8"
+          },
           {
             "name": "totalTickets",
             "type": "u32"
@@ -917,11 +975,6 @@ export const IDL: AnchorRaffleTicket = {
           "isSigner": true
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "senderTokens",
           "isMut": true,
           "isSigner": false
@@ -935,9 +988,68 @@ export const IDL: AnchorRaffleTicket = {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
+        {
+          "name": "tokenSplAddress",
+          "type": "publicKey"
+        },
+        {
+          "name": "ticketPrice",
+          "type": "u64"
+        },
+        {
+          "name": "amount",
+          "type": "u32"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "initializeWithPda",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "raffle",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "senderAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rafflePoolAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "poolBump",
+          "type": "u8"
+        },
         {
           "name": "tokenSplAddress",
           "type": "publicKey"
@@ -1083,6 +1195,10 @@ export const IDL: AnchorRaffleTicket = {
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "poolBump",
+            "type": "u8"
+          },
           {
             "name": "totalTickets",
             "type": "u32"

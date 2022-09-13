@@ -27,6 +27,7 @@ impl Global {
 #[account]
 pub struct Raffle
 {
+    pub pool_bump: u8,
     pub total_tickets: u32,
     pub sold_tickets: u32,
     pub price_per_ticket: u64,
@@ -44,6 +45,7 @@ impl Default for Raffle {
     #[inline]
     fn default() -> Raffle {
         Raffle {
+            pool_bump: 0,
             total_tickets: 0,
             sold_tickets: 0,
             price_per_ticket: 0,

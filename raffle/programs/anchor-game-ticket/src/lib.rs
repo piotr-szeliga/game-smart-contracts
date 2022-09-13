@@ -59,6 +59,11 @@ pub mod anchor_raffle_ticket
         raffle::initialize(ctx, token_spl_address, ticket_price, amount)
     }
 
+    pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token_spl_address: Pubkey, ticket_price: u64, amount: u32) -> Result<()> 
+    {
+        raffle::initialize_with_pda(ctx, pool_bump, token_spl_address, ticket_price, amount)
+    }
+
     pub fn buy_ticket_sol(ctx: Context<BuyTicketSOL>, amount: u32, _ticket_price: u64, _token_spl_address: Pubkey) -> Result<()>
     {
         raffle::buy_ticket_sol(ctx, amount, _ticket_price, _token_spl_address)

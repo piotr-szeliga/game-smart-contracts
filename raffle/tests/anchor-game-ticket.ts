@@ -218,13 +218,13 @@ describe("anchor-game-ticket", () => {
         // const tokenSPLAddress = new PublicKey("DUSTawucrTsGU8hcqRdHDCbuYhCPADMLM2VcCb8VnFnQ");
         console.log('Token SPL Address:', tokenSPLAddress.toString());
 
-        // const raffle = Keypair.generate();
-        const raffle = Keypair.fromSecretKey(new Uint8Array([116, 70, 177, 15, 159, 21, 163, 29, 18, 111, 62, 73, 143, 52, 203, 88, 129, 60, 61, 116, 176, 164, 238, 178, 105, 163, 25, 225, 65, 211, 117, 131, 188, 197, 246, 113, 242, 134, 90, 196, 40, 170, 246, 139, 143, 141, 232, 15, 196, 251, 28, 76, 66, 22, 115, 20, 32, 220, 89, 54, 14, 235, 241, 65]));
+        const raffle = Keypair.generate();
+        // const raffle = Keypair.fromSecretKey(new Uint8Array([116, 70, 177, 15, 159, 21, 163, 29, 18, 111, 62, 73, 143, 52, 203, 88, 129, 60, 61, 116, 176, 164, 238, 178, 105, 163, 25, 225, 65, 211, 117, 131, 188, 197, 246, 113, 242, 134, 90, 196, 40, 170, 246, 139, 143, 141, 232, 15, 196, 251, 28, 76, 66, 22, 115, 20, 32, 220, 89, 54, 14, 235, 241, 65]));
         console.log("Raffle :", raffle.publicKey.toString());
         console.log("Raffle Key:", raffle.secretKey.toString());
 
-        //const tokenSPLKP = Keypair.generate();
-        const tokenSPLKP = Keypair.fromSecretKey(new Uint8Array([49, 126, 59, 3, 106, 46, 22, 87, 188, 63, 0, 238, 192, 16, 55, 75, 177, 173, 142, 218, 56, 96, 93, 143, 170, 249, 239, 112, 251, 48, 162, 219, 2, 49, 81, 147, 24, 20, 128, 249, 157, 159, 165, 51, 122, 99, 64, 51, 129, 48, 26, 141, 193, 94, 225, 33, 234, 172, 105, 92, 112, 94, 134, 168]));
+        const tokenSPLKP = Keypair.generate();
+        // const tokenSPLKP = Keypair.fromSecretKey(new Uint8Array([49, 126, 59, 3, 106, 46, 22, 87, 188, 63, 0, 238, 192, 16, 55, 75, 177, 173, 142, 218, 56, 96, 93, 143, 170, 249, 239, 112, 251, 48, 162, 219, 2, 49, 81, 147, 24, 20, 128, 249, 157, 159, 165, 51, 122, 99, 64, 51, 129, 48, 26, 141, 193, 94, 225, 33, 234, 172, 105, 92, 112, 94, 134, 168]));
         console.log("Token SPL :", tokenSPLKP.publicKey.toString());
         console.log("Token SPL Key:", tokenSPLKP.secretKey.toString());
 

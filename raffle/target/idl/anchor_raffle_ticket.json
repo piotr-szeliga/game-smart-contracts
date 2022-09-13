@@ -320,11 +320,6 @@
           "isSigner": true
         },
         {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "senderTokens",
           "isMut": true,
           "isSigner": false
@@ -338,9 +333,68 @@
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
+        {
+          "name": "tokenSplAddress",
+          "type": "publicKey"
+        },
+        {
+          "name": "ticketPrice",
+          "type": "u64"
+        },
+        {
+          "name": "amount",
+          "type": "u32"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "initializeWithPda",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "raffle",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "senderAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rafflePoolAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "poolBump",
+          "type": "u8"
+        },
         {
           "name": "tokenSplAddress",
           "type": "publicKey"
@@ -487,6 +541,10 @@
         "kind": "struct",
         "fields": [
           {
+            "name": "poolBump",
+            "type": "u8"
+          },
+          {
             "name": "totalTickets",
             "type": "u32"
           },
@@ -592,5 +650,8 @@
       "name": "NotAuthorizedAdmin",
       "msg": "Not authorized admin"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "3ug8uwLeeJjA8yz7jYEe33ntz7wD9x2SWXPxwC4zJkm5"
+  }
 }

@@ -4,6 +4,7 @@ use anchor_spl::token::{Mint, Token, TokenAccount};
 use crate::state::{Raffle, Vault, Global, ErrorCode};
 
 pub const VAULT_SKT_SEED_PREFIX: &str = "skt_pool";
+pub const RAFFLE_POOL_SEED_PREFIX: &str = "raffle_pool";
 
 #[derive(Accounts)]
 pub struct Memo<'info> {
@@ -80,14 +81,40 @@ pub struct Initialize<'info>
     // pub raffle: AccountLoader<'info, Raffle>,
     #[account(init, payer = payer, space = Raffle::SPACE + 8)]
     pub raffle: Account<'info, Raffle>,
-    #[account(address = anchor_lang::system_program::ID)]
-    pub system_program: Program<'info, System>,
 
     #[account(mut)]
     pub sender_tokens: Account<'info, TokenAccount>,
+
     #[account(mut)]
     pub recipient_tokens: Account<'info, TokenAccount>,
+
     pub token_program: Program<'info, Token>,
+
+    #[account(address = anchor_lang::system_program::ID)]
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(pool_bump: u8)]
+pub struct InitializeWithPDA<'info>
+{
+    #[account(mut)]
+    pub payer: Signer<'info>,
+
+    #[account(init, payer = payer, space = Raffle::SPACE + 8)]
+    pub raffle: Account<'info, Raffle>,
+
+    #[account(mut)]
+    pub sender_ata: Account<'info, TokenAccount>,
+
+    #[account(mut)]
+    pub raffle_pool_ata: Account<'info, TokenAccount>,
+
+    // token program
+    pub token_program: Program<'info, Token>,
+
+    #[account(address = anchor_lang::system_program::ID)]
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
