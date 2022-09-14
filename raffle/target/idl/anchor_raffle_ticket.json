@@ -347,6 +347,10 @@
         {
           "name": "amount",
           "type": "u32"
+        },
+        {
+          "name": "storeBuyers",
+          "type": "bool"
         }
       ],
       "returns": null
@@ -401,6 +405,10 @@
         {
           "name": "amount",
           "type": "u32"
+        },
+        {
+          "name": "storeBuyers",
+          "type": "bool"
         }
       ],
       "returns": null
@@ -602,6 +610,10 @@
           {
             "name": "tokenSplAddress",
             "type": "publicKey"
+          },
+          {
+            "name": "storeBuyers",
+            "type": "bool"
           },
           {
             "name": "buyers",

@@ -9,7 +9,7 @@ use crate::id;
 
 pub const LAMPORTS_PER_SOL: u64 = 1000000000;
 
-pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32) -> Result<()>
+pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool) -> Result<()>
 {
     let raffle = &mut ctx.accounts.raffle;
 
@@ -17,6 +17,7 @@ pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_pr
     raffle.price_per_ticket = ticket_price;
     raffle.total_tickets = amount;
     raffle.sold_tickets = 0;
+    raffle.store_buyers = store_buyers;
     raffle.buyers = vec![];
 
     if ctx.accounts.sender_tokens.amount.clone() < 1 as u64
@@ -51,7 +52,7 @@ pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_pr
     Ok(())
 }
 
-pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token_spl_address: Pubkey, ticket_price: u64, amount: u32) -> Result<()>
+pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool) -> Result<()>
 {
     let raffle = &mut ctx.accounts.raffle;
 
@@ -60,6 +61,7 @@ pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token
     raffle.price_per_ticket = ticket_price;
     raffle.total_tickets = amount;
     raffle.sold_tickets = 0;
+    raffle.store_buyers = store_buyers;
     raffle.buyers = vec![];
 
     if ctx.accounts.sender_ata.amount.clone() < 1 as u64
@@ -110,16 +112,18 @@ pub fn update_raffle(raffle: &mut Raffle, buyer: Pubkey, amount: u32) -> Result<
 
     let remaining_tickets = raffle.total_tickets.checked_sub(raffle.sold_tickets).unwrap();
 
-    let index = raffle.buyers.iter().position(|x| x.key == buyer);
-    if let Some(index) = index {
-        let item = &mut raffle.buyers[index];
-        item.tickets = item.tickets.checked_add(amount).unwrap();
-    } else {
-        let item = Buyer {
-            key: buyer,
-            tickets: amount,
-        };
-        raffle.buyers.push(item);
+    if raffle.store_buyers == true {
+        let index = raffle.buyers.iter().position(|x| x.key == buyer);
+        if let Some(index) = index {
+            let item = &mut raffle.buyers[index];
+            item.tickets = item.tickets.checked_add(amount).unwrap();
+        } else {
+            let item = Buyer {
+                key: buyer,
+                tickets: amount,
+            };
+            raffle.buyers.push(item);
+        }
     }
 
     msg!("Buyer: {:?}", buyer);

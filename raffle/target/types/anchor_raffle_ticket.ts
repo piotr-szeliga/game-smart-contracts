@@ -347,6 +347,10 @@ export type AnchorRaffleTicket = {
         {
           "name": "amount",
           "type": "u32"
+        },
+        {
+          "name": "storeBuyers",
+          "type": "bool"
         }
       ],
       "returns": null
@@ -401,6 +405,10 @@ export type AnchorRaffleTicket = {
         {
           "name": "amount",
           "type": "u32"
+        },
+        {
+          "name": "storeBuyers",
+          "type": "bool"
         }
       ],
       "returns": null
@@ -602,6 +610,10 @@ export type AnchorRaffleTicket = {
           {
             "name": "tokenSplAddress",
             "type": "publicKey"
+          },
+          {
+            "name": "storeBuyers",
+            "type": "bool"
           },
           {
             "name": "buyers",
@@ -1053,6 +1065,10 @@ export const IDL: AnchorRaffleTicket = {
         {
           "name": "amount",
           "type": "u32"
+        },
+        {
+          "name": "storeBuyers",
+          "type": "bool"
         }
       ],
       "returns": null
@@ -1107,6 +1123,10 @@ export const IDL: AnchorRaffleTicket = {
         {
           "name": "amount",
           "type": "u32"
+        },
+        {
+          "name": "storeBuyers",
+          "type": "bool"
         }
       ],
       "returns": null
@@ -1308,6 +1328,10 @@ export const IDL: AnchorRaffleTicket = {
           {
             "name": "tokenSplAddress",
             "type": "publicKey"
+          },
+          {
+            "name": "storeBuyers",
+            "type": "bool"
           },
           {
             "name": "buyers",
