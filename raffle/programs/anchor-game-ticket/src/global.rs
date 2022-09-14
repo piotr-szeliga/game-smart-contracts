@@ -2,10 +2,9 @@ use anchor_lang::prelude::*;
 use crate::ins::*;
 use crate::state::{ErrorCode};
 
-pub fn initialize_global(ctx: Context<InitializeGlobal>, global_bump: u8) -> Result<()> {
+pub fn initialize_global(ctx: Context<InitializeGlobal>) -> Result<()> {
   let global = &mut ctx.accounts.global;
   global.authority = ctx.accounts.payer.key();
-  global.global_bump = global_bump;
   global.authorized_admins.push(ctx.accounts.admin.key());
   Ok(())
 }

@@ -42,8 +42,8 @@ pub mod anchor_raffle_ticket
         vault::convert_skt_sol(ctx, exchange_option, is_holder)
     }
 
-    pub fn initialize_global(ctx: Context<InitializeGlobal>, global_bump: u8) -> Result<()> {
-        global::initialize_global(ctx, global_bump)
+    pub fn initialize_global(ctx: Context<InitializeGlobal>) -> Result<()> {
+        global::initialize_global(ctx)
     }
 
     pub fn authroize_admin(ctx: Context<ControlAdmins>) -> Result<()> {

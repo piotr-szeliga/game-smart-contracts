@@ -15,7 +15,6 @@ impl Vault
 #[account]
 pub struct Global {
     pub authority: Pubkey,
-    pub global_bump: u8,
     pub authorized_admins: Vec<Pubkey>,
 }
 

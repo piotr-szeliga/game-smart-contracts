@@ -254,12 +254,7 @@
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "globalBump",
-          "type": "u8"
-        }
-      ],
+      "args": [],
       "returns": null
     },
     {
@@ -573,10 +568,6 @@
           {
             "name": "authority",
             "type": "publicKey"
-          },
-          {
-            "name": "globalBump",
-            "type": "u8"
           },
           {
             "name": "authorizedAdmins",

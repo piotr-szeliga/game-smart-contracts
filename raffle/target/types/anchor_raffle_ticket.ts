@@ -254,12 +254,7 @@ export type AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "globalBump",
-          "type": "u8"
-        }
-      ],
+      "args": [],
       "returns": null
     },
     {
@@ -573,10 +568,6 @@ export type AnchorRaffleTicket = {
           {
             "name": "authority",
             "type": "publicKey"
-          },
-          {
-            "name": "globalBump",
-            "type": "u8"
           },
           {
             "name": "authorizedAdmins",
@@ -969,12 +960,7 @@ export const IDL: AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "globalBump",
-          "type": "u8"
-        }
-      ],
+      "args": [],
       "returns": null
     },
     {
@@ -1288,10 +1274,6 @@ export const IDL: AnchorRaffleTicket = {
           {
             "name": "authority",
             "type": "publicKey"
-          },
-          {
-            "name": "globalBump",
-            "type": "u8"
           },
           {
             "name": "authorizedAdmins",
