@@ -69,8 +69,8 @@ pub enum ErrorCode
     NotEnoughTokens,
     #[msg("Custom Error.")] // 0x1774
     ErrorCustom,
-    #[msg("Already authorized amin")]
+    #[msg("Already authorized admin")] // 0x1775
     AlreadyAuthorizedAdmin,
-    #[msg("Not authorized admin")]
+    #[msg("Not authorized admin")] // 0x1776
     NotAuthorizedAdmin,
 }
