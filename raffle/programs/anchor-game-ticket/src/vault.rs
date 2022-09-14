@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::system_program;
 use anchor_spl::associated_token::{Create, create};
 use anchor_spl::token;
+use crate::state::{ErrorCode};
 use crate::utils::*;
 use crate::ins::*;
 use crate::id;
@@ -50,6 +51,11 @@ pub fn initialize_vault(ctx: Context<InitializeVault>, token_type: Pubkey, vault
 
 pub fn withdraw_vault(ctx: Context<WithdrawVault>, amount: u64) -> Result<()>
 {
+    let global = &ctx.accounts.global;
+    if global.authorized_admins.iter().any(|x| x == &ctx.accounts.claimer.key()) == false {
+        return Err(ErrorCode::NotAuthorizedAdmin.into());
+    }
+
     let vault = &ctx.accounts.vault;
     let vault_address = vault.key().clone();
 

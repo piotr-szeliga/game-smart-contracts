@@ -111,6 +111,11 @@ export type AnchorRaffleTicket = {
       "name": "withdrawVault",
       "accounts": [
         {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "claimer",
           "isMut": true,
           "isSigner": true
@@ -833,6 +838,11 @@ export const IDL: AnchorRaffleTicket = {
     {
       "name": "withdrawVault",
       "accounts": [
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
         {
           "name": "claimer",
           "isMut": true,

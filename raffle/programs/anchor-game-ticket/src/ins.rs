@@ -43,6 +43,8 @@ pub struct InitializeVault<'info>
 #[derive(Accounts)]
 pub struct WithdrawVault<'info>
 {
+    #[account(mut)]
+    pub global: Account<'info, Global>,
     // claimer authority
     #[account(mut)]
     pub claimer: Signer<'info>,
