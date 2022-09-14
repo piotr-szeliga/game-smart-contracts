@@ -48,7 +48,7 @@ pub fn initialize_vault(ctx: Context<InitializeVault>, token_type: Pubkey, vault
     Ok(())
 }
 
-pub fn withdraw_vault(ctx: Context<WithdrawVault>) -> Result<()>
+pub fn withdraw_vault(ctx: Context<WithdrawVault>, amount: u64) -> Result<()>
 {
     let vault = &ctx.accounts.vault;
     let vault_address = vault.key().clone();
@@ -68,7 +68,7 @@ pub fn withdraw_vault(ctx: Context<WithdrawVault>) -> Result<()>
         vault_address.as_ref(),
         &[vault.vault_bump],
     ];
-    token::transfer(cpi_context.with_signer(&[&seeds[..]]), 3)?;
+    token::transfer(cpi_context.with_signer(&[&seeds[..]]), amount)?;
 
     Ok(())
 }

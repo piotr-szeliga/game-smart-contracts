@@ -161,7 +161,12 @@ export type AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": [],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ],
       "returns": null
     },
     {
@@ -258,11 +263,11 @@ export type AnchorRaffleTicket = {
       "returns": null
     },
     {
-      "name": "authroizeAdmin",
+      "name": "authorizeAdmin",
       "accounts": [
         {
           "name": "authority",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -284,7 +289,7 @@ export type AnchorRaffleTicket = {
       "accounts": [
         {
           "name": "authority",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -879,7 +884,12 @@ export const IDL: AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": [],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ],
       "returns": null
     },
     {
@@ -976,11 +986,11 @@ export const IDL: AnchorRaffleTicket = {
       "returns": null
     },
     {
-      "name": "authroizeAdmin",
+      "name": "authorizeAdmin",
       "accounts": [
         {
           "name": "authority",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -1002,7 +1012,7 @@ export const IDL: AnchorRaffleTicket = {
       "accounts": [
         {
           "name": "authority",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
