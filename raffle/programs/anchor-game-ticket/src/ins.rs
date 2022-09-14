@@ -133,15 +133,15 @@ pub struct InitializeGlobal<'info>
 
 #[derive(Accounts)]
 pub struct ControlAdmins<'info> {
-    #[account(mut)]
     pub authority: Signer<'info>,
+
     #[account(
         mut,
         has_one = authority,
     )]
     pub global: Account<'info, Global>,
-    /// CHECK:
-    pub admin: AccountInfo<'info>,
+
+    pub admin: SystemAccount<'info>,
 }
 
 #[derive(Accounts)]
