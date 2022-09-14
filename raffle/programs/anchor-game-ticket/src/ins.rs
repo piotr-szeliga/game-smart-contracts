@@ -4,7 +4,7 @@ use anchor_spl::token::{Mint, Token, TokenAccount};
 use crate::state::{Raffle, Vault, Global, ErrorCode};
 
 pub const VAULT_SKT_SEED_PREFIX: &str = "skt_pool";
-pub const RAFFLE_POOL_SEED_PREFIEX: &str = "raffle_pool";
+pub const RAFFLE_POOL_SEED_PREFIX: &str = "raffle_pool";
 
 #[derive(Accounts)]
 pub struct Memo<'info> {
@@ -238,7 +238,7 @@ pub struct WithdrawFromPDA<'info> {
     pub raffle: Account<'info, Raffle>,
 
     /// CHECK:
-    #[account(mut, seeds = [RAFFLE_POOL_SEED_PREFIEX.as_bytes(), raffle.key().as_ref()], bump = raffle.pool_bump)]
+    #[account(mut, seeds = [RAFFLE_POOL_SEED_PREFIX.as_bytes(), raffle.key().as_ref()], bump = raffle.pool_bump)]
     pub raffle_pool: AccountInfo<'info>,
 
     #[account(mut)]

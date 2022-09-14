@@ -189,7 +189,7 @@ pub fn withdraw_from_pda(ctx: Context<WithdrawFromPDA>, amount: u64) -> Result<(
     let raffle = &ctx.accounts.raffle;
     let raffle_address = ctx.accounts.raffle.key().clone();
     let seeds = [
-        RAFFLE_POOL_SEED_PREFIEX.as_bytes(),
+        RAFFLE_POOL_SEED_PREFIX.as_bytes(),
         raffle_address.as_ref(),
         &[raffle.pool_bump],
     ];
