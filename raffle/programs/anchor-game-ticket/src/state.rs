@@ -23,7 +23,6 @@ impl Global {
     pub const LEN: usize = 1 + 32 * 10;
 }
 
-// #[account(zero_copy)]
 #[account]
 pub struct Raffle
 {
@@ -32,8 +31,7 @@ pub struct Raffle
     pub sold_tickets: u32,
     pub price_per_ticket: u64,
     pub token_spl_address: Pubkey,
-    // pub number_of_buyers: u32,
-    // pub buyers: [Buyer; 5000],
+    pub buyers: Vec<Buyer>,
 }
 
 impl Raffle
@@ -41,35 +39,10 @@ impl Raffle
     pub const SPACE: usize =  std::mem::size_of::<Raffle>();
 }
 
-impl Default for Raffle {
-    #[inline]
-    fn default() -> Raffle {
-        Raffle {
-            pool_bump: 0,
-            total_tickets: 0,
-            sold_tickets: 0,
-            price_per_ticket: 0,
-            token_spl_address: Pubkey::default(),
-            // number_of_buyers: 0,
-            // buyers: [Buyer::default(); 5000]
-        }
-    }
-}
-
 #[derive(Debug, AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, Copy)]
 pub struct Buyer {
     pub key: Pubkey,
     pub tickets: u32,
-}
-
-impl Default for Buyer {
-    #[inline]
-    fn default() ->  Buyer {
-        Buyer {
-            key: Pubkey::default(),
-            tickets: 0
-        }
-    }
 }
 
 #[event]

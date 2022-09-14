@@ -83,6 +83,16 @@ async function spawnMoney(
     return tx;
 }
 
+async function createNewMint(program: anchor.Program<AnchorRaffleTicket>, payer: Keypair): Promise<anchor.web3.PublicKey> {
+    return await createMint(
+        program.provider.connection,
+        payer,
+        program.provider.publicKey,
+        program.provider.publicKey,
+        0,
+    );
+}
+
 describe("anchor-game-ticket", () => {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
@@ -207,8 +217,8 @@ describe("anchor-game-ticket", () => {
 
         const recipient = new PublicKey("3xeW8eLMunbmMW83n2wLqNkiEr4GsUFJjzM6h19fhwot"); // raffle bank
 
-        //const senderWallet = Keypair.generate();
-        const senderWallet = Keypair.fromSecretKey(new Uint8Array([133, 230, 105, 82, 126, 147, 188, 49, 144, 121, 98, 112, 160, 239, 106, 142, 105, 92, 58, 193, 34, 169, 161, 57, 57, 231, 154, 146, 19, 17, 244, 172, 16, 123, 70, 229, 190, 105, 161, 60, 53, 123, 148, 82, 214, 237, 122, 193, 24, 62, 101, 168, 243, 70, 149, 117, 33, 159, 75, 104, 193, 83, 97, 231]));
+        const senderWallet = Keypair.generate();
+        // const senderWallet = Keypair.fromSecretKey(new Uint8Array([133, 230, 105, 82, 126, 147, 188, 49, 144, 121, 98, 112, 160, 239, 106, 142, 105, 92, 58, 193, 34, 169, 161, 57, 57, 231, 154, 146, 19, 17, 244, 172, 16, 123, 70, 229, 190, 105, 161, 60, 53, 123, 148, 82, 214, 237, 122, 193, 24, 62, 101, 168, 243, 70, 149, 117, 33, 159, 75, 104, 193, 83, 97, 231]));
         console.log("Sender:", senderWallet.publicKey.toString());
         console.log("Sender Key:", senderWallet.secretKey.toString());
 
@@ -223,10 +233,10 @@ describe("anchor-game-ticket", () => {
         console.log("Raffle :", raffle.publicKey.toString());
         console.log("Raffle Key:", raffle.secretKey.toString());
 
-        const tokenSPLKP = Keypair.generate();
+        const nftMint = await createNewMint(program, senderWallet);
         // const tokenSPLKP = Keypair.fromSecretKey(new Uint8Array([49, 126, 59, 3, 106, 46, 22, 87, 188, 63, 0, 238, 192, 16, 55, 75, 177, 173, 142, 218, 56, 96, 93, 143, 170, 249, 239, 112, 251, 48, 162, 219, 2, 49, 81, 147, 24, 20, 128, 249, 157, 159, 165, 51, 122, 99, 64, 51, 129, 48, 26, 141, 193, 94, 225, 33, 234, 172, 105, 92, 112, 94, 134, 168]));
-        console.log("Token SPL :", tokenSPLKP.publicKey.toString());
-        console.log("Token SPL Key:", tokenSPLKP.secretKey.toString());
+        console.log("nft mint address :", nftMint.toString());
+
 
         if (isLocalNet) {
             console.log("localnet...\n");
@@ -248,8 +258,8 @@ describe("anchor-game-ticket", () => {
         const sourcePublicKey = senderWallet.publicKey;
         const destPublicKey = recipient;
 
-        const sourceATA = await getOrCreateAssociatedTokenAccount(program.provider.connection, senderWallet, tokenSPLAddress, sourcePublicKey);
-        let recipientATA = await getOrCreateAssociatedTokenAccount(program.provider.connection, senderWallet, tokenSPLAddress, destPublicKey);
+        const sourceATA = await getOrCreateAssociatedTokenAccount(program.provider.connection, tokenSPLKP, tokenSPLKP.publicKey, sourcePublicKey);
+        let recipientATA = await getOrCreateAssociatedTokenAccount(program.provider.connection, senderWallet, tokenSPLKP.publicKey, destPublicKey);
 
         // Make sure receiver has a token account active
         const receiverAccount = await program.provider.connection.getAccountInfo(recipientATA.address);

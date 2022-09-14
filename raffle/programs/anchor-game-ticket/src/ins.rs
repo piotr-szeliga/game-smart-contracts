@@ -4,7 +4,7 @@ use anchor_spl::token::{Mint, Token, TokenAccount};
 use crate::state::{Raffle, Vault, Global, ErrorCode};
 
 pub const VAULT_SKT_SEED_PREFIX: &str = "skt_pool";
-pub const RAFFLE_POOL_SEED_PREFIX: &str = "raffle_pool";
+pub const RAFFLE_POOL_SEED_PREFIEX: &str = "raffle_pool";
 
 #[derive(Accounts)]
 pub struct Memo<'info> {
@@ -77,11 +77,10 @@ pub struct Initialize<'info>
 {
     #[account(mut)]
     pub payer: Signer<'info>,
-    // #[account(zero)]
-    // pub raffle: AccountLoader<'info, Raffle>,
-    #[account(init, payer = payer, space = Raffle::SPACE + 8)]
-    pub raffle: Account<'info, Raffle>,
 
+    #[account(zero)]
+    pub raffle: Account<'info, Raffle>,
+    
     #[account(mut)]
     pub sender_tokens: Account<'info, TokenAccount>,
 
@@ -101,7 +100,7 @@ pub struct InitializeWithPDA<'info>
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(init, payer = payer, space = Raffle::SPACE + 8)]
+    #[account(zero)]
     pub raffle: Account<'info, Raffle>,
 
     #[account(mut)]
@@ -156,14 +155,10 @@ pub struct BuyTicketSOL<'info> // For SOL Transfers
     pub recipient: AccountInfo<'info>,
     #[account(
         mut, 
-        // constraint = amount + raffle.load()?.sold_tickets <= raffle.load()?.total_tickets @ ErrorCode::NoTicketsLeft,
-        // constraint = ticket_price == raffle.load()?.price_per_ticket @ ErrorCode::RafflePriceMismatched,
-        // constraint = token_spl_address == raffle.load()?.token_spl_address @ ErrorCode::RaffleTokenSPLAddressMismatched
         constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft,
         constraint = ticket_price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched,
         constraint = token_spl_address == raffle.token_spl_address @ ErrorCode::RaffleTokenSPLAddressMismatched
     )]
-    // pub raffle: AccountLoader<'info, Raffle>,
     pub raffle: Account<'info, Raffle>,
     pub system_program: Program<'info, System>,
 }
@@ -179,14 +174,10 @@ pub struct BuyTicketSPL<'info> // For SPL-Token Transfer
     pub recipient_tokens: Account<'info, TokenAccount>,
     #[account(
         mut,
-        // constraint = amount + raffle.load()?.sold_tickets <= raffle.load()?.total_tickets @ ErrorCode::NoTicketsLeft,
-        // constraint = ticket_price == raffle.load()?.price_per_ticket @ ErrorCode::RafflePriceMismatched,
-        // constraint = token_spl_address == raffle.load()?.token_spl_address @ ErrorCode::RaffleTokenSPLAddressMismatched
         constraint = amount + raffle.sold_tickets <= raffle.total_tickets @ ErrorCode::NoTicketsLeft,
         constraint = ticket_price == raffle.price_per_ticket @ ErrorCode::RafflePriceMismatched,
         constraint = token_spl_address == raffle.token_spl_address @ ErrorCode::RaffleTokenSPLAddressMismatched
     )]
-    // pub raffle: AccountLoader<'info, Raffle>,
     pub raffle: Account<'info, Raffle>,
     pub token_program: Program<'info, Token>,
 }
@@ -232,5 +223,31 @@ pub struct Convert<'info> {
     // token program
     pub token_program: Program<'info, Token>,
     // system program
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct WithdrawFromPDA<'info> {
+    #[account(mut)]
+    pub admin: Signer<'info>,
+
+    #[account(mut)]
+    pub global: Account<'info, Global>,
+
+    #[account(mut)]
+    pub raffle: Account<'info, Raffle>,
+
+    /// CHECK:
+    #[account(mut, seeds = [RAFFLE_POOL_SEED_PREFIEX.as_bytes(), raffle.key().as_ref()], bump = raffle.pool_bump)]
+    pub raffle_pool: AccountInfo<'info>,
+
+    #[account(mut)]
+    pub raffle_pool_ata: Account<'info, TokenAccount>,
+
+    #[account(mut)]
+    pub dst_ata: Account<'info, TokenAccount>,
+
+    pub token_program: Program<'info, Token>,
+
     pub system_program: Program<'info, System>,
 }

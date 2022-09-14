@@ -317,7 +317,7 @@ export type AnchorRaffleTicket = {
         {
           "name": "raffle",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "senderTokens",
@@ -367,7 +367,7 @@ export type AnchorRaffleTicket = {
         {
           "name": "raffle",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "senderAta",
@@ -494,6 +494,58 @@ export type AnchorRaffleTicket = {
         }
       ],
       "returns": null
+    },
+    {
+      "name": "withdrawFromPda",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "raffle",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rafflePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rafflePoolAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "dstAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ],
+      "returns": null
     }
   ],
   "accounts": [
@@ -559,6 +611,14 @@ export type AnchorRaffleTicket = {
           {
             "name": "tokenSplAddress",
             "type": "publicKey"
+          },
+          {
+            "name": "buyers",
+            "type": {
+              "vec": {
+                "defined": "Buyer"
+              }
+            }
           }
         ]
       }
@@ -972,7 +1032,7 @@ export const IDL: AnchorRaffleTicket = {
         {
           "name": "raffle",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "senderTokens",
@@ -1022,7 +1082,7 @@ export const IDL: AnchorRaffleTicket = {
         {
           "name": "raffle",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "senderAta",
@@ -1149,6 +1209,58 @@ export const IDL: AnchorRaffleTicket = {
         }
       ],
       "returns": null
+    },
+    {
+      "name": "withdrawFromPda",
+      "accounts": [
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "raffle",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rafflePool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rafflePoolAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "dstAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ],
+      "returns": null
     }
   ],
   "accounts": [
@@ -1214,6 +1326,14 @@ export const IDL: AnchorRaffleTicket = {
           {
             "name": "tokenSplAddress",
             "type": "publicKey"
+          },
+          {
+            "name": "buyers",
+            "type": {
+              "vec": {
+                "defined": "Buyer"
+              }
+            }
           }
         ]
       }

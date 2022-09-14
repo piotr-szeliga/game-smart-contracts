@@ -73,4 +73,9 @@ pub mod anchor_raffle_ticket
     {
         raffle::buy_ticket_spl(ctx, amount, _ticket_price, _token_spl_address)
     }
+
+    pub fn withdraw_from_pda(ctx: Context<WithdrawFromPDA>, amount: u64) -> Result<()>
+    {
+        raffle::withdraw_from_pda(ctx, amount)
+    }
 }
