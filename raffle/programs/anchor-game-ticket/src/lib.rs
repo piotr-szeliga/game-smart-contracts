@@ -46,8 +46,8 @@ pub mod anchor_raffle_ticket
         global::initialize_global(ctx)
     }
 
-    pub fn authroize_admin(ctx: Context<ControlAdmins>) -> Result<()> {
-        global::authroize_admin(ctx)
+    pub fn authorize_admin(ctx: Context<ControlAdmins>) -> Result<()> {
+        global::authorize_admin(ctx)
     }
 
     pub fn unauthorize_admin(ctx: Context<ControlAdmins>) -> Result<()> {

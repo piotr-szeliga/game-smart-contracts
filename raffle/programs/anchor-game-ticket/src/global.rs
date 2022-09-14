@@ -9,7 +9,7 @@ pub fn initialize_global(ctx: Context<InitializeGlobal>) -> Result<()> {
   Ok(())
 }
 
-pub fn authroize_admin(ctx: Context<ControlAdmins>) -> Result<()> {
+pub fn authorize_admin(ctx: Context<ControlAdmins>) -> Result<()> {
   let global = &mut ctx.accounts.global;
 
   if global.authorized_admins.iter().any(|x| x == &ctx.accounts.admin.key()) {
