@@ -4,14 +4,13 @@ use anchor_spl::token::{self, Transfer as TransferSPL};
 use crate::state::{Raffle, BuyEvent, Buyer};
 use crate::ins::*;
 use crate::state::{ErrorCode};
-use crate::utils::*;
-use crate::id;
 use crate::constants::*;
 
 pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool) -> Result<()>
 {
     let raffle = &mut ctx.accounts.raffle;
 
+    raffle.owner = ctx.accounts.payer.key();
     raffle.token_spl_address = token_spl_address;
     raffle.price_per_ticket = ticket_price;
     raffle.total_tickets = amount;
@@ -19,26 +18,22 @@ pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_pr
     raffle.store_buyers = store_buyers;
     raffle.buyers = vec![];
 
-    if ctx.accounts.sender_tokens.amount.clone() < 1 as u64
+    if ctx.accounts.sender_ata.amount.clone() < 1 as u64
     {
         return err!(ErrorCode::NotEnoughTokens);
     }
 
     /* Option A: */
-    transfer_spl_token(
-        Context::new
-            (
-                &id(),
-                &mut TransferSPLToken
-                {
-                    sender: ctx.accounts.payer.clone(),
-                    sender_tokens: ctx.accounts.sender_tokens.clone(),
-                    recipient_tokens: ctx.accounts.recipient_tokens.clone(),
-                    token_program: ctx.accounts.token_program.clone()
-                },
-                &[],
-                ctx.bumps.clone()
-            )
+    token::transfer(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            TransferSPL {
+                from: ctx.accounts.sender_ata.to_account_info(),
+                to: ctx.accounts.raffle_pool_ata.to_account_info(),
+                authority: ctx.accounts.payer.to_account_info(),
+            },
+        ),
+        1,
     )?;
 
     msg!("Program initialized successfully.");
@@ -70,20 +65,16 @@ pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token
     }
 
     /* Option A: */
-    transfer_spl_token(
-        Context::new
-            (
-                &id(),
-                &mut TransferSPLToken
-                {
-                    sender: ctx.accounts.payer.clone(),
-                    sender_tokens: ctx.accounts.sender_ata.clone(),
-                    recipient_tokens: ctx.accounts.raffle_pool_ata.clone(),
-                    token_program: ctx.accounts.token_program.clone()
-                },
-                &[],
-                ctx.bumps.clone()
-            )
+    token::transfer(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            TransferSPL {
+                from: ctx.accounts.sender_ata.to_account_info(),
+                to: ctx.accounts.raffle_pool_ata.to_account_info(),
+                authority: ctx.accounts.payer.to_account_info(),
+            },
+        ),
+        1,
     )?;
 
     msg!("Program initialized successfully with PDA.");
@@ -211,5 +202,66 @@ pub fn withdraw_from_pda(ctx: Context<WithdrawFromPDA>, amount: u64) -> Result<(
     );
 
     token::transfer(cpi_context.with_signer(&[&seeds[..]]), amount)?;
+    Ok(())
+}
+
+pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Result<()> 
+{
+    if ctx.accounts.winner_nft_ata.key() != Pubkey::default() {
+        token::transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                TransferSPL {
+                    from: ctx.accounts.raffle_nft_ata.to_account_info(),
+                    to: ctx.accounts.winner_nft_ata.to_account_info(),
+                    authority: ctx.accounts.raffle_bank.to_account_info(),
+                },
+            ),
+            1,
+        )?;
+    }
+
+    let raffle = &ctx.accounts.raffle;
+    if raffle.token_spl_address == Pubkey::default() {
+        let mut amount = ctx.accounts.raffle_bank.to_account_info().lamports();
+        
+        amount = amount.checked_mul(100).unwrap()
+            .checked_sub(
+                amount.checked_mul(raffle_royalties as u64).unwrap()
+            ).unwrap()
+            .checked_div(100).unwrap();
+        
+        // transfer via SOL
+        system_program::transfer(
+            CpiContext::new(
+                ctx.accounts.system_program.to_account_info(),
+                TransferProgramSOL {
+                    from: ctx.accounts.raffle_bank.to_account_info().clone(),
+                    to: ctx.accounts.owner.to_account_info().clone(),
+                },
+            ),
+            amount,
+        )?;
+    } else {
+        let mut amount = ctx.accounts.raffle_spl_ata.amount;
+
+        amount = amount.checked_mul(100).unwrap()
+            .checked_sub(
+                amount.checked_mul(raffle_royalties as u64).unwrap()
+            ).unwrap()
+            .checked_div(100).unwrap();
+        
+        token::transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                TransferSPL {
+                    from: ctx.accounts.raffle_spl_ata.to_account_info(),
+                    to: ctx.accounts.owner_spl_ata.to_account_info(),
+                    authority: ctx.accounts.raffle_bank.to_account_info(),
+                },
+            ),
+            amount,
+        )?;
+    }
     Ok(())
 }

@@ -38,7 +38,12 @@ export type AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": [],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ],
       "returns": null
     },
     {
@@ -325,12 +330,12 @@ export type AnchorRaffleTicket = {
           "isSigner": false
         },
         {
-          "name": "senderTokens",
+          "name": "senderAta",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "recipientTokens",
+          "name": "rafflePoolAta",
           "isMut": true,
           "isSigner": false
         },
@@ -559,6 +564,63 @@ export type AnchorRaffleTicket = {
         }
       ],
       "returns": null
+    },
+    {
+      "name": "raffleFinalize",
+      "accounts": [
+        {
+          "name": "raffleBank",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "raffle",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "raffleNftAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "winnerNftAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "raffleSplAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ownerSplAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "raffleRoyalties",
+          "type": "u8"
+        }
+      ],
+      "returns": null
     }
   ],
   "accounts": [
@@ -619,6 +681,10 @@ export type AnchorRaffleTicket = {
           },
           {
             "name": "tokenSplAddress",
+            "type": "publicKey"
+          },
+          {
+            "name": "owner",
             "type": "publicKey"
           },
           {
@@ -771,7 +837,12 @@ export const IDL: AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": [],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ],
       "returns": null
     },
     {
@@ -1058,12 +1129,12 @@ export const IDL: AnchorRaffleTicket = {
           "isSigner": false
         },
         {
-          "name": "senderTokens",
+          "name": "senderAta",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "recipientTokens",
+          "name": "rafflePoolAta",
           "isMut": true,
           "isSigner": false
         },
@@ -1292,6 +1363,63 @@ export const IDL: AnchorRaffleTicket = {
         }
       ],
       "returns": null
+    },
+    {
+      "name": "raffleFinalize",
+      "accounts": [
+        {
+          "name": "raffleBank",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "raffle",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "raffleNftAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "winnerNftAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "raffleSplAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ownerSplAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "raffleRoyalties",
+          "type": "u8"
+        }
+      ],
+      "returns": null
     }
   ],
   "accounts": [
@@ -1352,6 +1480,10 @@ export const IDL: AnchorRaffleTicket = {
           },
           {
             "name": "tokenSplAddress",
+            "type": "publicKey"
+          },
+          {
+            "name": "owner",
             "type": "publicKey"
           },
           {

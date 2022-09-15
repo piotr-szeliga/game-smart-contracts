@@ -38,7 +38,12 @@
           "isSigner": false
         }
       ],
-      "args": [],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ],
       "returns": null
     },
     {
@@ -325,12 +330,12 @@
           "isSigner": false
         },
         {
-          "name": "senderTokens",
+          "name": "senderAta",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "recipientTokens",
+          "name": "rafflePoolAta",
           "isMut": true,
           "isSigner": false
         },
@@ -559,6 +564,63 @@
         }
       ],
       "returns": null
+    },
+    {
+      "name": "raffleFinalize",
+      "accounts": [
+        {
+          "name": "raffleBank",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "raffle",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "raffleNftAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "winnerNftAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "raffleSplAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ownerSplAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "raffleRoyalties",
+          "type": "u8"
+        }
+      ],
+      "returns": null
     }
   ],
   "accounts": [
@@ -619,6 +681,10 @@
           },
           {
             "name": "tokenSplAddress",
+            "type": "publicKey"
+          },
+          {
+            "name": "owner",
             "type": "publicKey"
           },
           {

@@ -30,6 +30,7 @@ pub struct Raffle
     pub sold_tickets: u32,
     pub price_per_ticket: u64,
     pub token_spl_address: Pubkey,
+    pub owner: Pubkey,
     pub store_buyers: bool,
     pub buyers: Vec<Buyer>,
 }

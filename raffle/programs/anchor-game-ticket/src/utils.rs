@@ -5,7 +5,7 @@ use spl_memo::build_memo;
 
 use crate::ins::*;
 
-pub fn transfer_spl_token(ctx: Context<TransferSPLToken>) -> Result<()>
+pub fn transfer_spl_token(ctx: Context<TransferSPLToken>, amount: u64) -> Result<()>
 {
     transfer(
         CpiContext::new(
@@ -16,7 +16,7 @@ pub fn transfer_spl_token(ctx: Context<TransferSPLToken>) -> Result<()>
                 authority: ctx.accounts.sender.to_account_info(),
             },
         ),
-        1,
+        amount,
     )?;
 
     msg!("Transfer {} Done!",  ctx.accounts.recipient_tokens.mint);

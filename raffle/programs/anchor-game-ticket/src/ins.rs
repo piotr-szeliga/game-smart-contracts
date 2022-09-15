@@ -82,10 +82,10 @@ pub struct Initialize<'info>
     pub raffle: Account<'info, Raffle>,
     
     #[account(mut)]
-    pub sender_tokens: Account<'info, TokenAccount>,
+    pub sender_ata: Account<'info, TokenAccount>,
 
     #[account(mut)]
-    pub recipient_tokens: Account<'info, TokenAccount>,
+    pub raffle_pool_ata: Account<'info, TokenAccount>,
 
     pub token_program: Program<'info, Token>,
 
@@ -246,6 +246,35 @@ pub struct WithdrawFromPDA<'info> {
 
     #[account(mut)]
     pub dst_ata: Account<'info, TokenAccount>,
+
+    pub token_program: Program<'info, Token>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct RaffleFinalize<'info> {
+    #[account(mut)]
+    pub raffle_bank: Signer<'info>,
+
+    #[account(mut)]
+    pub raffle: Account<'info, Raffle>,
+
+    #[account(mut, constraint = raffle.owner == owner.key())]
+    pub owner: SystemAccount<'info>,
+
+    #[account(mut)]
+    pub raffle_nft_ata: Account<'info, TokenAccount>,
+
+    /// CHECK:
+    #[account(mut)]
+    pub winner_nft_ata: AccountInfo<'info>,
+
+    #[account(mut)]
+    pub raffle_spl_ata: Account<'info, TokenAccount>,
+
+    #[account(mut, constraint = owner_spl_ata.owner == raffle.owner)]
+    pub owner_spl_ata: Account<'info, TokenAccount>,
 
     pub token_program: Program<'info, Token>,
 

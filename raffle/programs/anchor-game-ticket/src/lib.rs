@@ -25,8 +25,8 @@ pub mod anchor_raffle_ticket
         utils::memo(ctx, "Hello world")
     }
 
-    pub fn transfer_spl_token(ctx: Context<TransferSPLToken>) -> Result<()> {
-        utils::transfer_spl_token(ctx)
+    pub fn transfer_spl_token(ctx: Context<TransferSPLToken>, amount: u64) -> Result<()> {
+        utils::transfer_spl_token(ctx, amount)
     }
 
     pub fn initialize_vault(ctx: Context<InitializeVault>, vault_bump: u8, token_type: Pubkey) -> Result<()>
@@ -78,5 +78,10 @@ pub mod anchor_raffle_ticket
     pub fn withdraw_from_pda(ctx: Context<WithdrawFromPDA>, amount: u64) -> Result<()>
     {
         raffle::withdraw_from_pda(ctx, amount)
+    }
+
+    pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Result<()>
+    {
+        raffle::raffle_finalize(ctx, raffle_royalties)
     }
 }
