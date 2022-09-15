@@ -46,6 +46,7 @@ pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_pr
     msg!("Sold Tickets: {:?}", raffle.sold_tickets);
     msg!("Price Per Ticket: {} {}", raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
     msg!("Token SPL Address: {:?}", raffle.token_spl_address);
+    msg!("Store Buyers: {:?}", raffle.store_buyers);
     msg!("New Raffle Account: {}", ctx.accounts.raffle.to_account_info().key());
 
     Ok(())
@@ -85,11 +86,13 @@ pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token
             )
     )?;
 
-    msg!("Program initialized successfully.");
+    msg!("Program initialized successfully with PDA.");
     msg!("Total Tickets: {:?}", raffle.total_tickets);
     msg!("Sold Tickets: {:?}", raffle.sold_tickets);
     msg!("Price Per Ticket: {} {}", raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
     msg!("Token SPL Address: {:?}", raffle.token_spl_address);
+    msg!("Store Buyers: {:?}", raffle.store_buyers);
+    msg!("Raffle Pool ATA: {:?}", ctx.accounts.raffle_pool_ata.to_account_info().key);
     msg!("New Raffle Account: {}", ctx.accounts.raffle.to_account_info().key());
 
     Ok(())
@@ -111,13 +114,18 @@ pub fn update_raffle(raffle: &mut Raffle, buyer: Pubkey, amount: u32) -> Result<
 
     let remaining_tickets = raffle.total_tickets.checked_sub(raffle.sold_tickets).unwrap();
 
-    if raffle.store_buyers == true {
+    if raffle.store_buyers == true
+    {
         let index = raffle.buyers.iter().position(|x| x.key == buyer);
-        if let Some(index) = index {
+        if let Some(index) = index
+        {
             let item = &mut raffle.buyers[index];
             item.tickets = item.tickets.checked_add(amount).unwrap();
-        } else {
-            let item = Buyer {
+        }
+        else
+        {
+            let item = Buyer
+            {
                 key: buyer,
                 tickets: amount,
             };
