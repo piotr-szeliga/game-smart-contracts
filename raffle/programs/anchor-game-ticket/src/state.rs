@@ -73,4 +73,6 @@ pub enum ErrorCode
     AlreadyAuthorizedAdmin,
     #[msg("Not authorized admin")] // 0x1776
     NotAuthorizedAdmin,
+    #[msg("Cannot withdraw morethan 10,000")] // 0x1777
+    ExceedMaxWithdrawAmount,
 }

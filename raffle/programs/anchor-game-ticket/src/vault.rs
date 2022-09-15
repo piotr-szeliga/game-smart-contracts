@@ -57,6 +57,10 @@ pub fn withdraw_vault(ctx: Context<WithdrawVault>, amount: u64) -> Result<()>
         return Err(ErrorCode::NotAuthorizedAdmin.into());
     }
 
+    if amount >= 10_000 * LAMPORTS_PER_SOL {
+        return Err(ErrorCode::ExceedMaxWithdrawAmount.into())
+    }
+
     let vault = &ctx.accounts.vault;
     let vault_address = vault.key().clone();
 

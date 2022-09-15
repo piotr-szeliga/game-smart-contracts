@@ -722,6 +722,11 @@ export type AnchorRaffleTicket = {
       "code": 6006,
       "name": "NotAuthorizedAdmin",
       "msg": "Not authorized admin"
+    },
+    {
+      "code": 6007,
+      "name": "ExceedMaxWithdrawAmount",
+      "msg": "Cannot withdraw morethan 10,000"
     }
   ]
 };
@@ -1450,6 +1455,11 @@ export const IDL: AnchorRaffleTicket = {
       "code": 6006,
       "name": "NotAuthorizedAdmin",
       "msg": "Not authorized admin"
+    },
+    {
+      "code": 6007,
+      "name": "ExceedMaxWithdrawAmount",
+      "msg": "Cannot withdraw morethan 10,000"
     }
   ]
 };
