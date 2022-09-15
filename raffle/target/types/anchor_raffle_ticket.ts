@@ -251,7 +251,7 @@ export type AnchorRaffleTicket = {
         {
           "name": "global",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "admin",
@@ -716,7 +716,7 @@ export type AnchorRaffleTicket = {
     {
       "code": 6005,
       "name": "AlreadyAuthorizedAdmin",
-      "msg": "Already authorized amin"
+      "msg": "Already authorized admin"
     },
     {
       "code": 6006,
@@ -979,7 +979,7 @@ export const IDL: AnchorRaffleTicket = {
         {
           "name": "global",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "admin",
@@ -1444,7 +1444,7 @@ export const IDL: AnchorRaffleTicket = {
     {
       "code": 6005,
       "name": "AlreadyAuthorizedAdmin",
-      "msg": "Already authorized amin"
+      "msg": "Already authorized admin"
     },
     {
       "code": 6006,

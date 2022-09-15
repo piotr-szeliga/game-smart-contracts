@@ -6,6 +6,7 @@ mod raffle;
 mod utils;
 mod vault;
 mod global;
+mod constants;
 
 use anchor_lang::prelude::*;
 

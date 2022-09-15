@@ -2,9 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 use crate::state::{Raffle, Vault, Global, ErrorCode};
-
-pub const VAULT_SKT_SEED_PREFIX: &str = "skt_pool";
-pub const RAFFLE_POOL_SEED_PREFIX: &str = "raffle_pool";
+use crate::constants::*;
 
 #[derive(Accounts)]
 pub struct Memo<'info> {
@@ -124,7 +122,7 @@ pub struct InitializeGlobal<'info>
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(init, payer = payer, space = Global::LEN + 8)]
+    #[account(init, payer = payer, space = Global::LEN + 8, seeds = [GLOBAL_SEED.as_bytes()], bump, address = Pubkey::new(&GLOBAL_INITIALIZER))]
     pub global: Account<'info, Global>,
 
     pub admin: SystemAccount<'info>,

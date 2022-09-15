@@ -6,8 +6,7 @@ use crate::ins::*;
 use crate::state::{ErrorCode};
 use crate::utils::*;
 use crate::id;
-
-pub const LAMPORTS_PER_SOL: u64 = 1000000000;
+use crate::constants::*;
 
 pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool) -> Result<()>
 {
