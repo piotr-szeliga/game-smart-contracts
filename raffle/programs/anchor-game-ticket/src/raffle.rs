@@ -222,8 +222,9 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
     }
 
     let raffle = &ctx.accounts.raffle;
+    let mut amount;
     if raffle.token_spl_address == Pubkey::default() {
-        let mut amount = ctx.accounts.raffle_bank.to_account_info().lamports();
+        amount = ctx.accounts.raffle_bank.to_account_info().lamports();
         
         amount = amount.checked_mul(100).unwrap()
             .checked_sub(
@@ -243,7 +244,7 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
             amount,
         )?;
     } else {
-        let mut amount = ctx.accounts.raffle_spl_ata.amount;
+        amount = ctx.accounts.raffle_spl_ata.amount;
 
         amount = amount.checked_mul(100).unwrap()
             .checked_sub(
@@ -263,5 +264,11 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
             amount,
         )?;
     }
+
+    msg!("Winner NFT ATA: {:?}", ctx.accounts.winner_nft_ata);
+    msg!("Raffle owner: {:?}", raffle.owner);
+    msg!("Raffle Royalties: {:?}", raffle_royalties);
+    msg!("Token Spl Address: {:?}", raffle.token_spl_address);
+    msg!("Send amount to owner: {:?}", amount);
     Ok(())
 }
