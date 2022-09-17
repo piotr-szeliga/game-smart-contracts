@@ -220,7 +220,9 @@ pub fn withdraw_from_pda(ctx: Context<WithdrawFromPDA>, amount: u64) -> Result<(
 
 pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Result<()> 
 {
-    if ctx.accounts.winner_nft_ata.key() != Pubkey::default() {
+    /* Transfer NFT to winner only if 'winner_nft_ata' is set */
+    if ctx.accounts.winner_nft_ata.key() != Pubkey::default()
+    {
         token::transfer(
             CpiContext::new(
                 ctx.accounts.token_program.to_account_info(),
@@ -234,15 +236,20 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
         )?;
     }
 
+    /* Transfer raffle winnings minus royalties */
     let raffle = &ctx.accounts.raffle;
     let mut amount;
-    if raffle.token_spl_address == Pubkey::default() {
+    if raffle.token_spl_address == Pubkey::default() // transfer winning via SOL
+    {
         amount = ctx.accounts.raffle_bank.to_account_info().lamports();
-        
+
+        // calculate royalties
         amount = amount.checked_mul(100).unwrap()
-            .checked_sub(
+            .checked_sub
+            (
                 amount.checked_mul(raffle_royalties as u64).unwrap()
-            ).unwrap()
+            )
+            .unwrap()
             .checked_div(100).unwrap();
         
         // transfer via SOL
@@ -256,15 +263,20 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
             ),
             amount,
         )?;
-    } else {
+    }
+    else // transfer winning via SPL-Token
+    {
         amount = ctx.accounts.raffle_spl_ata.amount;
 
         amount = amount.checked_mul(100).unwrap()
-            .checked_sub(
+            .checked_sub
+            (
                 amount.checked_mul(raffle_royalties as u64).unwrap()
-            ).unwrap()
+            )
+            .unwrap()
             .checked_div(100).unwrap();
-        
+
+        // transfer via SPL-Token
         token::transfer(
             CpiContext::new(
                 ctx.accounts.token_program.to_account_info(),
@@ -279,9 +291,9 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
     }
 
     msg!("Winner NFT ATA: {:?}", ctx.accounts.winner_nft_ata);
-    msg!("Raffle owner: {:?}", raffle.owner);
     msg!("Raffle Royalties: {:?}", raffle_royalties);
-    msg!("Token Spl Address: {:?}", raffle.token_spl_address);
-    msg!("Send amount to owner: {:?}", amount);
+    msg!("Raffle owner: {:?}", raffle.owner);
+    msg!("Payment token Spl-Address: {:?}", raffle.token_spl_address);
+    msg!("Payment amount sent to raffle owner: {:?}", amount);
     Ok(())
 }
