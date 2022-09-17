@@ -621,6 +621,115 @@ export type AnchorRaffleTicket = {
         }
       ],
       "returns": null
+    },
+    {
+      "name": "initializeNftVault",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "nftVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "nftVaultPool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "poolBump",
+          "type": "u8"
+        },
+        {
+          "name": "mintPrice",
+          "type": "u64"
+        },
+        {
+          "name": "totalSupply",
+          "type": "u32"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "setMintPrice",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "nftVault",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "mintPrice",
+          "type": "u64"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "mintFromVault",
+      "accounts": [
+        {
+          "name": "buyer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "nftVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "nftVaultPool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "nftMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vaultPoolAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "buyerAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
     }
   ],
   "accounts": [
@@ -697,6 +806,36 @@ export type AnchorRaffleTicket = {
               "vec": {
                 "defined": "Buyer"
               }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "nftVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "poolBump",
+            "type": "u8"
+          },
+          {
+            "name": "mintPrice",
+            "type": "u64"
+          },
+          {
+            "name": "totalSupply",
+            "type": "u32"
+          },
+          {
+            "name": "soldMints",
+            "type": {
+              "vec": "publicKey"
             }
           }
         ]
@@ -793,6 +932,16 @@ export type AnchorRaffleTicket = {
       "code": 6007,
       "name": "ExceedMaxWithdrawAmount",
       "msg": "Cannot withdraw morethan 10,000"
+    },
+    {
+      "code": 6008,
+      "name": "AlreadyMinted",
+      "msg": "Already Minted"
+    },
+    {
+      "code": 6009,
+      "name": "NotEnoughSol",
+      "msg": "Not Enough Sol"
     }
   ]
 };
@@ -1420,6 +1569,115 @@ export const IDL: AnchorRaffleTicket = {
         }
       ],
       "returns": null
+    },
+    {
+      "name": "initializeNftVault",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "nftVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "nftVaultPool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "poolBump",
+          "type": "u8"
+        },
+        {
+          "name": "mintPrice",
+          "type": "u64"
+        },
+        {
+          "name": "totalSupply",
+          "type": "u32"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "setMintPrice",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "nftVault",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "mintPrice",
+          "type": "u64"
+        }
+      ],
+      "returns": null
+    },
+    {
+      "name": "mintFromVault",
+      "accounts": [
+        {
+          "name": "buyer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "nftVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "nftVaultPool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "nftMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vaultPoolAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "buyerAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [],
+      "returns": null
     }
   ],
   "accounts": [
@@ -1496,6 +1754,36 @@ export const IDL: AnchorRaffleTicket = {
               "vec": {
                 "defined": "Buyer"
               }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "nftVault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "poolBump",
+            "type": "u8"
+          },
+          {
+            "name": "mintPrice",
+            "type": "u64"
+          },
+          {
+            "name": "totalSupply",
+            "type": "u32"
+          },
+          {
+            "name": "soldMints",
+            "type": {
+              "vec": "publicKey"
             }
           }
         ]
@@ -1592,6 +1880,16 @@ export const IDL: AnchorRaffleTicket = {
       "code": 6007,
       "name": "ExceedMaxWithdrawAmount",
       "msg": "Cannot withdraw morethan 10,000"
+    },
+    {
+      "code": 6008,
+      "name": "AlreadyMinted",
+      "msg": "Already Minted"
+    },
+    {
+      "code": 6009,
+      "name": "NotEnoughSol",
+      "msg": "Not Enough Sol"
     }
   ]
 };

@@ -1,13 +1,54 @@
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{Mint, Token, TokenAccount};
-use crate::state::{Raffle, Vault, Global, ErrorCode};
+use crate::state::{Raffle, Vault, Global, NftVault, ErrorCode};
 use crate::constants::*;
 
 #[derive(Accounts)]
-pub struct Memo<'info> {
+pub struct Memo<'info> 
+{
     /// CHECK:
     pub memo: AccountInfo<'info>
+}
+
+#[derive(Accounts)]
+pub struct TransferSPLToken<'info> // For SPL-Token Transfer
+{
+    pub sender: Signer<'info>,
+    #[account(mut)]
+    pub sender_tokens: Account<'info, TokenAccount>,
+    #[account(mut)]
+    pub recipient_tokens: Account<'info, TokenAccount>,
+    pub token_program: Program<'info, Token>,
+}
+
+#[derive(Accounts)]
+pub struct InitializeGlobal<'info>
+{
+    #[account(mut)]
+    pub payer: Signer<'info>,
+
+    #[account(init, payer = payer, space = Global::LEN + 8, seeds = [GLOBAL_SEED.as_bytes()], bump, address = GLOBAL_INITIALIZER.parse::<Pubkey>().unwrap())]
+    pub global: Account<'info, Global>,
+
+    pub admin: SystemAccount<'info>,
+    
+    #[account(address = anchor_lang::system_program::ID)]
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct ControlAdmins<'info> 
+{
+    pub authority: Signer<'info>,
+
+    #[account(
+        mut,
+        has_one = authority,
+    )]
+    pub global: Account<'info, Global>,
+
+    pub admin: SystemAccount<'info>,
 }
 
 #[derive(Accounts)]
@@ -73,6 +114,40 @@ pub struct WithdrawVault<'info>
 }
 
 #[derive(Accounts)]
+pub struct Convert<'info> 
+{
+    // claimer authority
+    #[account(mut)]
+    pub claimer: Signer<'info>,
+    // claimer skt account
+    /// CHECK:
+    #[account(mut)]
+    pub claimer_skt_account: AccountInfo<'info>,
+    // skt mint
+    #[account(mut)]
+    pub skt_mint: Account<'info, Mint>,
+    /// CHECK:
+    #[account(mut)]
+    pub vault: Account<'info, Vault>,
+    // skt pool account
+    /// CHECK:
+    #[account(mut, seeds = [VAULT_SKT_SEED_PREFIX.as_bytes(), vault.key().as_ref()], bump = vault.vault_bump)]
+    pub vault_pool: AccountInfo<'info>,
+    // vault pool skt token account
+    #[account(mut)]
+    pub vault_pool_skt_account: Account<'info, TokenAccount>,
+    // associated token program 
+    #[account(address = anchor_spl::associated_token::ID)]
+    pub  associated_token_program: Program<'info, AssociatedToken>,
+    // rent
+    pub rent: Sysvar<'info, Rent>,
+    // token program
+    pub token_program: Program<'info, Token>,
+    // system program
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
 pub struct Initialize<'info>
 {
     #[account(mut)]
@@ -94,7 +169,6 @@ pub struct Initialize<'info>
 }
 
 #[derive(Accounts)]
-#[instruction(pool_bump: u8)]
 pub struct InitializeWithPDA<'info>
 {
     #[account(mut)]
@@ -114,34 +188,6 @@ pub struct InitializeWithPDA<'info>
 
     #[account(address = anchor_lang::system_program::ID)]
     pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-pub struct InitializeGlobal<'info>
-{
-    #[account(mut)]
-    pub payer: Signer<'info>,
-
-    #[account(init, payer = payer, space = Global::LEN + 8, seeds = [GLOBAL_SEED.as_bytes()], bump, address = GLOBAL_INITIALIZER.parse::<Pubkey>().unwrap())]
-    pub global: Account<'info, Global>,
-
-    pub admin: SystemAccount<'info>,
-    
-    #[account(address = anchor_lang::system_program::ID)]
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-pub struct ControlAdmins<'info> {
-    pub authority: Signer<'info>,
-
-    #[account(
-        mut,
-        has_one = authority,
-    )]
-    pub global: Account<'info, Global>,
-
-    pub admin: SystemAccount<'info>,
 }
 
 #[derive(Accounts)]
@@ -183,51 +229,8 @@ pub struct BuyTicketSPL<'info> // For SPL-Token Transfer
 }
 
 #[derive(Accounts)]
-pub struct TransferSPLToken<'info> // For SPL-Token Transfer
+pub struct WithdrawFromPDA<'info> 
 {
-    pub sender: Signer<'info>,
-    #[account(mut)]
-    pub sender_tokens: Account<'info, TokenAccount>,
-    #[account(mut)]
-    pub recipient_tokens: Account<'info, TokenAccount>,
-    pub token_program: Program<'info, Token>,
-}
-
-#[derive(Accounts)]
-pub struct Convert<'info> {
-    // claimer authority
-    #[account(mut)]
-    pub claimer: Signer<'info>,
-    // claimer skt account
-    /// CHECK:
-    #[account(mut)]
-    pub claimer_skt_account: AccountInfo<'info>,
-    // skt mint
-    #[account(mut)]
-    pub skt_mint: Account<'info, Mint>,
-    /// CHECK:
-    #[account(mut)]
-    pub vault: Account<'info, Vault>,
-    // skt pool account
-    /// CHECK:
-    #[account(mut, seeds = [VAULT_SKT_SEED_PREFIX.as_bytes(), vault.key().as_ref()], bump = vault.vault_bump)]
-    pub vault_pool: AccountInfo<'info>,
-    // vault pool skt token account
-    #[account(mut)]
-    pub vault_pool_skt_account: Account<'info, TokenAccount>,
-    // associated token program 
-    #[account(address = anchor_spl::associated_token::ID)]
-    pub  associated_token_program: Program<'info, AssociatedToken>,
-    // rent
-    pub rent: Sysvar<'info, Rent>,
-    // token program
-    pub token_program: Program<'info, Token>,
-    // system program
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-pub struct WithdrawFromPDA<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
 
@@ -253,7 +256,8 @@ pub struct WithdrawFromPDA<'info> {
 }
 
 #[derive(Accounts)]
-pub struct RaffleFinalize<'info> {
+pub struct RaffleFinalize<'info> 
+{
     #[account(mut)]
     pub raffle_bank: Signer<'info>,
 
@@ -275,6 +279,63 @@ pub struct RaffleFinalize<'info> {
 
     #[account(mut, constraint = owner_spl_ata.owner == raffle.owner)]
     pub owner_spl_ata: Account<'info, TokenAccount>,
+
+    pub token_program: Program<'info, Token>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct InitializeNftVault<'info> 
+{
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    #[account(zero)]
+    pub nft_vault: Account<'info, NftVault>,
+
+    /// CHECK:
+    #[account(
+        init, 
+        seeds = [NFT_VAULT_POOL_SEED.as_bytes(), nft_vault.key().as_ref()], 
+        bump,
+        payer = authority, 
+        space = 0, 
+    )]
+    pub nft_vault_pool: AccountInfo<'info>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct SetMintPrice<'info>
+{
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    #[account(mut, has_one = authority)]
+    pub nft_vault: Account<'info, NftVault>
+}
+
+#[derive(Accounts)]
+pub struct MintFromVault<'info>
+{
+    #[account(mut)]
+    pub buyer: Signer<'info>,
+
+    #[account(mut)]
+    pub nft_vault: Account<'info, NftVault>,
+
+    #[account(mut, seeds = [NFT_VAULT_POOL_SEED.as_bytes(), nft_vault.key().as_ref()], bump = nft_vault.pool_bump)]
+    pub nft_vault_pool: SystemAccount<'info>,
+
+    pub nft_mint: Account<'info, Mint>,
+
+    #[account(mut, constraint = vault_pool_ata.mint.key() == nft_mint.key())]
+    pub vault_pool_ata: Account<'info, TokenAccount>,
+
+    #[account(mut, constraint = vault_pool_ata.mint.key() == nft_mint.key())]
+    pub buyer_ata: Account<'info, TokenAccount>,
 
     pub token_program: Program<'info, Token>,
 

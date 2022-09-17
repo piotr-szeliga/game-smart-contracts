@@ -182,10 +182,19 @@ describe("anchor-game-ticket", () => {
         const _clientATA = await getOrCreateAssociatedTokenAccount(program.provider.connection, client, tokenSPLAddress, client.publicKey);
         console.log("Client ATA", _clientATA.address.toString());
 
+        const [global] = await PublicKey.findProgramAddress(
+            [
+                Buffer.from("global_account")
+            ],
+            program.programId
+        );
+
         await program.rpc.withdrawVault(
+            new anchor.BN(10 * LAMPORTS_PER_SOL),
             {
                 accounts:
                 {
+                    global,
                     claimer: client.publicKey,
                     claimerSktAccount: _clientATA.address,
                     vault: _vaultKeypair.publicKey,

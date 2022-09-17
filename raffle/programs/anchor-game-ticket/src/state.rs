@@ -46,6 +46,15 @@ pub struct Buyer {
     pub tickets: u32,
 }
 
+#[account]
+pub struct NftVault {
+    pub authority: Pubkey,
+    pub pool_bump: u8,
+    pub mint_price: u64,
+    pub total_supply: u32,
+    pub sold_mints: Vec<Pubkey>,
+}
+
 #[event]
 pub struct BuyEvent
 {
@@ -76,4 +85,8 @@ pub enum ErrorCode
     NotAuthorizedAdmin,
     #[msg("Cannot withdraw morethan 10,000")] // 0x1777
     ExceedMaxWithdrawAmount,
+    #[msg("Already Minted")] // 0x1778
+    AlreadyMinted,
+    #[msg("Not Enough Sol")] // 0x1779
+    NotEnoughSol
 }
