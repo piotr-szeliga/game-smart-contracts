@@ -2,7 +2,7 @@
 seeds = false
 [programs.devnet]
 #[programs.localnet]
-anchor_raffle_ticket = "3ug8uwLeeJjA8yz7jYEe33ntz7wD9x2SWXPxwC4zJkm5"
+anchor_raffle_ticket = "Hjaw5obT3bWQazo4bASgzjuP1mRgXoXMFbwVroHbWPSC"
 
 [registry]
 url = "https://anchor.projectserum.com"
@@ -11,7 +11,7 @@ url = "https://anchor.projectserum.com"
 cluster = "devnet"
 #cluster = "localnet"
 #wallet = "/Users/kob/.config/solana/id5.json"
-wallet = "~/.config/solana/id.json"
+wallet = "~/.config/solana/programSigner.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

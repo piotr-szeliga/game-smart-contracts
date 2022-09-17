@@ -13,7 +13,7 @@ use anchor_lang::prelude::*;
 
 use ins::*;
 
-declare_id!("3ug8uwLeeJjA8yz7jYEe33ntz7wD9x2SWXPxwC4zJkm5");
+declare_id!("Hjaw5obT3bWQazo4bASgzjuP1mRgXoXMFbwVroHbWPSC");
 
 
 #[program]
