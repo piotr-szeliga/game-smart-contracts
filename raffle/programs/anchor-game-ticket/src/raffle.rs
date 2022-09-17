@@ -202,6 +202,19 @@ pub fn withdraw_from_pda(ctx: Context<WithdrawFromPDA>, amount: u64) -> Result<(
     );
 
     token::transfer(cpi_context.with_signer(&[&seeds[..]]), amount)?;
+
+    if ctx.accounts.raffle_pool_ata.amount == 0 {
+        let cpi_context = CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            token::CloseAccount {
+                account: ctx.accounts.raffle_pool_ata.to_account_info().clone(),
+                destination: ctx.accounts.admin.to_account_info().clone(),
+                authority: ctx.accounts.raffle_pool.to_account_info().clone()
+            }
+        );
+        token::close_account(cpi_context)?;
+    }
+
     Ok(())
 }
 

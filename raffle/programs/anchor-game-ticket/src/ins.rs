@@ -122,7 +122,7 @@ pub struct InitializeGlobal<'info>
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(init, payer = payer, space = Global::LEN + 8, seeds = [GLOBAL_SEED.as_bytes()], bump, address = Pubkey::new(&GLOBAL_INITIALIZER))]
+    #[account(init, payer = payer, space = Global::LEN + 8, seeds = [GLOBAL_SEED.as_bytes()], bump, address = GLOBAL_INITIALIZER.parse::<Pubkey>().unwrap())]
     pub global: Account<'info, Global>,
 
     pub admin: SystemAccount<'info>,

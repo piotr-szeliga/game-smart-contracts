@@ -794,8 +794,5 @@
       "name": "ExceedMaxWithdrawAmount",
       "msg": "Cannot withdraw morethan 10,000"
     }
-  ],
-  "metadata": {
-    "address": "3ug8uwLeeJjA8yz7jYEe33ntz7wD9x2SWXPxwC4zJkm5"
-  }
+  ]
 }
