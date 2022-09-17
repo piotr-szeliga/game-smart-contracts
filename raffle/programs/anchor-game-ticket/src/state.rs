@@ -83,10 +83,10 @@ pub enum ErrorCode
     AlreadyAuthorizedAdmin,
     #[msg("Not authorized admin")] // 0x1776
     NotAuthorizedAdmin,
-    #[msg("Cannot withdraw morethan 10,000")] // 0x1777
+    #[msg("Cannot withdraw more than 10,000")] // 0x1777
     ExceedMaxWithdrawAmount,
     #[msg("Already Minted")] // 0x1778
     AlreadyMinted,
-    #[msg("Not Enough Sol")] // 0x1779
+    #[msg("Not Enough SOL")] // 0x1779
     NotEnoughSol
 }

@@ -17,8 +17,10 @@ import {
     mintTo,
     TOKEN_PROGRAM_ID
 } from "@solana/spl-token";
+import {Buffer} from "buffer";
 const MEMO_PROGRAM_ID: PublicKey = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
 const VAULT_SKT_SEED_PREFIX = "skt_pool";
+const GLOBAL_ACCOUNT_SEED = "global_account";
 
 async function getAndPrintAccount(program: any, raffleAddress: PublicKey) {
     let account = await program.account.raffle.fetchNullable(raffleAddress);
@@ -98,13 +100,52 @@ describe("anchor-game-ticket", () => {
     anchor.setProvider(anchor.AnchorProvider.env());
     const program = anchor.workspace.AnchorRaffleTicket as anchor.Program<AnchorRaffleTicket>;
 
-    const initializedVaultTestActive = true;
-    const initializedAndWithdrawVaultTestActive = true;
-    const initializedTestActive = true;
+    const initializedGlobalActive = true;
+    const initializedVaultTestActive = false;
+    const initializedAndWithdrawVaultTestActive = false;
+    const initializedTestActive = false;
     const buyTicketSOLTestActive = false;
     const buyTicketSPLTokenTestActive = false;
 
-    it("Program Init Vault and Withdraw!", async () => {
+    it("Global Init!", async () =>
+    {
+        if (!initializedGlobalActive) return;
+
+        // @ts-ignore
+        const wallet = program.provider.wallet;
+
+        //console.log(program.provider.connection);
+        console.log(program.programId.toString());
+        console.log(wallet.publicKey.toString());
+
+        const [global] = await PublicKey.findProgramAddress(
+            [
+                Buffer.from(GLOBAL_ACCOUNT_SEED)
+            ],
+            program.programId
+        );
+
+        console.log("Global:", global.toString());
+
+        const txSignature = await program.rpc.initializeGlobal({
+            accounts: {
+                payer: wallet.publicKey,
+                global,
+                admin: wallet.publicKey,
+                systemProgram: SystemProgram.programId
+            },
+        });
+
+        console.log(txSignature);
+        await program.provider.connection.confirmTransaction(txSignature, "confirmed");
+        console.log("Global Address: ", global.toString());
+
+        const globalAccount = await program.account.global.fetchNullable(global);
+        console.log("Global Account:", globalAccount);
+    });
+
+    it("Program Init Vault and Withdraw!", async () =>
+    {
         if (!initializedVaultTestActive) return;
 
         const client = Keypair.generate();
@@ -164,6 +205,7 @@ describe("anchor-game-ticket", () => {
         }
 
         console.log("Init Vault DONE!");
+        return;
 
         let vault = await program.account.vault.fetchNullable(_vaultKeypair.publicKey);
         console.log(vault.tokenType, vault.tokenType?.toString());
@@ -243,7 +285,7 @@ describe("anchor-game-ticket", () => {
         console.log("Raffle Key:", raffle.secretKey.toString());
 
         const nftMint = await createNewMint(program, senderWallet);
-        // const tokenSPLKP = Keypair.fromSecretKey(new Uint8Array([49, 126, 59, 3, 106, 46, 22, 87, 188, 63, 0, 238, 192, 16, 55, 75, 177, 173, 142, 218, 56, 96, 93, 143, 170, 249, 239, 112, 251, 48, 162, 219, 2, 49, 81, 147, 24, 20, 128, 249, 157, 159, 165, 51, 122, 99, 64, 51, 129, 48, 26, 141, 193, 94, 225, 33, 234, 172, 105, 92, 112, 94, 134, 168]));
+        const tokenSPLKP = Keypair.fromSecretKey(new Uint8Array([49, 126, 59, 3, 106, 46, 22, 87, 188, 63, 0, 238, 192, 16, 55, 75, 177, 173, 142, 218, 56, 96, 93, 143, 170, 249, 239, 112, 251, 48, 162, 219, 2, 49, 81, 147, 24, 20, 128, 249, 157, 159, 165, 51, 122, 99, 64, 51, 129, 48, 26, 141, 193, 94, 225, 33, 234, 172, 105, 92, 112, 94, 134, 168]));
         console.log("nft mint address :", nftMint.toString());
 
 
@@ -294,8 +336,8 @@ describe("anchor-game-ticket", () => {
                         systemProgram: SystemProgram.programId,
 
                         // Token Transfer
-                        senderTokens: sourceATA.address,
-                        recipientTokens: recipientATA.address,
+                        //senderTokens: sourceATA.address,
+                        //recipientTokens: recipientATA.address,
                         tokenProgram: TOKEN_PROGRAM_ID
                     },
                     signers: [senderWallet, raffle],

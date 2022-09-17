@@ -25,10 +25,10 @@ pub struct TransferSPLToken<'info> // For SPL-Token Transfer
 #[derive(Accounts)]
 pub struct InitializeGlobal<'info>
 {
-    #[account(mut)]
+    #[account(mut, address = GLOBAL_INITIALIZER.parse::<Pubkey>().unwrap())]
     pub payer: Signer<'info>,
 
-    #[account(init, payer = payer, space = Global::LEN + 8, seeds = [GLOBAL_SEED.as_bytes()], bump, address = GLOBAL_INITIALIZER.parse::<Pubkey>().unwrap())]
+    #[account(init, payer = payer, space = Global::LEN + 8, seeds = [GLOBAL_SEED.as_bytes()], bump)]
     pub global: Account<'info, Global>,
 
     pub admin: SystemAccount<'info>,
