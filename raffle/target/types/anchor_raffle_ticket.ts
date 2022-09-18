@@ -931,7 +931,7 @@ export type AnchorRaffleTicket = {
     {
       "code": 6007,
       "name": "ExceedMaxWithdrawAmount",
-      "msg": "Cannot withdraw morethan 10,000"
+      "msg": "Cannot withdraw more than 10,000"
     },
     {
       "code": 6008,
@@ -941,7 +941,7 @@ export type AnchorRaffleTicket = {
     {
       "code": 6009,
       "name": "NotEnoughSol",
-      "msg": "Not Enough Sol"
+      "msg": "Not Enough SOL"
     }
   ]
 };
@@ -1879,7 +1879,7 @@ export const IDL: AnchorRaffleTicket = {
     {
       "code": 6007,
       "name": "ExceedMaxWithdrawAmount",
-      "msg": "Cannot withdraw morethan 10,000"
+      "msg": "Cannot withdraw more than 10,000"
     },
     {
       "code": 6008,
@@ -1889,7 +1889,7 @@ export const IDL: AnchorRaffleTicket = {
     {
       "code": 6009,
       "name": "NotEnoughSol",
-      "msg": "Not Enough Sol"
+      "msg": "Not Enough SOL"
     }
   ]
 };
