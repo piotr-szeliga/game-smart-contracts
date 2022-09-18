@@ -23,7 +23,7 @@ pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_pr
         return err!(ErrorCode::NotEnoughTokens);
     }
 
-    /* Option A: */
+    // Transfer NFT to raffle bank
     token::transfer(
         CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
@@ -36,7 +36,7 @@ pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_pr
         1,
     )?;
 
-    msg!("Program initialized successfully.");
+    msg!("Program initialized successfully with Bank Vault.");
     msg!("Total Tickets: {:?}", raffle.total_tickets);
     msg!("Sold Tickets: {:?}", raffle.sold_tickets);
     msg!("Price Per Ticket: {} {}", raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
@@ -89,48 +89,6 @@ pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token
     Ok(())
 }
 
-pub fn update_raffle(raffle: &mut Raffle, buyer: Pubkey, amount: u32) -> Result<()> {
-    raffle.sold_tickets = raffle.sold_tickets.checked_add(amount).unwrap();
-    let transaction_price = raffle.price_per_ticket * amount as u64;
-
-    emit!(BuyEvent
-        {
-            buyer: buyer,
-            amount: amount,
-            sold_tickets: raffle.sold_tickets,
-            total_tickets: raffle.total_tickets,
-            remaining_tickets: raffle.total_tickets.checked_sub(raffle.sold_tickets).unwrap()
-        });
-
-
-    let remaining_tickets = raffle.total_tickets.checked_sub(raffle.sold_tickets).unwrap();
-
-    if raffle.store_buyers == true
-    {
-        let index = raffle.buyers.iter().position(|x| x.key == buyer);
-        if let Some(index) = index
-        {
-            let item = &mut raffle.buyers[index];
-            item.tickets = item.tickets.checked_add(amount).unwrap();
-        }
-        else
-        {
-            let item = Buyer
-            {
-                key: buyer,
-                tickets: amount,
-            };
-            raffle.buyers.push(item);
-        }
-    }
-
-    msg!("Buyer: {:?}", buyer);
-    msg!("Total Tickets: {:?} | Sold {:?} | Remaining: {:?} | Price {:?} ({})", raffle.total_tickets, raffle.sold_tickets, remaining_tickets, raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
-    msg!("Buy Amount: {:?} | Total Cost: {:?} ({})", amount, transaction_price, transaction_price as f64 / LAMPORTS_PER_SOL as f64);
-
-    Ok(())
-}
-
 pub fn buy_ticket_sol(ctx: Context<BuyTicketSOL>, amount: u32, _ticket_price: u64, _token_spl_address: Pubkey) -> Result<()>
 {
     let raffle = &mut ctx.accounts.raffle;
@@ -149,6 +107,8 @@ pub fn buy_ticket_sol(ctx: Context<BuyTicketSOL>, amount: u32, _ticket_price: u6
         ),
         transaction_price,
     )?;
+
+    msg!("Token Type: SOL");
 
     update_raffle(raffle, ctx.accounts.buyer.key(), amount)
 }
@@ -177,6 +137,51 @@ pub fn buy_ticket_spl(ctx: Context<BuyTicketSPL>, amount: u32, _ticket_price: u6
     update_raffle(raffle, ctx.accounts.sender.key(), amount)
 }
 
+pub fn update_raffle(raffle: &mut Raffle, buyer: Pubkey, amount: u32) -> Result<()>
+{
+    raffle.sold_tickets = raffle.sold_tickets.checked_add(amount).unwrap();
+    let transaction_price = raffle.price_per_ticket * amount as u64;
+
+    emit!(BuyEvent
+        {
+            buyer: buyer,
+            amount: amount,
+            sold_tickets: raffle.sold_tickets,
+            total_tickets: raffle.total_tickets,
+            remaining_tickets: raffle.total_tickets.checked_sub(raffle.sold_tickets).unwrap()
+        });
+
+
+    let remaining_tickets = raffle.total_tickets.checked_sub(raffle.sold_tickets).unwrap();
+
+    // store the buyer if feature is enabled
+    if raffle.store_buyers == true
+    {
+        let index = raffle.buyers.iter().position(|x| x.key == buyer);
+        if let Some(index) = index
+        {
+            let item = &mut raffle.buyers[index];
+            item.tickets = item.tickets.checked_add(amount).unwrap();
+        }
+        else
+        {
+            let item = Buyer
+            {
+                key: buyer,
+                tickets: amount,
+            };
+            raffle.buyers.push(item);
+        }
+    }
+
+    msg!("Buyer: {:?}", buyer);
+    msg!("Total Tickets: {:?} | Sold {:?} | Remaining: {:?} | Price {:?} ({})", raffle.total_tickets, raffle.sold_tickets, remaining_tickets, raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
+    msg!("Buy Amount: {:?} | Total Cost: {:?} ({})", amount, transaction_price, transaction_price as f64 / LAMPORTS_PER_SOL as f64);
+
+    Ok(())
+}
+
+// Withdraw tokens from PDA
 pub fn withdraw_from_pda(ctx: Context<WithdrawFromPDA>, amount: u64) -> Result<()> 
 {
     let global = &ctx.accounts.global;
@@ -192,6 +197,7 @@ pub fn withdraw_from_pda(ctx: Context<WithdrawFromPDA>, amount: u64) -> Result<(
         &[raffle.pool_bump],
     ];
 
+    // Transfer token from PDA pool to user ATA
     let cpi_context = CpiContext::new(
         ctx.accounts.token_program.to_account_info().clone(),
         TransferSPL {
@@ -201,9 +207,12 @@ pub fn withdraw_from_pda(ctx: Context<WithdrawFromPDA>, amount: u64) -> Result<(
         }
     );
 
+    // Transfer the token
     token::transfer(cpi_context.with_signer(&[&seeds[..]]), amount)?;
 
-    if ctx.accounts.raffle_pool_ata.amount == 0 {
+    // If no more balance in token account, let's close it
+    if ctx.accounts.raffle_pool_ata.amount == 0
+    {
         let cpi_context = CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
             token::CloseAccount {

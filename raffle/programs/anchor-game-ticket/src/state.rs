@@ -69,24 +69,24 @@ pub struct BuyEvent
 #[error_code]
 pub enum ErrorCode
 {
-    #[msg("No more tickets left for purchase.")] // 0x1770
+    #[msg("No more tickets left for purchase.")] // 0x1770 - 6000
     NoTicketsLeft,
-    #[msg("Raffle price mismatched.")] // 0x1771
+    #[msg("Raffle price mismatched.")] // 0x1771 - 6001
     RafflePriceMismatched,
-    #[msg("Token Address mismatched.")] // 0x1772
+    #[msg("Token Address mismatched.")] // 0x1772 - 6002
     RaffleTokenSPLAddressMismatched,
-    #[msg("Not Enough Tokens.")] // 0x1773
+    #[msg("Not Enough Tokens.")] // 0x1773 - 6003
     NotEnoughTokens,
-    #[msg("Custom Error.")] // 0x1774
+    #[msg("Custom Error.")] // 0x1774 - 6004
     ErrorCustom,
-    #[msg("Already authorized admin")] // 0x1775
+    #[msg("Already authorized admin")] // 0x1775 - 6005
     AlreadyAuthorizedAdmin,
-    #[msg("Not authorized admin")] // 0x1776
+    #[msg("Not authorized admin")] // 0x1776 - 6006
     NotAuthorizedAdmin,
-    #[msg("Cannot withdraw more than 10,000")] // 0x1777
+    #[msg("Cannot withdraw more than 10,000")] // 0x1777 - 6007
     ExceedMaxWithdrawAmount,
-    #[msg("Already Minted")] // 0x1778
+    #[msg("Already Minted")] // 0x1778 - 6008
     AlreadyMinted,
-    #[msg("Not Enough SOL")] // 0x1779
+    #[msg("Not Enough SOL")] // 0x1779 - 6009
     NotEnoughSol
 }
