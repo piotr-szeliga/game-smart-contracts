@@ -30,6 +30,7 @@ pub fn initialize_vault(ctx: Context<InitializeVault>, token_type: Pubkey, vault
     vault.token_type = token_type;
     vault.vault_bump = vault_bump;
 
+    msg!("Vault Address: {:?}", vault.key().clone());
     msg!("Vault PDA: {:?}", ctx.accounts.vault_pool.key);
     msg!("Vault ATA: {:?}", ctx.accounts.vault_pool_skt_account.key);
     msg!("Vault Owner: {:?}", ctx.accounts.vault_pool.owner);
@@ -110,6 +111,7 @@ pub fn convert_skt_sol(ctx: Context<Convert>, exchange_option: u8, is_holder: bo
         _ => 500_000_000_000
     };
 
+    // Send SOL from buyer to vault
     {
         let cpi_context = CpiContext::new(
             ctx.accounts.system_program.to_account_info().clone(),
@@ -121,7 +123,8 @@ pub fn convert_skt_sol(ctx: Context<Convert>, exchange_option: u8, is_holder: bo
 
         system_program::transfer(cpi_context, sol_amount)?;
     }
-   
+
+    // send SKT to buyer
     {
         if ctx.accounts.claimer_skt_account.owner == &System::id() {
             let cpi_context = CpiContext::new(
@@ -147,12 +150,22 @@ pub fn convert_skt_sol(ctx: Context<Convert>, exchange_option: u8, is_holder: bo
                 authority: ctx.accounts.vault_pool.to_account_info().clone(),
             }
         );
+
         let seeds = [
             VAULT_SKT_SEED_PREFIX.as_bytes(),
             vault_address.as_ref(),
             &[vault.vault_bump],
         ];
-        anchor_spl::token::transfer(cpi_context.with_signer(&[&seeds[..]]), skt_amount)?;
+
+        token::transfer(cpi_context.with_signer(&[&seeds[..]]), skt_amount)?;
+
+        msg!("Vault Address: {:?}", vault_address);
+        msg!("Vault PDA: {:?}", ctx.accounts.vault_pool.key);
+        msg!("Vault ATA: {:?}", ctx.accounts.vault_pool_skt_account.key());
+        msg!("Vault Owner: {:?}", ctx.accounts.vault_pool.owner);
+        msg!("Received: {:?} ({:?} SOL)", sol_amount, sol_amount as f64 / LAMPORTS_PER_SOL as f64);
+        msg!("Sent: {:?} ({:?} $SKT)", skt_amount, skt_amount / LAMPORTS_PER_SOL);
     }
+
     Ok(())
 }
