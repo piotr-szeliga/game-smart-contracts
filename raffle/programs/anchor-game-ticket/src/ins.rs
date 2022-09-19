@@ -138,7 +138,7 @@ pub struct Convert<'info>
     pub vault_pool_skt_account: Account<'info, TokenAccount>,
     // associated token program 
     #[account(address = anchor_spl::associated_token::ID)]
-    pub  associated_token_program: Program<'info, AssociatedToken>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
     // rent
     pub rent: Sysvar<'info, Rent>,
     // token program
@@ -148,8 +148,11 @@ pub struct Convert<'info>
 }
 
 #[derive(Accounts)]
-pub struct Initialize<'info>
+pub struct InitializeRaffle<'info>
 {
+    #[account(mut)]
+    pub global: Account<'info, Global>,
+
     #[account(mut)]
     pub payer: Signer<'info>,
 

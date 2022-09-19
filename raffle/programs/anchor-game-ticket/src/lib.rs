@@ -55,9 +55,9 @@ pub mod anchor_raffle_ticket
         global::unauthorize_admin(ctx)
     }
 
-    pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool) -> Result<()>
+    pub fn initialize(ctx: Context<InitializeRaffle>, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool, transfer_token: bool) -> Result<()>
     {
-        raffle::initialize(ctx, token_spl_address, ticket_price, amount, store_buyers)
+        raffle::initialize_raffle(ctx, token_spl_address, ticket_price, amount, store_buyers, transfer_token)
     }
 
     pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool) -> Result<()> 

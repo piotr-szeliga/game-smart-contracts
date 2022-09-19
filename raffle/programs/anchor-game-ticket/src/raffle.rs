@@ -7,8 +7,9 @@ use crate::state::{ErrorCode};
 use crate::constants::*;
 use crate::utils;
 
-pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool) -> Result<()>
+pub fn initialize_raffle(ctx: Context<InitializeRaffle>, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool, transfer_token: bool) -> Result<()>
 {
+    let global = &ctx.accounts.global;
     let raffle = &mut ctx.accounts.raffle;
 
     raffle.owner = ctx.accounts.payer.key();
@@ -24,18 +25,30 @@ pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_pr
         return err!(ErrorCode::NotEnoughTokens);
     }
 
-    // Transfer NFT to raffle bank
-    token::transfer(
-        CpiContext::new(
-            ctx.accounts.token_program.to_account_info(),
-            TransferSPL {
-                from: ctx.accounts.sender_ata.to_account_info(),
-                to: ctx.accounts.raffle_pool_ata.to_account_info(),
-                authority: ctx.accounts.payer.to_account_info(),
-            },
-        ),
-        1,
-    )?;
+    if transfer_token
+    {
+        // Transfer NFT to raffle bank
+        token::transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                TransferSPL {
+                    from: ctx.accounts.sender_ata.to_account_info(),
+                    to: ctx.accounts.raffle_pool_ata.to_account_info(),
+                    authority: ctx.accounts.payer.to_account_info(),
+                },
+            ),
+            1,
+        )?;
+    }
+    else
+    {
+        // if user chosen not to transfer token to raffle bank,
+        // we must make sure he is an authorized admin, otherwise raise an error
+        if global.authorized_admins.iter().any(|x| x == &ctx.accounts.payer.key()) == false
+        {
+            return Err(ErrorCode::NotAuthorizedAdmin.into());
+        }
+    }
 
     msg!("Program initialized successfully with Bank Vault.");
     msg!("Total Tickets: {:?}", raffle.total_tickets);
@@ -249,13 +262,13 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
     /* Transfer raffle winnings minus royalties */
     let raffle = &ctx.accounts.raffle;
 
-    // total raffle bank balance
+    // Total raffle bank balance
     let raffle_bank_balance = raffle.price_per_ticket.checked_mul(raffle.sold_tickets as u64).unwrap();
 
-    // calculate royalties
+    // Calculate royalties
     let bank_amount_royalties = raffle_bank_balance.checked_mul(raffle_royalties as u64).unwrap().checked_div(100).unwrap();
 
-    // owner payout amount to transfer
+    // Owner payout amount to transfer
     let owner_payout_amount = raffle_bank_balance.checked_mul(100).unwrap()
                    .checked_sub
                    (
@@ -266,7 +279,7 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
 
     if raffle.token_spl_address == Pubkey::default() // transfer winning via SOL
     {
-        // transfer via SOL
+        // Transfer via SOL
         system_program::transfer(
             CpiContext::new(
                 ctx.accounts.system_program.to_account_info(),
@@ -278,9 +291,9 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
             owner_payout_amount,
         )?;
     }
-    else // transfer winning via SPL-Token
+    else // Transfer winning via SPL-Token
     {
-        // transfer via SPL-Token
+        // Transfer via SPL-Token
         token::transfer(
             CpiContext::new(
                 ctx.accounts.token_program.to_account_info(),
@@ -295,7 +308,7 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
     }
 
     msg!("Raffle Bank Balance: {:?} ({:?})", utils::to_float(raffle_bank_balance), raffle_bank_balance);
-    msg!("Raffle Bank Royalties: {:?}% - {:?} ({:?})", raffle_royalties, utils::to_float(bank_amount_royalties), bank_amount_royalties);
+    msg!("Raffle Bank Royalties: {:?}% = {:?} ({:?})", raffle_royalties, utils::to_float(bank_amount_royalties), bank_amount_royalties);
     msg!("Payment Token: {:?}", raffle.token_spl_address);
     msg!("Winner NFT ATA: {:?}", ctx.accounts.winner_nft_ata.to_account_info().key());
     msg!("Raffle Owner: {:?}", raffle.owner);

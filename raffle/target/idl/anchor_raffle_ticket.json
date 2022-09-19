@@ -312,6 +312,11 @@
       "name": "initialize",
       "accounts": [
         {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true
@@ -357,6 +362,10 @@
         },
         {
           "name": "storeBuyers",
+          "type": "bool"
+        },
+        {
+          "name": "transferToken",
           "type": "bool"
         }
       ]
