@@ -248,15 +248,17 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
     /* Transfer raffle winnings minus royalties */
     let raffle = &ctx.accounts.raffle;
     let mut amount = raffle.price_per_ticket.checked_mul(raffle.sold_tickets as u64).unwrap();
+    let mut amountRoyalties;
 
     // calculate royalties
+    amountRoyalties = amount.checked_mul(raffle_royalties as u64).unwrap().checked_div(100).unwrap();
     amount = amount.checked_mul(100).unwrap()
-        .checked_sub
-        (
-            amount.checked_mul(raffle_royalties as u64).unwrap()
-        )
-        .unwrap()
-        .checked_div(100).unwrap();
+                   .checked_sub
+                   (
+                        amount.checked_mul(raffle_royalties as u64).unwrap()
+                   )
+                   .unwrap()
+                   .checked_div(100).unwrap();
 
     if raffle.token_spl_address == Pubkey::default() // transfer winning via SOL
     {
@@ -289,9 +291,9 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
     }
 
     msg!("Winner NFT ATA: {:?}", ctx.accounts.winner_nft_ata);
-    msg!("Raffle Royalties: {:?}", raffle_royalties);
+    msg!("Raffle bank royalties: {:?}% ({:?} {:?})", raffle_royalties, amountRoyalties, amountRoyalties as f64 / LAMPORTS_PER_SOL as f64);
     msg!("Raffle owner: {:?}", raffle.owner);
     msg!("Payment token Spl-Address: {:?}", raffle.token_spl_address);
-    msg!("Payment amount sent to raffle owner: {:?}", amount);
+    msg!("Payment amount sent to raffle owner: {:?} ({:?})", amount, amount as f64 / LAMPORTS_PER_SOL as f64);
     Ok(())
 }
