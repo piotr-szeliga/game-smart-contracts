@@ -5,6 +5,7 @@ use crate::state::{Raffle, BuyEvent, Buyer};
 use crate::ins::*;
 use crate::state::{ErrorCode};
 use crate::constants::*;
+use crate::utils;
 
 pub fn initialize(ctx: Context<Initialize>, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool) -> Result<()>
 {
@@ -247,15 +248,18 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
 
     /* Transfer raffle winnings minus royalties */
     let raffle = &ctx.accounts.raffle;
-    let mut amount = raffle.price_per_ticket.checked_mul(raffle.sold_tickets as u64).unwrap();
-    let amount_royalties;
+
+    // total raffle bank balance
+    let raffle_bank_balance = raffle.price_per_ticket.checked_mul(raffle.sold_tickets as u64).unwrap();
 
     // calculate royalties
-    amount_royalties = amount.checked_mul(raffle_royalties as u64).unwrap().checked_div(100).unwrap();
-    amount = amount.checked_mul(100).unwrap()
+    let bank_amount_royalties = raffle_bank_balance.checked_mul(raffle_royalties as u64).unwrap().checked_div(100).unwrap();
+
+    // owner payout amount to transfer
+    let owner_payout_amount = raffle_bank_balance.checked_mul(100).unwrap()
                    .checked_sub
                    (
-                        amount.checked_mul(raffle_royalties as u64).unwrap()
+                       raffle_bank_balance.checked_mul(raffle_royalties as u64).unwrap()
                    )
                    .unwrap()
                    .checked_div(100).unwrap();
@@ -271,7 +275,7 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
                     to: ctx.accounts.owner.to_account_info().clone(),
                 },
             ),
-            amount,
+            owner_payout_amount,
         )?;
     }
     else // transfer winning via SPL-Token
@@ -286,14 +290,16 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
                     authority: ctx.accounts.raffle_bank.to_account_info(),
                 },
             ),
-            amount,
+            owner_payout_amount,
         )?;
     }
 
-    msg!("Winner NFT ATA: {:?}", ctx.accounts.winner_nft_ata);
-    msg!("Raffle bank royalties: {:?}% ({:?} {:?})", raffle_royalties, amount_royalties, amount_royalties as f64 / LAMPORTS_PER_SOL as f64);
-    msg!("Raffle owner: {:?}", raffle.owner);
-    msg!("Payment token Spl-Address: {:?}", raffle.token_spl_address);
-    msg!("Payment amount sent to raffle owner: {:?} ({:?})", amount, amount as f64 / LAMPORTS_PER_SOL as f64);
+    msg!("Raffle Bank Balance: {:?} ({:?})", utils::to_float(raffle_bank_balance), raffle_bank_balance);
+    msg!("Raffle Bank Royalties: {:?}% - {:?} ({:?})", raffle_royalties, utils::to_float(bank_amount_royalties), bank_amount_royalties);
+    msg!("Payment Token: {:?}", raffle.token_spl_address);
+    msg!("Winner NFT ATA: {:?}", ctx.accounts.winner_nft_ata.to_account_info().key());
+    msg!("Raffle Owner: {:?}", raffle.owner);
+    msg!("Raffle Owner Payout: {:?} ({:?})", utils::to_float(owner_payout_amount), owner_payout_amount);
+
     Ok(())
 }
