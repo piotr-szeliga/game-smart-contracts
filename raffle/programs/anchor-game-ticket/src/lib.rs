@@ -6,7 +6,6 @@ mod raffle;
 mod utils;
 mod vault;
 mod global;
-mod nft_vault;
 mod constants;
 
 use anchor_lang::prelude::*;
@@ -84,20 +83,5 @@ pub mod anchor_raffle_ticket
     pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Result<()>
     {
         raffle::raffle_finalize(ctx, raffle_royalties)
-    }
-
-    pub fn initialize_nft_vault(ctx: Context<InitializeNftVault>, pool_bump: u8, mint_price: u64, total_supply: u32) -> Result<()>
-    {
-        nft_vault::initialize_nft_vault(ctx, pool_bump, mint_price, total_supply)
-    }
-
-    pub fn set_mint_price(ctx: Context<SetMintPrice>, mint_price: u64) -> Result<()>
-    {
-        nft_vault::set_mint_price(ctx, mint_price)
-    }
-
-    pub fn mint_from_vault(ctx: Context<MintFromVault>) -> Result<()>
-    {
-        nft_vault::mint_from_vault(ctx)
     }
 }

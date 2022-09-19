@@ -247,20 +247,19 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
 
     /* Transfer raffle winnings minus royalties */
     let raffle = &ctx.accounts.raffle;
-    let mut amount;
+    let mut amount = raffle.price_per_ticket.checked_mul(raffle.sold_tickets as u64).unwrap();
+
+    // calculate royalties
+    amount = amount.checked_mul(100).unwrap()
+        .checked_sub
+        (
+            amount.checked_mul(raffle_royalties as u64).unwrap()
+        )
+        .unwrap()
+        .checked_div(100).unwrap();
+
     if raffle.token_spl_address == Pubkey::default() // transfer winning via SOL
     {
-        amount = ctx.accounts.raffle_bank.to_account_info().lamports();
-
-        // calculate royalties
-        amount = amount.checked_mul(100).unwrap()
-            .checked_sub
-            (
-                amount.checked_mul(raffle_royalties as u64).unwrap()
-            )
-            .unwrap()
-            .checked_div(100).unwrap();
-        
         // transfer via SOL
         system_program::transfer(
             CpiContext::new(
@@ -275,16 +274,6 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
     }
     else // transfer winning via SPL-Token
     {
-        amount = ctx.accounts.raffle_spl_ata.amount;
-
-        amount = amount.checked_mul(100).unwrap()
-            .checked_sub
-            (
-                amount.checked_mul(raffle_royalties as u64).unwrap()
-            )
-            .unwrap()
-            .checked_div(100).unwrap();
-
         // transfer via SPL-Token
         token::transfer(
             CpiContext::new(

@@ -3,6 +3,5 @@ pub const GLOBAL_INITIALIZER: &str = "EF5qxGB1AirUH4ENw1niV1ewiNHzH2fWs7naQQYF2d
 pub const VAULT_SKT_SEED_PREFIX: &str = "skt_pool";
 pub const RAFFLE_POOL_SEED_PREFIX: &str = "raffle_pool";
 pub const GLOBAL_SEED: &str = "global_account";
-pub const NFT_VAULT_POOL_SEED: &str = "nft_vault_pool";
 
 pub const LAMPORTS_PER_SOL: u64 = 1000000000;
