@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{transfer, Transfer};
 use anchor_lang::solana_program::program::invoke;
 use spl_memo::build_memo;
+use crate::constants::LAMPORTS_PER_SOL;
 
 use crate::ins::*;
 
@@ -36,5 +37,10 @@ pub fn memo(ctx: Context<Memo>, text: &str) -> Result<()> {
     )?;
 
     Ok(())
+}
+
+pub fn to_float(num: u64) -> f64
+{
+    return num as f64 / LAMPORTS_PER_SOL as f64;
 }
 

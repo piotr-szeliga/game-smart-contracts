@@ -312,6 +312,11 @@ export type AnchorRaffleTicket = {
       "name": "initialize",
       "accounts": [
         {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true
@@ -357,6 +362,10 @@ export type AnchorRaffleTicket = {
         },
         {
           "name": "storeBuyers",
+          "type": "bool"
+        },
+        {
+          "name": "transferToken",
           "type": "bool"
         }
       ]
@@ -1097,6 +1106,11 @@ export const IDL: AnchorRaffleTicket = {
       "name": "initialize",
       "accounts": [
         {
+          "name": "global",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "payer",
           "isMut": true,
           "isSigner": true
@@ -1142,6 +1156,10 @@ export const IDL: AnchorRaffleTicket = {
         },
         {
           "name": "storeBuyers",
+          "type": "bool"
+        },
+        {
+          "name": "transferToken",
           "type": "bool"
         }
       ]
