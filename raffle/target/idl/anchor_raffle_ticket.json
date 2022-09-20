@@ -367,6 +367,10 @@
         {
           "name": "transferToken",
           "type": "bool"
+        },
+        {
+          "name": "nftMintAddress",
+          "type": "publicKey"
         }
       ]
     },
@@ -424,6 +428,10 @@
         {
           "name": "storeBuyers",
           "type": "bool"
+        },
+        {
+          "name": "nftMintAddress",
+          "type": "publicKey"
         }
       ]
     },
@@ -680,6 +688,10 @@
           },
           {
             "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "nftMintAddress",
             "type": "publicKey"
           },
           {

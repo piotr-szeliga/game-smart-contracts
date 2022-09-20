@@ -7,7 +7,7 @@ use crate::state::{ErrorCode};
 use crate::constants::*;
 use crate::utils;
 
-pub fn initialize_raffle(ctx: Context<InitializeRaffle>, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool, transfer_token: bool) -> Result<()>
+pub fn initialize_raffle(ctx: Context<InitializeRaffle>, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool, transfer_token: bool, nft_mint_address: Pubkey) -> Result<()>
 {
     let global = &ctx.accounts.global;
     let raffle = &mut ctx.accounts.raffle;
@@ -18,6 +18,7 @@ pub fn initialize_raffle(ctx: Context<InitializeRaffle>, token_spl_address: Pubk
     raffle.total_tickets = amount;
     raffle.sold_tickets = 0;
     raffle.store_buyers = store_buyers;
+    raffle.nft_mint_address = nft_mint_address;
     raffle.buyers = vec![];
 
     if ctx.accounts.sender_ata.amount.clone() < 1 as u64
@@ -54,6 +55,7 @@ pub fn initialize_raffle(ctx: Context<InitializeRaffle>, token_spl_address: Pubk
     msg!("Total Tickets: {:?}", raffle.total_tickets);
     msg!("Sold Tickets: {:?}", raffle.sold_tickets);
     msg!("Price Per Ticket: {} {}", raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
+    msg!("NFT Mint Address: {:?}", raffle.nft_mint_address);
     msg!("Token SPL Address: {:?}", raffle.token_spl_address);
     msg!("Store Buyers: {:?}", raffle.store_buyers);
     msg!("New Raffle Account: {}", ctx.accounts.raffle.to_account_info().key());
@@ -61,7 +63,7 @@ pub fn initialize_raffle(ctx: Context<InitializeRaffle>, token_spl_address: Pubk
     Ok(())
 }
 
-pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool) -> Result<()>
+pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool, nft_mint_address: Pubkey) -> Result<()>
 {
     let raffle = &mut ctx.accounts.raffle;
 
@@ -71,6 +73,7 @@ pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token
     raffle.total_tickets = amount;
     raffle.sold_tickets = 0;
     raffle.store_buyers = store_buyers;
+    raffle.nft_mint_address = nft_mint_address;
     raffle.buyers = vec![];
 
     if ctx.accounts.sender_ata.amount.clone() < 1 as u64
@@ -95,6 +98,7 @@ pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token
     msg!("Total Tickets: {:?}", raffle.total_tickets);
     msg!("Sold Tickets: {:?}", raffle.sold_tickets);
     msg!("Price Per Ticket: {} {}", raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
+    msg!("NFT Mint Address: {:?}", raffle.nft_mint_address);
     msg!("Token SPL Address: {:?}", raffle.token_spl_address);
     msg!("Store Buyers: {:?}", raffle.store_buyers);
     msg!("Raffle Pool ATA: {:?}", ctx.accounts.raffle_pool_ata.to_account_info().key);
@@ -265,46 +269,52 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
     // Total raffle bank balance
     let raffle_bank_balance = raffle.price_per_ticket.checked_mul(raffle.sold_tickets as u64).unwrap();
 
-    // Calculate royalties
-    let bank_amount_royalties = raffle_bank_balance.checked_mul(raffle_royalties as u64).unwrap().checked_div(100).unwrap();
+    let mut bank_amount_royalties = 0;
+    let mut owner_payout_amount= 0;
 
-    // Owner payout amount to transfer
-    let owner_payout_amount = raffle_bank_balance.checked_mul(100).unwrap()
-                   .checked_sub
-                   (
-                       raffle_bank_balance.checked_mul(raffle_royalties as u64).unwrap()
-                   )
-                   .unwrap()
-                   .checked_div(100).unwrap();
+    if raffle_bank_balance > 0 // Only send money if there is any earnings in raffle bank
+    {
+        // Calculate royalties
+        bank_amount_royalties = raffle_bank_balance.checked_mul(raffle_royalties as u64).unwrap().checked_div(100).unwrap();
 
-    if raffle.token_spl_address == Pubkey::default() // transfer winning via SOL
-    {
-        // Transfer via SOL
-        system_program::transfer(
-            CpiContext::new(
-                ctx.accounts.system_program.to_account_info(),
-                TransferProgramSOL {
-                    from: ctx.accounts.raffle_bank.to_account_info().clone(),
-                    to: ctx.accounts.owner.to_account_info().clone(),
-                },
-            ),
-            owner_payout_amount,
-        )?;
-    }
-    else // Transfer winning via SPL-Token
-    {
-        // Transfer via SPL-Token
-        token::transfer(
-            CpiContext::new(
-                ctx.accounts.token_program.to_account_info(),
-                TransferSPL {
-                    from: ctx.accounts.raffle_spl_ata.to_account_info(),
-                    to: ctx.accounts.owner_spl_ata.to_account_info(),
-                    authority: ctx.accounts.raffle_bank.to_account_info(),
-                },
-            ),
-            owner_payout_amount,
-        )?;
+        // Owner payout amount to transfer
+        owner_payout_amount = raffle_bank_balance.checked_mul(100).unwrap()
+            .checked_sub
+            (
+                raffle_bank_balance.checked_mul(raffle_royalties as u64).unwrap()
+            )
+            .unwrap()
+            .checked_div(100).unwrap();
+
+        if raffle.token_spl_address == Pubkey::default() // transfer winning via SOL
+        {
+            // Transfer via SOL
+            system_program::transfer(
+                CpiContext::new(
+                    ctx.accounts.system_program.to_account_info(),
+                    TransferProgramSOL {
+                        from: ctx.accounts.raffle_bank.to_account_info().clone(),
+                        to: ctx.accounts.owner.to_account_info().clone(),
+                    },
+                ),
+                owner_payout_amount,
+            )?;
+        }
+        else // Transfer winning via SPL-Token
+        {
+            // Transfer via SPL-Token
+            token::transfer(
+                CpiContext::new(
+                    ctx.accounts.token_program.to_account_info(),
+                    TransferSPL {
+                        from: ctx.accounts.raffle_spl_ata.to_account_info(),
+                        to: ctx.accounts.owner_spl_ata.to_account_info(),
+                        authority: ctx.accounts.raffle_bank.to_account_info(),
+                    },
+                ),
+                owner_payout_amount,
+            )?;
+        }
     }
 
     msg!("Raffle Bank Balance: {:?} ({:?})", utils::to_float(raffle_bank_balance), raffle_bank_balance);

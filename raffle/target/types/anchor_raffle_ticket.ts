@@ -367,6 +367,10 @@ export type AnchorRaffleTicket = {
         {
           "name": "transferToken",
           "type": "bool"
+        },
+        {
+          "name": "nftMintAddress",
+          "type": "publicKey"
         }
       ]
     },
@@ -424,6 +428,10 @@ export type AnchorRaffleTicket = {
         {
           "name": "storeBuyers",
           "type": "bool"
+        },
+        {
+          "name": "nftMintAddress",
+          "type": "publicKey"
         }
       ]
     },
@@ -680,6 +688,10 @@ export type AnchorRaffleTicket = {
           },
           {
             "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "nftMintAddress",
             "type": "publicKey"
           },
           {
@@ -1161,6 +1173,10 @@ export const IDL: AnchorRaffleTicket = {
         {
           "name": "transferToken",
           "type": "bool"
+        },
+        {
+          "name": "nftMintAddress",
+          "type": "publicKey"
         }
       ]
     },
@@ -1218,6 +1234,10 @@ export const IDL: AnchorRaffleTicket = {
         {
           "name": "storeBuyers",
           "type": "bool"
+        },
+        {
+          "name": "nftMintAddress",
+          "type": "publicKey"
         }
       ]
     },
@@ -1474,6 +1494,10 @@ export const IDL: AnchorRaffleTicket = {
           },
           {
             "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "nftMintAddress",
             "type": "publicKey"
           },
           {
