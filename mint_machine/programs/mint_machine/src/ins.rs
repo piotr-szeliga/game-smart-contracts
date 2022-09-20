@@ -44,10 +44,12 @@ pub struct MintFromVault<'info>
     #[account(mut)]
     pub nft_vault: Account<'info, NftVault>,
 
+    /// CHECK:
     #[account(mut, seeds = [NFT_VAULT_POOL_SEED.as_bytes(), nft_vault.key().as_ref()], bump = nft_vault.pool_bump)]
-    pub nft_vault_pool: SystemAccount<'info>,
+    pub nft_vault_pool: AccountInfo<'info>,
 
-    pub nft_mint: Account<'info, Mint>,
+    /// CHECK:
+    pub nft_mint: AccountInfo<'info>,
 
     #[account(mut, constraint = vault_pool_ata.mint.key() == nft_mint.key())]
     pub vault_pool_ata: Account<'info, TokenAccount>,
