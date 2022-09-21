@@ -49,7 +49,7 @@ pub struct MintFromVault<'info>
     pub nft_vault_pool: AccountInfo<'info>,
 
     /// CHECK:
-    pub nft_mint: AccountInfo<'info>,
+    pub nft_mint: Account<'info, Mint>,
 
     #[account(mut, constraint = vault_pool_ata.mint.key() == nft_mint.key())]
     pub vault_pool_ata: Account<'info, TokenAccount>,
