@@ -7,8 +7,11 @@ pub struct NftVault {
     pub mint_price: u64,
     pub total_supply: u32,
     pub sold_mints: Vec<Pubkey>,
+    pub name: String,
+    pub symbol: String,
+    pub creator: Pubkey,
+    pub uris: Vec<Vec<u8>>,
 }
-
 
 #[error_code]
 pub enum ErrorCode
@@ -18,5 +21,9 @@ pub enum ErrorCode
     #[msg("Already Minted")] //
     AlreadyMinted,
     #[msg("Not Enough SOL")] //
-    NotEnoughSol
+    NotEnoughSol,
+    #[msg("Mint Failed")]
+    MintFailed,
+    #[msg("Metadata Create Failed")]
+    MetadataCreateFailed,
 }

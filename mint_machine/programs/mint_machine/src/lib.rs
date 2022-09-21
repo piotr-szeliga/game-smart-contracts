@@ -23,9 +23,19 @@ pub mod mint_machine {
         nft_vault::set_mint_price(ctx, mint_price)
     }
 
-    pub fn mint_from_vault(ctx: Context<MintFromVault>) -> Result<()>
+    pub fn buy_from_vault(ctx: Context<BuyFromVault>) -> Result<()>
     {
-        nft_vault::mint_from_vault(ctx)
+        nft_vault::buy_from_vault(ctx)
+    }
+
+    pub fn add_uri(ctx: Context<AddUri>, uri: Vec<u8>) -> Result<()> 
+    {
+        nft_vault::add_uri(ctx, uri)
+    }
+
+    pub fn mint(ctx: Context<MintNft>) -> Result<()>
+    {
+        nft_vault::mint(ctx)
     }
 }
 
