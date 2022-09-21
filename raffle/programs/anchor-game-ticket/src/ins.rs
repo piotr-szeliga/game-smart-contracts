@@ -186,7 +186,6 @@ pub struct InitializeWithPDA<'info>
     #[account(mut)]
     pub raffle_pool_ata: Account<'info, TokenAccount>,
 
-    // token program
     pub token_program: Program<'info, Token>,
 
     #[account(address = anchor_lang::system_program::ID)]

@@ -55,14 +55,14 @@ pub mod anchor_raffle_ticket
         global::unauthorize_admin(ctx)
     }
 
-    pub fn initialize(ctx: Context<InitializeRaffle>, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool, transfer_token: bool) -> Result<()>
+    pub fn initialize(ctx: Context<InitializeRaffle>, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool, transfer_token: bool, nft_mint_address: Pubkey) -> Result<()>
     {
-        raffle::initialize_raffle(ctx, token_spl_address, ticket_price, amount, store_buyers, transfer_token)
+        raffle::initialize_raffle(ctx, token_spl_address, ticket_price, amount, store_buyers, transfer_token, nft_mint_address)
     }
 
-    pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool) -> Result<()> 
+    pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token_spl_address: Pubkey, ticket_price: u64, amount: u32, store_buyers: bool, nft_mint_address: Pubkey) -> Result<()>
     {
-        raffle::initialize_with_pda(ctx, pool_bump, token_spl_address, ticket_price, amount, store_buyers)
+        raffle::initialize_with_pda(ctx, pool_bump, token_spl_address, ticket_price, amount, store_buyers, nft_mint_address)
     }
 
     pub fn buy_ticket_sol(ctx: Context<BuyTicketSOL>, amount: u32, _ticket_price: u64, _token_spl_address: Pubkey) -> Result<()>

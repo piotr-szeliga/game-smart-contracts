@@ -19,7 +19,7 @@ pub struct Global {
 }
 
 impl Global {
-    pub const LEN: usize = 1 + 32 * 10;
+    pub const LEN: usize = 1 + 32 * 5; // allow 5 auth admins
 }
 
 #[account]
@@ -31,6 +31,7 @@ pub struct Raffle
     pub price_per_ticket: u64,
     pub token_spl_address: Pubkey,
     pub owner: Pubkey,
+    pub nft_mint_address: Pubkey,
     pub store_buyers: bool,
     pub buyers: Vec<Buyer>,
 }
