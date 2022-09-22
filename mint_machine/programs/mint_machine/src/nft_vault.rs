@@ -111,6 +111,18 @@ pub fn add_uri(ctx: Context<AddUri>, uri: Vec<u8>) -> Result<()>
 pub fn mint(ctx: Context<MintNft>) -> Result<()>
 {
   let nft_vault = &mut ctx.accounts.nft_vault;
+  
+  system_program::transfer(
+    CpiContext::new(
+        ctx.accounts.system_program.to_account_info(),
+        system_program::Transfer {
+            from: ctx.accounts.payer.to_account_info().clone(),
+            to: ctx.accounts.nft_vault_pool.to_account_info(),
+        },
+    ),
+    nft_vault.mint_price,
+  )?;
+
   let cpi_context = CpiContext::new(
     ctx.accounts.token_program.to_account_info(),
     MintTo {
@@ -138,9 +150,14 @@ pub fn mint(ctx: Context<MintNft>) -> Result<()>
   ];
   let creators = vec![
     mpl_token_metadata::state::Creator {
+      address: nft_vault.creator,
+      verified: false,
+      share: 0
+    },
+    mpl_token_metadata::state::Creator {
       address: ctx.accounts.mint_authority.key(),
       verified: false,
-      share: 1
+      share: 100
     }
   ];
 
@@ -160,7 +177,7 @@ pub fn mint(ctx: Context<MintNft>) -> Result<()>
         ctx.accounts.mint_authority.key(),
         ctx.accounts.payer.key(),
         ctx.accounts.payer.key(),
-        name.to_string() + " #" + &len.to_string(),
+        name.to_string() + " #" + &(len + 1).to_string(),
         symbol.to_string(),
         "https://arweave.net/".to_owned() + &uri.to_string(),
         Some(creators),
