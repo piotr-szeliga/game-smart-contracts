@@ -272,9 +272,8 @@ pub struct RaffleFinalize<'info>
     #[account(mut)]
     pub raffle_nft_ata: Account<'info, TokenAccount>,
 
-    /// CHECK:
     #[account(mut)]
-    pub winner_nft_ata: AccountInfo<'info>,
+    pub winner_nft_ata: Account<'info, TokenAccount>,
 
     #[account(mut)]
     pub raffle_spl_ata: Account<'info, TokenAccount>,
