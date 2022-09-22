@@ -124,7 +124,7 @@ pub fn convert_skt_sol(ctx: Context<Convert>, exchange_option: u8, is_holder: bo
         system_program::transfer(cpi_context, sol_amount)?;
     }
 
-    // send SKT to buyer
+    // Send SKT to buyer
     {
         if ctx.accounts.claimer_skt_account.owner == &System::id() {
             let cpi_context = CpiContext::new(
