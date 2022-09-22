@@ -1,6 +1,7 @@
 use anchor_lang::{
   prelude::*,
-  system_program::{self, program::invoke}
+  system_program,
+  solana_program::program::invoke,
 };
 use anchor_spl::token::{transfer, Transfer, MintTo, mint_to};
 use mpl_token_metadata::instruction::{create_metadata_accounts_v2};
@@ -9,7 +10,7 @@ use crate::ins::*;
 use crate::constants::*;
 use crate::state::{ErrorCode};
 
-pub fn initialize_nft_vault(ctx: Context<InitializeNftVault>, pool_bump: u8, mint_price: u64, total_supply: u32) -> Result<()>
+pub fn initialize_nft_vault(ctx: Context<InitializeNftVault>, pool_bump: u8, mint_price: u64, total_supply: u32, name: String, symbol: String, creator: Pubkey) -> Result<()>
 {
   let nft_vault = &mut ctx.accounts.nft_vault;
   nft_vault.authority = ctx.accounts.authority.key();
@@ -18,6 +19,9 @@ pub fn initialize_nft_vault(ctx: Context<InitializeNftVault>, pool_bump: u8, min
   nft_vault.total_supply = total_supply;
   nft_vault.sold_mints = vec![];
   nft_vault.uris = vec![];
+  nft_vault.name = name;
+  nft_vault.symbol = symbol;
+  nft_vault.creator = creator;
   
   msg!("Mint Price: {:?}", mint_price);
   msg!("Total Supply: {:?}", total_supply);
@@ -140,6 +144,8 @@ pub fn mint(ctx: Context<MintNft>) -> Result<()>
     }
   ];
 
+  let name = &nft_vault.name;
+  let symbol = &nft_vault.symbol;
   let len = nft_vault.sold_mints.len();
   let uri = from_utf8(&nft_vault.uris[len])
     .map_err(|err| {
@@ -154,9 +160,9 @@ pub fn mint(ctx: Context<MintNft>) -> Result<()>
         ctx.accounts.mint_authority.key(),
         ctx.accounts.payer.key(),
         ctx.accounts.payer.key(),
-        nft_vault.name,
-        nft_vault.symbol,
-        uri,
+        name.to_string() + " #" + &len.to_string(),
+        symbol.to_string(),
+        "https://arweave.net/".to_owned() + &uri.to_string(),
         Some(creators),
         1,
         true,
@@ -167,8 +173,11 @@ pub fn mint(ctx: Context<MintNft>) -> Result<()>
     &accounts
 );
 if let Err(_) = result {
-    return Err(error!(ErrorCode::MetadataCreateFailed.into()));
+    return Err(ErrorCode::MetadataCreateFailed.into());
 }
 msg!("Metadata account created !!!");
+
+nft_vault.sold_mints.push(ctx.accounts.mint.key());
+
 Ok(())
 }

@@ -13,9 +13,9 @@ declare_id!("BPpeLp15ArmbtZMTmf8fSr9mQYPtpy7aVxaSCcjYpKSq");
 pub mod mint_machine {
     use super::*;
 
-    pub fn initialize_nft_vault(ctx: Context<InitializeNftVault>, pool_bump: u8, mint_price: u64, total_supply: u32) -> Result<()>
+    pub fn initialize_nft_vault(ctx: Context<InitializeNftVault>, pool_bump: u8, mint_price: u64, total_supply: u32, name: String, symbol: String, creator: Pubkey) -> Result<()>
     {
-        nft_vault::initialize_nft_vault(ctx, pool_bump, mint_price, total_supply)
+        nft_vault::initialize_nft_vault(ctx, pool_bump, mint_price, total_supply, name, symbol, creator)
     }
 
     pub fn set_mint_price(ctx: Context<SetMintPrice>, mint_price: u64) -> Result<()>
