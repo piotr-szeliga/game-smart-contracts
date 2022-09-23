@@ -89,22 +89,26 @@ pub fn convert_skt_sol(ctx: Context<Convert>, exchange_option: u8, is_holder: bo
     let vault = &ctx.accounts.vault;
     let vault_address = vault.key().clone();
     
-    let sol_amount = match is_holder {
-        false => match exchange_option {
+    let sol_amount = match is_holder
+    {
+        false => match exchange_option
+        {
+            0 => 500_000_000,
+            1 => 700_000_000,
+            2 => 1_200_000_000,
+            _ => 1_800_000_000
+        },
+        true => match exchange_option
+        {
             0 => 400_000_000,
             1 => 600_000_000,
             2 => 1_000_000_000,
             _ => 1_600_000_000
-        },
-        true => match exchange_option {
-            0 => 300_000_000,
-            1 => 500_000_000,
-            2 => 800_000_000,
-            _ => 1_300_000_000
         }
     };
 
-    let skt_amount = match exchange_option {
+    let skt_amount = match exchange_option
+    {
         0 => 70_000_000_000,
         1 => 140_000_000_000,
         2 => 320_000_000_000,
