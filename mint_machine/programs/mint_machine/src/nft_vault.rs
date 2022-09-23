@@ -111,6 +111,14 @@ pub fn add_uri(ctx: Context<AddUri>, uri: Vec<u8>) -> Result<()>
 pub fn mint(ctx: Context<MintNft>) -> Result<()>
 {
   let nft_vault = &mut ctx.accounts.nft_vault;
+
+  if nft_vault.total_supply as usize == nft_vault.sold_mints.len()  {
+    return Err(ErrorCode::NotEnoughTokens.into());
+  }
+
+  if ctx.accounts.payer.lamports() < nft_vault.mint_price {
+    return Err(ErrorCode::NotEnoughSol.into())
+  }
   
   system_program::transfer(
     CpiContext::new(

@@ -11,7 +11,8 @@
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     },
     {
       "name": "transferSplToken",
@@ -42,7 +43,8 @@
           "name": "amount",
           "type": "u64"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "initializeVault",
@@ -107,7 +109,8 @@
           "name": "tokenType",
           "type": "publicKey"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "withdrawVault",
@@ -173,7 +176,65 @@
           "name": "amount",
           "type": "u64"
         }
-      ]
+      ],
+      "returns": null
+    },
+    {
+      "name": "claimSkt",
+      "accounts": [
+        {
+          "name": "claimer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "backend",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "claimerSktAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "sktMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultPool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultPoolSktAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ],
+      "returns": null
     },
     {
       "name": "convertSktSol",
@@ -238,7 +299,8 @@
           "name": "isHolder",
           "type": "bool"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "initializeGlobal",
@@ -264,7 +326,8 @@
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     },
     {
       "name": "authorizeAdmin",
@@ -285,7 +348,8 @@
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     },
     {
       "name": "unauthorizeAdmin",
@@ -306,7 +370,8 @@
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [],
+      "returns": null
     },
     {
       "name": "initialize",
@@ -372,7 +437,8 @@
           "name": "nftMintAddress",
           "type": "publicKey"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "initializeWithPda",
@@ -433,7 +499,8 @@
           "name": "nftMintAddress",
           "type": "publicKey"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "buyTicketSol",
@@ -472,7 +539,8 @@
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "buyTicketSpl",
@@ -516,7 +584,8 @@
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "withdrawFromPda",
@@ -567,7 +636,8 @@
           "name": "amount",
           "type": "u64"
         }
-      ]
+      ],
+      "returns": null
     },
     {
       "name": "raffleFinalize",
@@ -623,7 +693,8 @@
           "name": "raffleRoyalties",
           "type": "u8"
         }
-      ]
+      ],
+      "returns": null
     }
   ],
   "accounts": [
@@ -803,6 +874,6 @@
     }
   ],
   "metadata": {
-    "address": "Hjaw5obT3bWQazo4bASgzjuP1mRgXoXMFbwVroHbWPSC"
+    "address": "3ug8uwLeeJjA8yz7jYEe33ntz7wD9x2SWXPxwC4zJkm5"
   }
 }

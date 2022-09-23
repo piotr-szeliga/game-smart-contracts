@@ -85,6 +85,31 @@ pub fn withdraw_vault(ctx: Context<WithdrawVault>, amount: u64) -> Result<()>
     Ok(())
 }
 
+pub fn claim_skt(ctx: Context<ClaimSkt>, amount: u64) -> Result<()>
+{
+    let vault = &ctx.accounts.vault;
+    let vault_address = vault.key().clone();
+
+    let cpi_context = CpiContext::new(
+        ctx.accounts.token_program.to_account_info().clone(),
+        token::Transfer
+        {
+            from: ctx.accounts.vault_pool_skt_account.to_account_info().clone(),
+            to: ctx.accounts.claimer_skt_account.to_account_info().clone(),
+            authority: ctx.accounts.vault_pool.to_account_info().clone(),
+        }
+    );
+
+    let seeds = [
+        VAULT_SKT_SEED_PREFIX.as_bytes(),
+        vault_address.as_ref(),
+        &[vault.vault_bump],
+    ];
+    token::transfer(cpi_context.with_signer(&[&seeds[..]]), amount)?;
+
+    Ok(())
+}
+
 pub fn convert_skt_sol(ctx: Context<Convert>, exchange_option: u8, is_holder: bool) -> Result<()> {
     let vault = &ctx.accounts.vault;
     let vault_address = vault.key().clone();

@@ -12,7 +12,7 @@ use anchor_lang::prelude::*;
 
 use ins::*;
 
-declare_id!("Hjaw5obT3bWQazo4bASgzjuP1mRgXoXMFbwVroHbWPSC");
+declare_id!("3ug8uwLeeJjA8yz7jYEe33ntz7wD9x2SWXPxwC4zJkm5");
 
 
 #[program]
@@ -37,6 +37,11 @@ pub mod anchor_raffle_ticket
     pub fn withdraw_vault(ctx: Context<WithdrawVault>, amount: u64) -> Result<()>
     {
         vault::withdraw_vault(ctx, amount)
+    }
+
+    pub fn claim_skt(ctx: Context<ClaimSkt>, amount: u64) -> Result<()>
+    {
+        vault::claim_skt(ctx, amount)
     }
 
     pub fn convert_skt_sol(ctx: Context<Convert>, exchange_option: u8, is_holder: bool) -> Result<()> {

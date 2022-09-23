@@ -114,6 +114,36 @@ pub struct WithdrawVault<'info>
 }
 
 #[derive(Accounts)]
+pub struct ClaimSkt<'info>
+{
+    // claimer authority
+    #[account(mut)]
+    pub claimer: Signer<'info>,
+    // backend authority
+    #[account(mut, address = BACKEND_KEY.parse::<Pubkey>().unwrap())]
+    pub backend: Signer<'info>,
+    // claimer skt account
+    #[account(mut)]
+    pub claimer_skt_account: Account<'info, TokenAccount>,
+    // skt mint
+    #[account(mut)]
+    pub skt_mint: Account<'info, Mint>,
+    #[account(mut)]
+    pub vault: Account<'info, Vault>,
+    // skt pool account
+    /// CHECK:
+    #[account(mut, seeds = [VAULT_SKT_SEED_PREFIX.as_bytes(), vault.key().as_ref()], bump = vault.vault_bump)]
+    pub vault_pool: AccountInfo<'info>,
+    // vault pool skt token account
+    #[account(mut)]
+    pub vault_pool_skt_account: Account<'info, TokenAccount>,
+    // token program
+    pub token_program: Program<'info, Token>,
+    // system program
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
 pub struct Convert<'info> 
 {
     // claimer authority
