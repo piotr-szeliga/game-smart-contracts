@@ -1,6 +1,6 @@
 const app = require("./config/express");
 const txCtrl = require("./controller/transaction.controller");
-const { Keypair } = require("@solana/web3.js");
+const { Keypair, PublicKey } = require("@solana/web3.js");
 const bs58 = require("bs58");
 const anchor = require("@project-serum/anchor");
 const {
@@ -11,8 +11,10 @@ const {
 let payer = Keypair.fromSecretKey(
   bs58.decode("")
 );
+
 const program = await loadSwitchboardProgram("devnet", undefined, payer);
 
+const vrfKey = new PublicKey("");
 const vrfAccount = new VrfAccount({
   program,
   publicKey: vrfKey,
