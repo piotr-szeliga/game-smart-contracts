@@ -1,0 +1,1 @@
+pub const GAME_POOL_SEED_PREFIX: &str = "slots_game_pool";
