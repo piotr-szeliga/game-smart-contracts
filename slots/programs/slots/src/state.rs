@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 #[account]
 pub struct Game {
-    pub authroity: Pubkey,
+    pub authority: Pubkey,
     pub bump: u8,
 }
 impl Game
@@ -11,13 +11,14 @@ impl Game
 }
 
 #[account]
-pub struct Round {
-    pub round_no: u32,
-    pub player: Pubkey,
-    pub status: [u8; 5],
-    pub price: u64,
+pub struct Player {
+    pub game: Pubkey,
+    pub earned_money: u64,
+    pub key: Pubkey,
+    pub status: u32,
+    pub bump: u8,
 }
-impl Round
+impl Player
 {
-    pub const LEN: usize =  std::mem::size_of::<Round>();
+    pub const LEN: usize =  std::mem::size_of::<Player>();
 }
