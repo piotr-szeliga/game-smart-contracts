@@ -3,6 +3,7 @@ use crate::state::*;
 use crate::constants::*;
 
 #[derive(Accounts)]
+#[instruction(name: String)]
 pub struct CreateGame<'info> 
 {
     #[account(mut)]
@@ -13,12 +14,26 @@ pub struct CreateGame<'info>
       payer = payer, 
       space = Game::LEN + 8,
       seeds = [
+        name.as_bytes(),
         GAME_SEED_PREFIX.as_bytes(),
         payer.key().as_ref()
       ],
       bump
     )]
     pub game: Account<'info, Game>,
+
+    /// CHECK:
+    #[account(
+      init,
+      payer = payer,
+      space = 0,
+      seeds = [
+        GAME_TREASURY_SEED_PREFIX.as_bytes(),
+        game.key().as_ref()
+      ],
+      bump
+    )]
+    pub game_treasury: AccountInfo<'info>,
     
     pub system_program: Program<'info, System>,
 }
@@ -30,6 +45,7 @@ pub struct AddPlayer<'info> {
   pub payer: Signer<'info>,
   #[account(
     seeds = [
+      game.name.as_bytes(),
       GAME_SEED_PREFIX.as_bytes(),
       game.authority.as_ref(),
     ],
@@ -48,6 +64,18 @@ pub struct AddPlayer<'info> {
     bump
   )]
   pub player: Account<'info, Player>,
+  /// CHECK:
+  #[account(
+    init,
+    payer = payer,
+    space = 0,
+    seeds = [
+      PLAYER_TREASURY_SEED_PREFIX.as_bytes(),
+      player.key().as_ref(),
+    ],
+    bump
+  )]
+  pub player_treasury: AccountInfo<'info>,
   pub system_program: Program<'info, System>,
 }
 
@@ -59,12 +87,23 @@ pub struct Play<'info>
     #[account(
       mut,
       seeds = [
+        game.name.as_bytes(),
         GAME_SEED_PREFIX.as_bytes(),
         game.authority.as_ref(),
       ],
       bump = game.bump,
     )]
     pub game: Account<'info, Game>,
+    /// CHECK:
+    #[account(
+      mut,
+      seeds = [
+        GAME_TREASURY_SEED_PREFIX.as_bytes(),
+        game.key().as_ref()
+      ],
+      bump = game.treasury_bump
+    )]
+    pub game_treasury: AccountInfo<'info>,
     #[account(
         mut,
         seeds=[
@@ -75,6 +114,16 @@ pub struct Play<'info>
         bump = player.bump
     )]
     pub player: Account<'info, Player>,
+    /// CHECK:
+    #[account(
+      mut,
+      seeds = [
+        PLAYER_TREASURY_SEED_PREFIX.as_bytes(),
+        player.key().as_ref(),
+      ],
+      bump = player.treasury_bump
+    )]
+    pub player_treasury: AccountInfo<'info>,
     pub system_program: Program<'info, System>,
 }
 
@@ -93,5 +142,15 @@ pub struct Claim<'info>
       bump = player.bump
     )]
     pub player: Account<'info, Player>,
+    /// CHECK:
+    #[account(
+      mut,
+      seeds = [
+        PLAYER_TREASURY_SEED_PREFIX.as_bytes(),
+        player.key().as_ref(),
+      ],
+      bump = player.treasury_bump
+    )]
+    pub player_treasury: AccountInfo<'info>,
     pub system_program: Program<'info, System>
 }

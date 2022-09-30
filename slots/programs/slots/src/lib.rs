@@ -17,19 +17,22 @@ declare_id!("DMMYkdhZQyKLegrBVw85jUvyHq5P6Gp6MnyUEmzvptCP");
 pub mod slots {
     use super::*;
 
-    pub fn create_game(ctx: Context<CreateGame>, bump: u8) -> Result<()> {
+    pub fn create_game(ctx: Context<CreateGame>, name: String, bump: u8, treasury_bump: u8) -> Result<()> {
         let game = &mut ctx.accounts.game;
         game.authority = ctx.accounts.payer.key();
+        game.name = name;
         game.bump = bump;
+        game.treasury_bump = treasury_bump;
         Ok(())
     }
 
-    pub fn add_player(ctx: Context<AddPlayer>, bump: u8) -> Result<()> {
+    pub fn add_player(ctx: Context<AddPlayer>, bump: u8, treasury_bump: u8) -> Result<()> {
         let player = &mut ctx.accounts.player;
         player.key = ctx.accounts.payer.key();
         player.game = ctx.accounts.game.key();
         player.earned_money = 0;
         player.bump = bump;
+        player.treasury_bump = treasury_bump;
         player.status = 0;
 
         Ok(())
@@ -70,12 +73,14 @@ pub mod slots {
                 ctx.accounts.system_program.to_account_info(),
                 system_program::Transfer {
                     from: ctx.accounts.payer.to_account_info().clone(),
-                    to: ctx.accounts.game.to_account_info(),
+                    to: ctx.accounts.game_treasury.to_account_info(),
                 },
             ),
             price,
         )?;
 
+        let max = 3;
+        
         let earned = match max {
             3 => price,
             4 => price.checked_mul(5).unwrap().checked_div(4).unwrap(),
@@ -87,22 +92,26 @@ pub mod slots {
             player.earned_money = player.earned_money.checked_add(earned).unwrap();
 
             let game = &ctx.accounts.game;
+            let game_key = game.key();
             let seeds = [
-                GAME_SEED_PREFIX.as_bytes(),
-                game.authority.as_ref(),
-                &[game.bump]
+                GAME_TREASURY_SEED_PREFIX.as_bytes(),
+                game_key.as_ref(),
+                &[game.treasury_bump]
             ];
             system_program::transfer(
                 CpiContext::new(
                     ctx.accounts.system_program.to_account_info(),
                     system_program::Transfer {
-                        from: ctx.accounts.game.to_account_info().clone(),
-                        to: ctx.accounts.player.to_account_info().clone(),
+                        from: ctx.accounts.game_treasury.to_account_info().clone(),
+                        to: ctx.accounts.player_treasury.to_account_info().clone(),
                     },
                 ).with_signer(&[&seeds[..]]),
                 earned,
             )?;
         }
+
+        msg!("Status: {:?}", status);
+        msg!("Max Equal: {:?}", max);
         
         Ok(())
     }
@@ -110,12 +119,10 @@ pub mod slots {
     pub fn claim(ctx: Context<Claim>) -> Result<()> {
         let player = &mut ctx.accounts.player;
         let player_key = player.key;
-        let game_key = player.game;
         let seeds = [
-            PLAYER_SEED_PREFIX.as_bytes(),
+            PLAYER_TREASURY_SEED_PREFIX.as_bytes(),
             player_key.as_ref(),
-            game_key.as_ref(),
-            &[player.bump]
+            &[player.treasury_bump]
         ];
         let amount = player.earned_money;
         player.earned_money = 0;
@@ -123,7 +130,7 @@ pub mod slots {
             CpiContext::new(
                 ctx.accounts.system_program.to_account_info(),
                 system_program::Transfer {
-                    from: ctx.accounts.player.to_account_info().clone(),
+                    from: ctx.accounts.player_treasury.to_account_info().clone(),
                     to: ctx.accounts.claimer.to_account_info().clone(),
                 },
             ).with_signer(&[&seeds[..]]),

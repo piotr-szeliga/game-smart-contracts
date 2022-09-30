@@ -3,7 +3,9 @@ use anchor_lang::prelude::*;
 #[account]
 pub struct Game {
     pub authority: Pubkey,
+    pub name: String,
     pub bump: u8,
+    pub treasury_bump: u8,
 }
 impl Game
 {
@@ -17,6 +19,7 @@ pub struct Player {
     pub key: Pubkey,
     pub status: u32,
     pub bump: u8,
+    pub treasury_bump: u8,
 }
 impl Player
 {
