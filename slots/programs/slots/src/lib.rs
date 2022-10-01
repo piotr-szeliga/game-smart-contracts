@@ -42,30 +42,42 @@ pub mod slots {
         let player = &mut ctx.accounts.player;
 
         let mut rand = get_random();
+        // rand = (rand / 10 ) % 10 + (rand / 10) * 10;
         player.status = rand;
         
-        let mut status: [u8; 5] = [0; 5];
-        let mut i = 0;
-        while i < 5 {
-            status[i] = ((rand % 10) & 0xff) as u8;
-            rand /= 10;
-            i += 1;
-        }
+        // let mut status: [u8; 5] = [0; 5];
+        // let mut i = 0;
+        // while i < 5 {
+        //     status[i] = ((rand % 10) & 0xff) as u8;
+        //     rand /= 10;
+        //     i += 1;
+        // }
 
-        let mut counts: [u8; 10] = [0; 10];
-        i = 0;
-        while i < 5 {
-            counts[status[i] as usize] += 1;
-            i += 1;
-        }
+        // let mut counts: [u8; 10] = [0; 10];
+        // i = 0;
+        // while i < 5 {
+        //     counts[status[i] as usize] += 1;
+        //     i += 1;
+        // }
 
-        let mut max = 0;
-        i = 0;
-        while i < 10 {
-            if max < counts[i] {
-                max = counts[i];
-            }
-            i += 1;
+        // let mut max = 0;
+        // i = 0;
+        // while i < 10 {
+        //     if max < counts[i] {
+        //         max = counts[i];
+        //     }
+        //     i += 1;
+        // }
+        let mut max = rand % 2 + 1;
+        rand = rand % 100;
+        if rand < 25 {
+            max = 3;
+        }
+        if rand < 20 {
+            max = 4;
+        }
+        if rand < 10 {
+            max = 5;
         }
 
         system_program::transfer(
@@ -78,8 +90,6 @@ pub mod slots {
             ),
             price,
         )?;
-
-        let max = 3;
         
         let earned = match max {
             3 => price,
@@ -91,26 +101,29 @@ pub mod slots {
         if earned > 0 {
             player.earned_money = player.earned_money.checked_add(earned).unwrap();
 
-            let game = &ctx.accounts.game;
-            let game_key = game.key();
-            let seeds = [
-                GAME_TREASURY_SEED_PREFIX.as_bytes(),
-                game_key.as_ref(),
-                &[game.treasury_bump]
-            ];
-            system_program::transfer(
-                CpiContext::new(
-                    ctx.accounts.system_program.to_account_info(),
-                    system_program::Transfer {
-                        from: ctx.accounts.game_treasury.to_account_info().clone(),
-                        to: ctx.accounts.player_treasury.to_account_info().clone(),
-                    },
-                ).with_signer(&[&seeds[..]]),
-                earned,
-            )?;
+            // let game = &ctx.accounts.game;
+            // let game_key = game.key();
+            // let seeds = [
+            //     GAME_TREASURY_SEED_PREFIX.as_bytes(),
+            //    ; game_key.as_ref(),
+            //     &[game.treasury_bump]
+            // ];
+            // system_program::transfer(
+            //     CpiContext::new(
+            //         ctx.accounts.system_program.to_account_info(),
+            //         system_program::Transfer {
+            //             from: ctx.accounts.game_treasury.to_account_info().clone(),
+            //             to: ctx.accounts.player_treasury.to_account_info().clone(),
+            //         },
+            //     ).with_signer(&[&seeds[..]]),
+            //     earned,
+            // )?;
+
+            **ctx.accounts.game_treasury.try_borrow_mut_lamports()? -= earned;
+            **ctx.accounts.player_treasury.try_borrow_mut_lamports()? += earned;
         }
 
-        msg!("Status: {:?}", status);
+        msg!("Status: {:?}", rand);
         msg!("Max Equal: {:?}", max);
         
         Ok(())
@@ -118,24 +131,26 @@ pub mod slots {
 
     pub fn claim(ctx: Context<Claim>) -> Result<()> {
         let player = &mut ctx.accounts.player;
-        let player_key = player.key;
-        let seeds = [
-            PLAYER_TREASURY_SEED_PREFIX.as_bytes(),
-            player_key.as_ref(),
-            &[player.treasury_bump]
-        ];
+        // let player_key = player.key;
+        // let seeds = [
+        //     PLAYER_TREASURY_SEED_PREFIX.as_bytes(),
+        //     player_key.as_ref(),
+        //     &[player.treasury_bump]
+        // ];
         let amount = player.earned_money;
         player.earned_money = 0;
-        system_program::transfer(
-            CpiContext::new(
-                ctx.accounts.system_program.to_account_info(),
-                system_program::Transfer {
-                    from: ctx.accounts.player_treasury.to_account_info().clone(),
-                    to: ctx.accounts.claimer.to_account_info().clone(),
-                },
-            ).with_signer(&[&seeds[..]]),
-            amount,
-        )?;        
+        // system_program::transfer(
+        //     CpiContext::new(
+        //         ctx.accounts.system_program.to_account_info(),
+        //         system_program::Transfer {
+        //             from: ctx.accounts.player_treasury.to_account_info().clone(),
+        //             to: ctx.accounts.claimer.to_account_info().clone(),
+        //         },
+        //     ).with_signer(&[&seeds[..]]),
+        //     amount,
+        // )?;        
+        **ctx.accounts.player_treasury.try_borrow_mut_lamports()? -= amount;
+        **ctx.accounts.claimer.try_borrow_mut_lamports()? += amount;
         Ok(())
     }
 }
