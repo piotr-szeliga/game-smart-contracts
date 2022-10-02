@@ -320,6 +320,7 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
     msg!("Raffle Bank Balance: {:?} ({:?})", utils::to_float(raffle_bank_balance), raffle_bank_balance);
     msg!("Raffle Bank Royalties: {:?}% = {:?} ({:?})", raffle_royalties, utils::to_float(bank_amount_royalties), bank_amount_royalties);
     msg!("Payment Token: {:?}", raffle.token_spl_address);
+    msg!("Winner NFT: {:?}", ctx.accounts.winner_nft_ata.owner.key());
     msg!("Winner NFT ATA: {:?}", ctx.accounts.winner_nft_ata.to_account_info().key());
     msg!("Raffle Owner: {:?}", raffle.owner);
     msg!("Raffle Owner Payout: {:?} ({:?})", utils::to_float(owner_payout_amount), owner_payout_amount);

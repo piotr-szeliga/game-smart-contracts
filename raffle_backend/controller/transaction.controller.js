@@ -85,6 +85,7 @@ const getTransaction = async (req, res) => {
   const txBase64 = serializedTx.toString("base64");
 
   res.json(txBase64);
+  console.log("result:", txBase64);
 };
 
 module.exports = {
