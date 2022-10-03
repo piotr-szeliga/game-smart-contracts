@@ -209,7 +209,8 @@ pub mod slots {
             return Err(ErrorCode::UnauthorizedWallet.into());
         }
 
-        let game = &ctx.accounts.game;
+        let game = &mut ctx.accounts.game;
+        game.earned_money = game.earned_money.checked_sub(amount).unwrap();
         
         if game.token_type == false {
             **ctx.accounts.game_treasury.try_borrow_mut_lamports()? -= amount;
