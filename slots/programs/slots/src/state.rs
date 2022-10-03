@@ -6,6 +6,10 @@ pub struct Game {
     pub name: String,
     pub bump: u8,
     pub treasury_bump: u8,
+    pub token_type: bool,
+    pub royalty: u8,
+    pub community_wallet: Pubkey,
+    pub earned_money: u64,
 }
 impl Game
 {
@@ -24,4 +28,12 @@ pub struct Player {
 impl Player
 {
     pub const LEN: usize =  std::mem::size_of::<Player>();
+}
+
+#[error_code]
+pub enum ErrorCode {
+    #[msg("Unauthorized wallet cannot create game")]
+    UnauthorizedWallet,
+    #[msg("Invalid token type")]
+    InvalidTokenType,
 }

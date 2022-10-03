@@ -7,8 +7,11 @@ use anchor_lang::{
     prelude::*,
     system_program,
 };
+use anchor_spl::token::{transfer, Transfer};
+
 use ins::*;
 use utils::*;
+use state::ErrorCode;
 use constants::*;
 
 declare_id!("DMMYkdhZQyKLegrBVw85jUvyHq5P6Gp6MnyUEmzvptCP");
@@ -17,12 +20,34 @@ declare_id!("DMMYkdhZQyKLegrBVw85jUvyHq5P6Gp6MnyUEmzvptCP");
 pub mod slots {
     use super::*;
 
-    pub fn create_game(ctx: Context<CreateGame>, name: String, bump: u8, treasury_bump: u8) -> Result<()> {
+    pub fn create_game(ctx: Context<CreateGame>, name: String, bump: u8, treasury_bump: u8, token_type: bool, community_wallet: Pubkey) -> Result<()> {
+        let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == ctx.accounts.payer.key());
+        if index == false {
+            return Err(ErrorCode::UnauthorizedWallet.into());
+        }
+
         let game = &mut ctx.accounts.game;
         game.authority = ctx.accounts.payer.key();
         game.name = name;
         game.bump = bump;
         game.treasury_bump = treasury_bump;
+        game.token_type = token_type;
+        game.community_wallet = community_wallet;
+        game.royalty = 5;
+        game.earned_money = 0;
+        Ok(())
+    }
+
+
+    pub fn set_community_wallet(ctx: Context<SetCommunityWallet>, community_wallet: Pubkey, royalty: u8) -> Result<()> {
+        let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == ctx.accounts.payer.key());
+        if index == false {
+            return Err(ErrorCode::UnauthorizedWallet.into());
+        }
+
+        let game = &mut ctx.accounts.game;
+        game.community_wallet = community_wallet;
+        game.royalty = royalty;
         Ok(())
     }
 
@@ -38,48 +63,17 @@ pub mod slots {
         Ok(())
     }
 
-    pub fn play(ctx: Context<Play>, price: u64) -> Result<()> {
+    pub fn play_with_sol(ctx: Context<PlayWithSol>, price: u64) -> Result<()> {
         let player = &mut ctx.accounts.player;
-
-        let mut rand = get_random();
-        // rand = (rand / 10 ) % 10 + (rand / 10) * 10;
+        let (rand, earned) = get_status(price);
         player.status = rand;
+
+        let game = &mut ctx.accounts.game;
+        if game.token_type != false {
+            return Err(ErrorCode::InvalidTokenType.into());
+        }
+        let royalty_amount = price.checked_mul(game.royalty as u64).unwrap().checked_div(100).unwrap();
         
-        // let mut status: [u8; 5] = [0; 5];
-        // let mut i = 0;
-        // while i < 5 {
-        //     status[i] = ((rand % 10) & 0xff) as u8;
-        //     rand /= 10;
-        //     i += 1;
-        // }
-
-        // let mut counts: [u8; 10] = [0; 10];
-        // i = 0;
-        // while i < 5 {
-        //     counts[status[i] as usize] += 1;
-        //     i += 1;
-        // }
-
-        // let mut max = 0;
-        // i = 0;
-        // while i < 10 {
-        //     if max < counts[i] {
-        //         max = counts[i];
-        //     }
-        //     i += 1;
-        // }
-        let mut max = rand % 2 + 1;
-        rand = rand % 100;
-        if rand < 25 {
-            max = 3;
-        }
-        if rand < 20 {
-            max = 4;
-        }
-        if rand < 10 {
-            max = 5;
-        }
-
         system_program::transfer(
             CpiContext::new(
                 ctx.accounts.system_program.to_account_info(),
@@ -88,69 +82,159 @@ pub mod slots {
                     to: ctx.accounts.game_treasury.to_account_info(),
                 },
             ),
-            price,
+            price.checked_sub(royalty_amount).unwrap(),
         )?;
-        
-        let earned = match max {
-            3 => price,
-            4 => price.checked_mul(5).unwrap().checked_div(4).unwrap(),
-            5 => price.checked_mul(3).unwrap().checked_div(2).unwrap(),
-            _ => 0,
-        };
-        
+        if royalty_amount > 0 {
+            system_program::transfer(
+                CpiContext::new(
+                    ctx.accounts.system_program.to_account_info(),
+                    system_program::Transfer {
+                        from: ctx.accounts.payer.to_account_info().clone(),
+                        to: ctx.accounts.community_treasury.to_account_info(),
+                    },
+                ),
+                royalty_amount,
+            )?;
+        }
+        game.earned_money = game.earned_money.checked_add(price).unwrap().checked_sub(royalty_amount).unwrap();
+
         if earned > 0 {
             player.earned_money = player.earned_money.checked_add(earned).unwrap();
-
-            // let game = &ctx.accounts.game;
-            // let game_key = game.key();
-            // let seeds = [
-            //     GAME_TREASURY_SEED_PREFIX.as_bytes(),
-            //    ; game_key.as_ref(),
-            //     &[game.treasury_bump]
-            // ];
-            // system_program::transfer(
-            //     CpiContext::new(
-            //         ctx.accounts.system_program.to_account_info(),
-            //         system_program::Transfer {
-            //             from: ctx.accounts.game_treasury.to_account_info().clone(),
-            //             to: ctx.accounts.player_treasury.to_account_info().clone(),
-            //         },
-            //     ).with_signer(&[&seeds[..]]),
-            //     earned,
-            // )?;
 
             **ctx.accounts.game_treasury.try_borrow_mut_lamports()? -= earned;
             **ctx.accounts.player_treasury.try_borrow_mut_lamports()? += earned;
         }
-
-        msg!("Status: {:?}", rand);
-        msg!("Max Equal: {:?}", max);
         
         Ok(())
     }
 
-    pub fn claim(ctx: Context<Claim>) -> Result<()> {
+    pub fn play_with_spl(ctx: Context<PlayWithSpl>, price: u64) -> Result<()> {
         let player = &mut ctx.accounts.player;
-        // let player_key = player.key;
-        // let seeds = [
-        //     PLAYER_TREASURY_SEED_PREFIX.as_bytes(),
-        //     player_key.as_ref(),
-        //     &[player.treasury_bump]
-        // ];
+        let (rand, earned) = get_status(price);
+        player.status = rand;
+
+        let game = &mut ctx.accounts.game;
+        if game.token_type != true {
+            return Err(ErrorCode::InvalidTokenType.into());
+        }
+        let royalty_amount = price.checked_mul(game.royalty as u64).unwrap().checked_div(100).unwrap();
+        
+        transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                Transfer {
+                        authority: ctx.accounts.payer.to_account_info().clone(),
+                        from: ctx.accounts.payer_ata.to_account_info().clone(),
+                    to: ctx.accounts.game_treasury_ata.to_account_info().clone(),
+                }
+            ),
+            price.checked_sub(royalty_amount).unwrap(),
+        )?;
+        if royalty_amount > 0 {
+            transfer(
+                CpiContext::new(
+                    ctx.accounts.token_program.to_account_info(),
+                    Transfer {
+                        authority: ctx.accounts.payer.to_account_info().clone(),
+                        from: ctx.accounts.payer_ata.to_account_info().clone(),
+                        to: ctx.accounts.community_treasury_ata.to_account_info().clone(),
+                    }
+                ),
+                royalty_amount,
+            )?;
+        }
+        game.earned_money = game.earned_money.checked_add(price).unwrap().checked_sub(royalty_amount).unwrap();
+
+        if earned > 0 {
+            player.earned_money = player.earned_money.checked_add(earned).unwrap();
+
+            let game_key = game.key();
+            let seeds = [
+                GAME_TREASURY_SEED_PREFIX.as_bytes(),
+                game_key.as_ref(),
+                &[game.treasury_bump]
+            ];
+            transfer(
+                CpiContext::new(
+                    ctx.accounts.token_program.to_account_info(),
+                    Transfer {
+                        authority: ctx.accounts.game_treasury.to_account_info().clone(),
+                        from: ctx.accounts.game_treasury_ata.to_account_info().clone(),
+                        to: ctx.accounts.player_treasury_ata.to_account_info().clone(),
+                    }
+                ).with_signer(&[&seeds[..]]),
+                earned,
+            )?;
+        }
+        Ok(())
+    }
+
+    pub fn claim(ctx: Context<Claim>) -> Result<()> {
+        let game = &ctx.accounts.game;
+        let player = &mut ctx.accounts.player;
+        
         let amount = player.earned_money;
         player.earned_money = 0;
-        // system_program::transfer(
-        //     CpiContext::new(
-        //         ctx.accounts.system_program.to_account_info(),
-        //         system_program::Transfer {
-        //             from: ctx.accounts.player_treasury.to_account_info().clone(),
-        //             to: ctx.accounts.claimer.to_account_info().clone(),
-        //         },
-        //     ).with_signer(&[&seeds[..]]),
-        //     amount,
-        // )?;        
-        **ctx.accounts.player_treasury.try_borrow_mut_lamports()? -= amount;
-        **ctx.accounts.claimer.try_borrow_mut_lamports()? += amount;
+
+        if game.token_type == false {
+            **ctx.accounts.player_treasury.try_borrow_mut_lamports()? -= amount;
+            **ctx.accounts.claimer.try_borrow_mut_lamports()? += amount;
+        } else {
+            let player_key = player.key;
+            let seeds = [
+                PLAYER_TREASURY_SEED_PREFIX.as_bytes(),
+                player_key.as_ref(),
+                &[player.treasury_bump]
+            ];
+
+            transfer(
+                CpiContext::new(
+                    ctx.accounts.token_program.to_account_info(),
+                    Transfer {
+                        authority: ctx.accounts.player_treasury.to_account_info().clone(),
+                        from: ctx.accounts.player_treasury_ata.to_account_info().clone(),
+                        to: ctx.accounts.claimer_ata.to_account_info().clone(),
+                    }
+                ).with_signer(&[&seeds[..]]),
+                amount,
+            )?;
+        }
+        
+        Ok(())
+    }
+
+    pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
+        let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == ctx.accounts.claimer.key());
+        if index == false {
+            return Err(ErrorCode::UnauthorizedWallet.into());
+        }
+
+        let game = &ctx.accounts.game;
+        
+        if game.token_type == false {
+            **ctx.accounts.game_treasury.try_borrow_mut_lamports()? -= amount;
+            **ctx.accounts.claimer.try_borrow_mut_lamports()? += amount;
+        } else {
+            let game_key = game.key();
+            let seeds = [
+                GAME_TREASURY_SEED_PREFIX.as_bytes(),
+                game_key.as_ref(),
+                &[game.treasury_bump]
+            ];
+
+            transfer(
+                CpiContext::new(
+                    ctx.accounts.token_program.to_account_info(),
+                    Transfer {
+                        authority: ctx.accounts.game_treasury.to_account_info().clone(),
+                        from: ctx.accounts.game_treasury_ata.to_account_info().clone(),
+                        to: ctx.accounts.claimer_ata.to_account_info().clone(),
+                    }
+                ).with_signer(&[&seeds[..]]),
+                amount,
+            )?;
+        }
+        
         Ok(())
     }
 }
