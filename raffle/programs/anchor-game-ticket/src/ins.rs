@@ -308,7 +308,7 @@ pub struct RaffleFinalize<'info>
     #[account(mut)]
     pub raffle_spl_ata: Account<'info, TokenAccount>,
 
-    #[account(mut, constraint = owner_spl_ata.owner == raffle.owner)]
+    #[account(mut, constraint = owner_spl_ata.owner == raffle.owner || owner_spl_ata.key() == Pubkey::default())]
     pub owner_spl_ata: Account<'info, TokenAccount>,
 
     pub token_program: Program<'info, Token>,
