@@ -5,11 +5,11 @@ pub struct Game {
     pub authority: Pubkey,
     pub name: String,
     pub bump: u8,
-    pub treasury_bump: u8,
     pub token_type: bool,
     pub royalty: u8,
     pub community_wallet: Pubkey,
-    pub earned_money: u64,
+    pub main_balance: u64,
+    pub community_balance: u64,
 }
 impl Game
 {
@@ -23,7 +23,6 @@ pub struct Player {
     pub key: Pubkey,
     pub status: u32,
     pub bump: u8,
-    pub treasury_bump: u8,
 }
 impl Player
 {
@@ -34,6 +33,4 @@ impl Player
 pub enum ErrorCode {
     #[msg("Unauthorized wallet cannot create game")]
     UnauthorizedWallet,
-    #[msg("Invalid token type")]
-    InvalidTokenType,
 }
