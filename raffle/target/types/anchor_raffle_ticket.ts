@@ -11,8 +11,7 @@ export type AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": [],
-      "returns": null
+      "args": []
     },
     {
       "name": "transferSplToken",
@@ -43,8 +42,7 @@ export type AnchorRaffleTicket = {
           "name": "amount",
           "type": "u64"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "initializeVault",
@@ -109,8 +107,7 @@ export type AnchorRaffleTicket = {
           "name": "tokenType",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "withdrawVault",
@@ -176,8 +173,7 @@ export type AnchorRaffleTicket = {
           "name": "amount",
           "type": "u64"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "claimSkt",
@@ -233,8 +229,7 @@ export type AnchorRaffleTicket = {
           "name": "amount",
           "type": "u64"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "convertSktSol",
@@ -299,8 +294,7 @@ export type AnchorRaffleTicket = {
           "name": "isHolder",
           "type": "bool"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "initializeGlobal",
@@ -326,8 +320,7 @@ export type AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": [],
-      "returns": null
+      "args": []
     },
     {
       "name": "authorizeAdmin",
@@ -348,8 +341,7 @@ export type AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": [],
-      "returns": null
+      "args": []
     },
     {
       "name": "unauthorizeAdmin",
@@ -370,8 +362,7 @@ export type AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": [],
-      "returns": null
+      "args": []
     },
     {
       "name": "initialize",
@@ -437,8 +428,7 @@ export type AnchorRaffleTicket = {
           "name": "nftMintAddress",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "initializeWithPda",
@@ -499,8 +489,7 @@ export type AnchorRaffleTicket = {
           "name": "nftMintAddress",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "buyTicketSol",
@@ -539,8 +528,7 @@ export type AnchorRaffleTicket = {
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "buyTicketSpl",
@@ -584,8 +572,7 @@ export type AnchorRaffleTicket = {
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "withdrawFromPda",
@@ -636,8 +623,7 @@ export type AnchorRaffleTicket = {
           "name": "amount",
           "type": "u64"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "raffleFinalize",
@@ -693,8 +679,7 @@ export type AnchorRaffleTicket = {
           "name": "raffleRoyalties",
           "type": "u8"
         }
-      ],
-      "returns": null
+      ]
     }
   ],
   "accounts": [
@@ -829,6 +814,21 @@ export type AnchorRaffleTicket = {
           "index": false
         }
       ]
+    },
+    {
+      "name": "ClaimSKTEvent",
+      "fields": [
+        {
+          "name": "claimer",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -888,8 +888,7 @@ export const IDL: AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": [],
-      "returns": null
+      "args": []
     },
     {
       "name": "transferSplToken",
@@ -920,8 +919,7 @@ export const IDL: AnchorRaffleTicket = {
           "name": "amount",
           "type": "u64"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "initializeVault",
@@ -986,8 +984,7 @@ export const IDL: AnchorRaffleTicket = {
           "name": "tokenType",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "withdrawVault",
@@ -1053,8 +1050,7 @@ export const IDL: AnchorRaffleTicket = {
           "name": "amount",
           "type": "u64"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "claimSkt",
@@ -1110,8 +1106,7 @@ export const IDL: AnchorRaffleTicket = {
           "name": "amount",
           "type": "u64"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "convertSktSol",
@@ -1176,8 +1171,7 @@ export const IDL: AnchorRaffleTicket = {
           "name": "isHolder",
           "type": "bool"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "initializeGlobal",
@@ -1203,8 +1197,7 @@ export const IDL: AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": [],
-      "returns": null
+      "args": []
     },
     {
       "name": "authorizeAdmin",
@@ -1225,8 +1218,7 @@ export const IDL: AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": [],
-      "returns": null
+      "args": []
     },
     {
       "name": "unauthorizeAdmin",
@@ -1247,8 +1239,7 @@ export const IDL: AnchorRaffleTicket = {
           "isSigner": false
         }
       ],
-      "args": [],
-      "returns": null
+      "args": []
     },
     {
       "name": "initialize",
@@ -1314,8 +1305,7 @@ export const IDL: AnchorRaffleTicket = {
           "name": "nftMintAddress",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "initializeWithPda",
@@ -1376,8 +1366,7 @@ export const IDL: AnchorRaffleTicket = {
           "name": "nftMintAddress",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "buyTicketSol",
@@ -1416,8 +1405,7 @@ export const IDL: AnchorRaffleTicket = {
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "buyTicketSpl",
@@ -1461,8 +1449,7 @@ export const IDL: AnchorRaffleTicket = {
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "withdrawFromPda",
@@ -1513,8 +1500,7 @@ export const IDL: AnchorRaffleTicket = {
           "name": "amount",
           "type": "u64"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "raffleFinalize",
@@ -1570,8 +1556,7 @@ export const IDL: AnchorRaffleTicket = {
           "name": "raffleRoyalties",
           "type": "u8"
         }
-      ],
-      "returns": null
+      ]
     }
   ],
   "accounts": [
@@ -1703,6 +1688,21 @@ export const IDL: AnchorRaffleTicket = {
         {
           "name": "remainingTickets",
           "type": "u32",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "ClaimSKTEvent",
+      "fields": [
+        {
+          "name": "claimer",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amount",
+          "type": "u64",
           "index": false
         }
       ]

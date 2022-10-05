@@ -169,7 +169,6 @@ pub fn update_raffle(raffle: &mut Raffle, buyer: Pubkey, amount: u32) -> Result<
             remaining_tickets: raffle.total_tickets.checked_sub(raffle.sold_tickets).unwrap()
         });
 
-
     let remaining_tickets = raffle.total_tickets.checked_sub(raffle.sold_tickets).unwrap();
 
     // store the buyer if feature is enabled
