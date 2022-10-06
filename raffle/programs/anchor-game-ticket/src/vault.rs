@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_lang::system_program;
 use anchor_spl::associated_token::{Create, create};
 use anchor_spl::token;
-use crate::state::{ErrorCode};
+use crate::state::{ClaimSKTEvent, ErrorCode};
 use crate::constants::*;
 use crate::utils::*;
 use crate::ins::*;
@@ -106,6 +106,12 @@ pub fn claim_skt(ctx: Context<ClaimSkt>, amount: u64) -> Result<()>
         &[vault.vault_bump],
     ];
     token::transfer(cpi_context.with_signer(&[&seeds[..]]), amount)?;
+
+    emit!(ClaimSKTEvent
+         {
+            claimer: ctx.accounts.claimer.key.clone(),
+            amount: amount
+         });
 
     Ok(())
 }

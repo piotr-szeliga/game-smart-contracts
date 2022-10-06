@@ -11,8 +11,7 @@
           "isSigner": false
         }
       ],
-      "args": [],
-      "returns": null
+      "args": []
     },
     {
       "name": "transferSplToken",
@@ -43,8 +42,7 @@
           "name": "amount",
           "type": "u64"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "initializeVault",
@@ -109,8 +107,7 @@
           "name": "tokenType",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "withdrawVault",
@@ -176,8 +173,7 @@
           "name": "amount",
           "type": "u64"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "claimSkt",
@@ -233,8 +229,7 @@
           "name": "amount",
           "type": "u64"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "convertSktSol",
@@ -299,8 +294,7 @@
           "name": "isHolder",
           "type": "bool"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "initializeGlobal",
@@ -326,8 +320,7 @@
           "isSigner": false
         }
       ],
-      "args": [],
-      "returns": null
+      "args": []
     },
     {
       "name": "authorizeAdmin",
@@ -348,8 +341,7 @@
           "isSigner": false
         }
       ],
-      "args": [],
-      "returns": null
+      "args": []
     },
     {
       "name": "unauthorizeAdmin",
@@ -370,8 +362,7 @@
           "isSigner": false
         }
       ],
-      "args": [],
-      "returns": null
+      "args": []
     },
     {
       "name": "initialize",
@@ -437,8 +428,7 @@
           "name": "nftMintAddress",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "initializeWithPda",
@@ -499,8 +489,7 @@
           "name": "nftMintAddress",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "buyTicketSol",
@@ -539,8 +528,7 @@
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "buyTicketSpl",
@@ -584,8 +572,7 @@
           "name": "tokenSplAddress",
           "type": "publicKey"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "withdrawFromPda",
@@ -636,8 +623,7 @@
           "name": "amount",
           "type": "u64"
         }
-      ],
-      "returns": null
+      ]
     },
     {
       "name": "raffleFinalize",
@@ -693,8 +679,7 @@
           "name": "raffleRoyalties",
           "type": "u8"
         }
-      ],
-      "returns": null
+      ]
     }
   ],
   "accounts": [
@@ -829,6 +814,21 @@
           "index": false
         }
       ]
+    },
+    {
+      "name": "ClaimSKTEvent",
+      "fields": [
+        {
+          "name": "claimer",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amount",
+          "type": "u64",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [
@@ -874,6 +874,6 @@
     }
   ],
   "metadata": {
-    "address": "3ug8uwLeeJjA8yz7jYEe33ntz7wD9x2SWXPxwC4zJkm5"
+    "address": "Hjaw5obT3bWQazo4bASgzjuP1mRgXoXMFbwVroHbWPSC"
   }
 }

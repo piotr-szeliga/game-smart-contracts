@@ -57,6 +57,12 @@ pub struct BuyEvent
     pub remaining_tickets: u32
 }
 
+#[event]
+pub struct ClaimSKTEvent
+{
+    pub claimer: Pubkey,
+    pub amount: u64
+}
 
 #[error_code]
 pub enum ErrorCode
