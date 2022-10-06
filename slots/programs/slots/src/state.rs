@@ -10,6 +10,7 @@ pub struct Game {
     pub community_wallet: Pubkey,
     pub main_balance: u64,
     pub community_balance: u64,
+    pub jackpot: u64,
 }
 impl Game
 {

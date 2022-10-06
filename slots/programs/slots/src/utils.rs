@@ -14,7 +14,7 @@ pub fn get_random() -> u32 {
   u32::from_be_bytes(slice)  
 }
 
-pub fn get_status(price: u64) -> (u32, u64) {
+pub fn get_status(price: u64, jackpot: u64) -> (u32, u64) {
   let mut rand = get_random();
   
   let mut max = rand % 2 + 1;
@@ -29,10 +29,12 @@ pub fn get_status(price: u64) -> (u32, u64) {
       max = 5;
   }
 
+  let multipler = (max - 1) * 10 - rand % 10;
+
   let earned = match max {
-      3 => price,
-      4 => price.checked_mul(5).unwrap().checked_div(4).unwrap(),
-      5 => price.checked_mul(3).unwrap().checked_div(2).unwrap(),
+      3 => price.checked_mul(multipler as u64).unwrap().checked_div(10).unwrap(),
+      4 => price.checked_mul(multipler as u64).unwrap().checked_div(10).unwrap(),
+      5 => jackpot,
       _ => 0,
   };
 

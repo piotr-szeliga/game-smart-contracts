@@ -35,6 +35,7 @@ pub mod slots {
         game.royalty = 5;
         game.main_balance = 0;
         game.community_balance = 0;
+        game.jackpot = 14_400_000_000;
         Ok(())
     }
 
@@ -52,6 +53,17 @@ pub mod slots {
         Ok(())
     }
 
+    pub fn set_jackpot(ctx: Context<SetJackpot>, jackpot: u64) -> Result<()> {
+        let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == ctx.accounts.payer.key());
+        if index == false {
+            return Err(ErrorCode::UnauthorizedWallet.into());
+        }
+
+        let game = &mut ctx.accounts.game;
+        game.jackpot = jackpot;
+        Ok(())
+    }
+
     pub fn add_player(ctx: Context<AddPlayer>, bump: u8) -> Result<()> {
         let player = &mut ctx.accounts.player;
         player.key = ctx.accounts.payer.key();
@@ -64,11 +76,12 @@ pub mod slots {
     }
 
     pub fn play(ctx: Context<Play>, price: u64) -> Result<()> {
+        let game = &ctx.accounts.game;
         let player = &mut ctx.accounts.player;
-        let (rand, earned) = get_status(price);
+        let jackpot = game.jackpot;
+        let (rand, earned) = get_status(price, jackpot);
         player.status = rand;
 
-        let game = &ctx.accounts.game;
         
         let royalty_amount = price.checked_mul(game.royalty as u64).unwrap().checked_div(100).unwrap();
         

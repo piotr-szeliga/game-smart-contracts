@@ -44,6 +44,21 @@ pub struct SetCommunityWallet<'info> {
 
 
 #[derive(Accounts)]
+pub struct SetJackpot<'info> {
+  #[account(mut)]
+  pub payer: Signer<'info>,
+  #[account(
+    seeds = [
+      game.name.as_bytes(),
+      GAME_SEED_PREFIX.as_bytes(),
+      game.authority.as_ref(),
+    ],
+    bump = game.bump,
+  )]
+  pub game: Account<'info, Game>,
+}
+
+#[derive(Accounts)]
 pub struct AddPlayer<'info> {
   #[account(mut)]
   pub payer: Signer<'info>,
