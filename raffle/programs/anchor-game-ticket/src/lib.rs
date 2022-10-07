@@ -34,9 +34,9 @@ pub mod anchor_raffle_ticket
         vault::initialize_vault(ctx, token_type, vault_bump)
     }
 
-    pub fn withdraw_vault(ctx: Context<WithdrawVault>, amount: u64) -> Result<()>
+    pub fn withdraw_vault(ctx: Context<WithdrawVault>, spl_amount: u64, sol_amount: u64) -> Result<()>
     {
-        vault::withdraw_vault(ctx, amount)
+        vault::withdraw_vault(ctx, spl_amount, sol_amount)
     }
 
     pub fn claim_skt(ctx: Context<ClaimSkt>, amount: u64) -> Result<()>

@@ -51,36 +51,43 @@ pub fn initialize_vault(ctx: Context<InitializeVault>, token_type: Pubkey, vault
     Ok(())
 }
 
-pub fn withdraw_vault(ctx: Context<WithdrawVault>, amount: u64) -> Result<()>
+pub fn withdraw_vault(ctx: Context<WithdrawVault>, spl_amount: u64, sol_amount: u64) -> Result<()>
 {
     let global = &ctx.accounts.global;
     if global.authorized_admins.iter().any(|x| x == &ctx.accounts.claimer.key()) == false {
         return Err(ErrorCode::NotAuthorizedAdmin.into());
     }
 
-    if amount >= 10_000 * LAMPORTS_PER_SOL {
+    if spl_amount >= 10_000 * LAMPORTS_PER_SOL {
         return Err(ErrorCode::ExceedMaxWithdrawAmount.into())
     }
 
-    let vault = &ctx.accounts.vault;
-    let vault_address = vault.key().clone();
+    if spl_amount > 0 {
+        let vault = &ctx.accounts.vault;
+        let vault_address = vault.key().clone();
+    
+        let cpi_context = CpiContext::new(
+            ctx.accounts.token_program.to_account_info().clone(),
+            token::Transfer
+            {
+                from: ctx.accounts.vault_pool_skt_account.to_account_info().clone(),
+                to: ctx.accounts.claimer_skt_account.to_account_info().clone(),
+                authority: ctx.accounts.vault_pool.to_account_info().clone(),
+            }
+        );
+    
+        let seeds = [
+            VAULT_SKT_SEED_PREFIX.as_bytes(),
+            vault_address.as_ref(),
+            &[vault.vault_bump],
+        ];
+        token::transfer(cpi_context.with_signer(&[&seeds[..]]), spl_amount)?;
+    }
 
-    let cpi_context = CpiContext::new(
-        ctx.accounts.token_program.to_account_info().clone(),
-        token::Transfer
-        {
-            from: ctx.accounts.vault_pool_skt_account.to_account_info().clone(),
-            to: ctx.accounts.claimer_skt_account.to_account_info().clone(),
-            authority: ctx.accounts.vault_pool.to_account_info().clone(),
-        }
-    );
-
-    let seeds = [
-        VAULT_SKT_SEED_PREFIX.as_bytes(),
-        vault_address.as_ref(),
-        &[vault.vault_bump],
-    ];
-    token::transfer(cpi_context.with_signer(&[&seeds[..]]), amount)?;
+    if sol_amount > 0 {
+        **ctx.accounts.vault_pool.try_borrow_mut_lamports()? -= sol_amount;
+        **ctx.accounts.claimer.try_borrow_mut_lamports()? += sol_amount;
+    }
 
     Ok(())
 }
