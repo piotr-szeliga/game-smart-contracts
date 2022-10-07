@@ -26,7 +26,8 @@ pub fn get_status(price: u64, jackpot: u64) -> (u32, u64) {
       max = 4;
   }
   if rand < 10 {
-      max = 5;
+      rand = rand + 10;
+      max = 4;
   }
 
   let multipler = (max - 1) * 10 - rand % 10;
