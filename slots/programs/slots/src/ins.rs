@@ -107,16 +107,6 @@ pub struct Play<'info>
   #[account(mut)]
   pub game_treasury_ata: Account<'info, TokenAccount>,
   #[account(
-    mut,
-    address = game.community_wallet
-  )]
-  pub community_treasury: SystemAccount<'info>,
-  #[account(
-    mut,
-    constraint = community_treasury_ata.owner == game.community_wallet
-  )]
-  pub community_treasury_ata: Account<'info, TokenAccount>,
-  #[account(
       mut,
       seeds=[
           PLAYER_SEED_PREFIX.as_bytes(),
@@ -126,6 +116,35 @@ pub struct Play<'info>
       bump = player.bump
   )]
   pub player: Account<'info, Player>,
+  pub token_program: Program<'info, Token>,
+  pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct SendToCommunityWallet<'info> 
+{
+  #[account(
+    mut,
+    seeds = [
+      game.name.as_bytes(),
+      GAME_SEED_PREFIX.as_bytes(),
+      game.authority.as_ref(),
+    ],
+    bump = game.bump,
+  )]
+  pub game: Account<'info, Game>,
+  #[account(mut)]
+  pub game_treasury_ata: Account<'info, TokenAccount>,
+  #[account(
+    mut,
+    constraint = game.community_wallets.iter().any(|x| x == &community_wallet.key())
+  )]
+  pub community_wallet: SystemAccount<'info>,
+  #[account(
+    mut,
+    constraint = community_treasury_ata.owner == community_wallet.key()
+  )]
+  pub community_treasury_ata: Account<'info, TokenAccount>,
   pub token_program: Program<'info, Token>,
   pub system_program: Program<'info, System>,
 }

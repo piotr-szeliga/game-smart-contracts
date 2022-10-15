@@ -6,15 +6,16 @@ pub struct Game {
     pub name: String,
     pub bump: u8,
     pub token_type: bool,
-    pub royalty: u8,
-    pub community_wallet: Pubkey,
+    pub royalties: Vec<u16>,
+    pub community_wallets: Vec<Pubkey>,
     pub main_balance: u64,
-    pub community_balance: u64,
+    pub community_balances: Vec<u64>,
+    pub community_pending_balances: Vec<u64>,
     pub jackpot: u64,
 }
 impl Game
 {
-    pub const LEN: usize =  std::mem::size_of::<Game>();
+    pub const LEN: usize =  std::mem::size_of::<Game>() + 50 * 5;
 }
 
 #[account]
@@ -34,4 +35,6 @@ impl Player
 pub enum ErrorCode {
     #[msg("Unauthorized wallet cannot create game")]
     UnauthorizedWallet,
+    #[msg("You should bet at least 0.05 sol")]
+    MinimumPrice
 }
