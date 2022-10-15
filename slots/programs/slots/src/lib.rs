@@ -49,23 +49,28 @@ pub mod slots {
         }
 
         let game = &mut ctx.accounts.game;
-        if game.community_wallets.iter().any(|x| x == &community_wallet) {
-            let index = game.community_wallets.iter().position(|x| x == &community_wallet);
-            if let Some(index) = index {
-                game.royalties[index] = royalty;
-                if royalty == 10001 {
-                    game.royalties.remove(index);
-                    game.community_balances.remove(index);
-                    game.community_wallets.remove(index);
-                    game.community_pending_balances.remove(index);
-                }
+        
+        let index = game.community_wallets.iter().position(|x| x == &community_wallet);
+        if let Some(index) = index {
+            game.royalties[index] = royalty;
+            if royalty == 10001 {
+                game.royalties.remove(index);
+                game.community_balances.remove(index);
+                game.community_wallets.remove(index);
+                game.community_pending_balances.remove(index);
+                msg!("Removed");
+            } else {
+                msg!("Updated");
+                msg!("New Royalty: {:?}", royalty);
             }
         } else {
             game.community_wallets.push(community_wallet);
             game.royalties.push(royalty);
             game.community_balances.push(0);
             game.community_pending_balances.push(0);
+            msg!("New Added");
         }
+        msg!("Community Wallet: {:?}", community_wallet);
         Ok(())
     }
 

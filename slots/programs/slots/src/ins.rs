@@ -32,6 +32,7 @@ pub struct SetCommunityWallet<'info> {
   #[account(mut)]
   pub payer: Signer<'info>,
   #[account(
+    mut,
     seeds = [
       game.name.as_bytes(),
       GAME_SEED_PREFIX.as_bytes(),
@@ -48,6 +49,7 @@ pub struct SetJackpot<'info> {
   #[account(mut)]
   pub payer: Signer<'info>,
   #[account(
+    mut,
     seeds = [
       game.name.as_bytes(),
       GAME_SEED_PREFIX.as_bytes(),
