@@ -8,10 +8,13 @@ pub struct Game {
     pub token_type: bool,
     pub royalties: Vec<u16>,
     pub community_wallets: Vec<Pubkey>,
+    pub commission_wallet: Pubkey,
+    pub commission_fee: u16,
     pub main_balance: u64,
     pub community_balances: Vec<u64>,
     pub community_pending_balances: Vec<u64>,
     pub jackpot: u64,
+    pub win_percents: [u16; 3],
 }
 impl Game
 {

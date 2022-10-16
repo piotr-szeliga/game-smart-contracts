@@ -28,24 +28,7 @@ pub struct CreateGame<'info>
 }
 
 #[derive(Accounts)]
-pub struct SetCommunityWallet<'info> {
-  #[account(mut)]
-  pub payer: Signer<'info>,
-  #[account(
-    mut,
-    seeds = [
-      game.name.as_bytes(),
-      GAME_SEED_PREFIX.as_bytes(),
-      game.authority.as_ref(),
-    ],
-    bump = game.bump,
-  )]
-  pub game: Account<'info, Game>,
-}
-
-
-#[derive(Accounts)]
-pub struct SetJackpot<'info> {
+pub struct ConfigGame<'info> {
   #[account(mut)]
   pub payer: Signer<'info>,
   #[account(
@@ -108,6 +91,16 @@ pub struct Play<'info>
   pub game: Account<'info, Game>,
   #[account(mut)]
   pub game_treasury_ata: Account<'info, TokenAccount>,
+  #[account(
+    mut,
+    address = game.commission_wallet
+  )]
+  pub commission_treasury: SystemAccount<'info>,
+  #[account(
+    mut,
+    constraint = commission_treasury_ata.owner == game.commission_wallet
+  )]
+  pub commission_treasury_ata: Account<'info, TokenAccount>,
   #[account(
       mut,
       seeds=[

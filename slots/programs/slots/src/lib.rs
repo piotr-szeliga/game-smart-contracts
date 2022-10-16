@@ -20,7 +20,16 @@ declare_id!("DMMYkdhZQyKLegrBVw85jUvyHq5P6Gp6MnyUEmzvptCP");
 pub mod slots {
     use super::*;
 
-    pub fn create_game(ctx: Context<CreateGame>, name: String, bump: u8, token_type: bool, community_wallets: Vec<Pubkey>, royalties: Vec<u16>) -> Result<()> {
+    pub fn create_game(
+        ctx: Context<CreateGame>, 
+        name: String, 
+        bump: u8, 
+        token_type: bool, 
+        community_wallets: Vec<Pubkey>, 
+        royalties: Vec<u16>,
+        commission_wallet: Pubkey,
+        commission_fee: u16,
+    ) -> Result<()> {
         let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == ctx.accounts.payer.key());
         if index == false {
             return Err(ErrorCode::UnauthorizedWallet.into());
@@ -32,17 +41,20 @@ pub mod slots {
         game.bump = bump;
         game.token_type = token_type;
         game.community_wallets = community_wallets;
+        game.commission_wallet = commission_wallet;
+        game.commission_fee = commission_fee;
         let len = royalties.len();
         game.royalties = royalties;
         game.main_balance = 0;
         game.community_balances = vec![0; len]; 
         game.community_pending_balances = vec![0; len];
         game.jackpot = 14_400_000_000;
+        game.win_percents = [2500, 1500, 0];
         Ok(())
     }
 
 
-    pub fn set_community_wallet(ctx: Context<SetCommunityWallet>, community_wallet: Pubkey, royalty: u16) -> Result<()> {
+    pub fn set_community_wallet(ctx: Context<ConfigGame>, community_wallet: Pubkey, royalty: u16) -> Result<()> {
         let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == ctx.accounts.payer.key());
         if index == false {
             return Err(ErrorCode::UnauthorizedWallet.into());
@@ -74,13 +86,27 @@ pub mod slots {
         Ok(())
     }
 
-    pub fn set_jackpot(ctx: Context<SetJackpot>, jackpot: u64) -> Result<()> {
+    pub fn set_commission(ctx: Context<ConfigGame>, commission_wallet: Pubkey, commission_fee: u16) -> Result<()> {
         let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == ctx.accounts.payer.key());
         if index == false {
             return Err(ErrorCode::UnauthorizedWallet.into());
         }
 
         let game = &mut ctx.accounts.game;
+        game.commission_wallet = commission_wallet;
+        game.commission_fee = commission_fee;
+
+        Ok(())
+    }
+
+    pub fn set_winning(ctx: Context<ConfigGame>, win_percents: [u16; 3], jackpot: u64) -> Result<()> {
+        let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == ctx.accounts.payer.key());
+        if index == false {
+            return Err(ErrorCode::UnauthorizedWallet.into());
+        }
+
+        let game = &mut ctx.accounts.game;
+        game.win_percents = win_percents;
         game.jackpot = jackpot;
         Ok(())
     }
@@ -103,8 +129,11 @@ pub mod slots {
         let game = &ctx.accounts.game;
         let player = &mut ctx.accounts.player;
         let jackpot = game.jackpot;
-        let (rand, earned) = get_status(price, jackpot);
+        let win_percents = game.win_percents;
+        let (rand, earned) = get_status(price, win_percents, jackpot);
         player.status = rand;
+
+        let commission_amount = price.checked_mul(game.commission_fee as u64).unwrap().checked_div(10000).unwrap();
         
         match game.token_type {
             false => {
@@ -116,8 +145,20 @@ pub mod slots {
                             to: ctx.accounts.game.to_account_info(),
                         },
                     ),
-                    price,
+                    price.checked_sub(commission_amount).unwrap(),
                 )?;
+                if commission_amount > 0 {
+                    system_program::transfer(
+                        CpiContext::new(
+                            ctx.accounts.system_program.to_account_info(),
+                            system_program::Transfer {
+                                from: ctx.accounts.payer.to_account_info().clone(),
+                                to: ctx.accounts.commission_treasury.to_account_info(),
+                            },
+                        ),
+                        commission_amount
+                    )?;
+                }
             },
             true => {
                 transfer(
@@ -129,13 +170,26 @@ pub mod slots {
                             to: ctx.accounts.game_treasury_ata.to_account_info().clone(),
                         }
                     ),
-                    price,
-                )?;                
+                    price.checked_sub(commission_amount).unwrap(),
+                )?;
+                if commission_amount > 0 {
+                    transfer(
+                        CpiContext::new(
+                            ctx.accounts.token_program.to_account_info(),
+                            Transfer {
+                                authority: ctx.accounts.payer.to_account_info().clone(),
+                                from: ctx.accounts.payer_ata.to_account_info().clone(),
+                                to: ctx.accounts.commission_treasury_ata.to_account_info().clone(),
+                            }
+                        ),
+                        price.checked_sub(commission_amount).unwrap(),
+                    )?;
+                }
             }
         }
         
         let game = &mut ctx.accounts.game;
-        game.main_balance = game.main_balance.checked_add(price).unwrap();
+        game.main_balance = game.main_balance.checked_add(price).unwrap().checked_sub(commission_amount).unwrap();
         let len = game.royalties.len();
         for i in 0..len {
             let royalty = game.royalties[i];
