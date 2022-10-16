@@ -247,8 +247,9 @@ pub mod slots {
         player.earned_money = 0;
 
         if game.token_type == false {
+            msg!("Amount: {:?}", amount);
             **ctx.accounts.game.to_account_info().try_borrow_mut_lamports()? -= amount;
-            **ctx.accounts.claimer.try_borrow_mut_lamports()? += amount;
+            **ctx.accounts.claimer.to_account_info().try_borrow_mut_lamports()? += amount;
         } else {
             let game_name = &game.name;
             let authority = game.authority;
@@ -271,6 +272,9 @@ pub mod slots {
                 amount,
             )?;
         }
+
+        let game = &mut ctx.accounts.game;
+        game.main_balance = game.main_balance.checked_sub(amount).unwrap();
         
         Ok(())
     }
