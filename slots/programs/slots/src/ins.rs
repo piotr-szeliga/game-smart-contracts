@@ -71,6 +71,28 @@ pub struct AddPlayer<'info> {
   pub system_program: Program<'info, System>,
 }
 
+#[derive(Accounts)]
+pub struct Fund<'info> {
+  #[account(mut)]
+  pub payer: Signer<'info>,
+  /// CHECK:
+  #[account(mut)]
+  pub payer_ata: AccountInfo<'info>,
+  #[account(
+    mut,
+    seeds = [
+      game.name.as_bytes(),
+      GAME_SEED_PREFIX.as_bytes(),
+      game.authority.as_ref(),
+    ],
+    bump = game.bump,
+  )]
+  pub game: Account<'info, Game>,
+  #[account(mut)]
+  pub game_treasury_ata: Account<'info, TokenAccount>,
+  pub token_program: Program<'info, Token>,
+  pub system_program: Program<'info, System>,
+}
 
 #[derive(Accounts)]
 pub struct Play<'info>

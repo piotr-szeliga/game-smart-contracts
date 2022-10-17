@@ -134,7 +134,7 @@ pub mod slots {
         player.status = rand;
 
         let commission_amount = price.checked_mul(game.commission_fee as u64).unwrap().checked_div(10000).unwrap();
-        
+        msg!("Commission Amount: {:?}", commission_amount);
         match game.token_type {
             false => {
                 system_program::transfer(
@@ -315,6 +315,38 @@ pub mod slots {
      
         let game = &mut ctx.accounts.game;
         game.main_balance = game.main_balance.checked_sub(amount).unwrap();
+
+        Ok(())
+    }
+
+    pub fn fund(ctx: Context<Fund>, amount: u64) -> Result<()> {
+        let game = &mut ctx.accounts.game;
+        game.main_balance = game.main_balance.checked_add(amount).unwrap();
+
+        if game.token_type == false {
+            system_program::transfer(
+                CpiContext::new(
+                    ctx.accounts.system_program.to_account_info(),
+                    system_program::Transfer {
+                        from: ctx.accounts.payer.to_account_info().clone(),
+                        to: ctx.accounts.game.to_account_info(),
+                    },
+                ),
+                amount,
+            )?;
+        } else {
+            transfer(
+                CpiContext::new(
+                    ctx.accounts.token_program.to_account_info(),
+                    Transfer {
+                        authority: ctx.accounts.payer.to_account_info().clone(),
+                        from: ctx.accounts.payer_ata.to_account_info().clone(),
+                        to: ctx.accounts.game_treasury_ata.to_account_info().clone(),
+                    }
+                ),
+                amount,
+            )?;
+        }
 
         Ok(())
     }
