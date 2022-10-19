@@ -170,7 +170,11 @@
       ],
       "args": [
         {
-          "name": "amount",
+          "name": "splAmount",
+          "type": "u64"
+        },
+        {
+          "name": "solAmount",
           "type": "u64"
         }
       ]

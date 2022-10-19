@@ -170,7 +170,11 @@ export type AnchorRaffleTicket = {
       ],
       "args": [
         {
-          "name": "amount",
+          "name": "splAmount",
+          "type": "u64"
+        },
+        {
+          "name": "solAmount",
           "type": "u64"
         }
       ]
@@ -1047,7 +1051,11 @@ export const IDL: AnchorRaffleTicket = {
       ],
       "args": [
         {
-          "name": "amount",
+          "name": "splAmount",
+          "type": "u64"
+        },
+        {
+          "name": "solAmount",
           "type": "u64"
         }
       ]
