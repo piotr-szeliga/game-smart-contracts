@@ -48,8 +48,17 @@ pub mod slots {
         game.main_balance = 0;
         game.community_balances = vec![0; len]; 
         game.community_pending_balances = vec![0; len];
-        game.jackpot = 14_400_000_000;
-        game.win_percents = [2500, 1500, 0];
+        game.jackpot = 14_400_000_000;        
+        game.win_percents = [
+            [2500, 1500, 0],
+            [2000, 1000, 0],
+            [1500,  500, 0],
+            [1000,  250, 0],
+            [ 500,  200, 0],
+            [ 200,  100, 0],
+        ];
+        game.min_rounds_before_win = 5;
+        game.lose_counter = 0;
         Ok(())
     }
 
@@ -99,7 +108,7 @@ pub mod slots {
         Ok(())
     }
 
-    pub fn set_winning(ctx: Context<ConfigGame>, win_percents: [u16; 3], jackpot: u64) -> Result<()> {
+    pub fn set_winning(ctx: Context<ConfigGame>, win_percents: [[u16; 3]; 6], jackpot: u64, min_rounds_before_win: u8) -> Result<()> {
         let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == ctx.accounts.payer.key());
         if index == false {
             return Err(ErrorCode::UnauthorizedWallet.into());
@@ -108,6 +117,7 @@ pub mod slots {
         let game = &mut ctx.accounts.game;
         game.win_percents = win_percents;
         game.jackpot = jackpot;
+        game.min_rounds_before_win = min_rounds_before_win;
         Ok(())
     }
 
@@ -122,15 +132,16 @@ pub mod slots {
         Ok(())
     }
 
-    pub fn play(ctx: Context<Play>, price: u64) -> Result<()> {
-        if price < 50_000_000 {
+    pub fn play(ctx: Context<Play>, bet_no: u8) -> Result<()> {
+        if bet_no > 5 {
             return Err(ErrorCode::MinimumPrice.into());
         }
         let game = &ctx.accounts.game;
         let player = &mut ctx.accounts.player;
         let jackpot = game.jackpot;
         let win_percents = game.win_percents;
-        let (rand, earned) = get_status(price, win_percents, jackpot);
+        let price = BET_PRICES[bet_no as usize];
+        let (rand, earned) = get_status(bet_no, win_percents, jackpot, game.lose_counter + 1 < game.min_rounds_before_win);
         player.status = rand;
 
         let commission_amount = price.checked_mul(game.commission_fee as u64).unwrap().checked_div(10000).unwrap();
@@ -189,6 +200,10 @@ pub mod slots {
         }
         
         let game = &mut ctx.accounts.game;
+        game.lose_counter = game.lose_counter.checked_add(1).unwrap();
+        if earned > 0 {
+            game.lose_counter = 0;
+        }
         game.main_balance = game.main_balance.checked_add(price).unwrap().checked_sub(commission_amount).unwrap();
         let len = game.royalties.len();
         for i in 0..len {

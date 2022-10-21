@@ -14,7 +14,9 @@ pub struct Game {
     pub community_balances: Vec<u64>,
     pub community_pending_balances: Vec<u64>,
     pub jackpot: u64,
-    pub win_percents: [u16; 3],
+    pub win_percents: [[u16; 3]; 6],
+    pub min_rounds_before_win: u8,
+    pub lose_counter: u8,
 }
 impl Game
 {
