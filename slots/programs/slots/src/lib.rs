@@ -57,8 +57,8 @@ pub mod slots {
             [ 500,  200, 0],
             [ 200,  100, 0],
         ];
-        game.min_rounds_before_win = 5;
-        game.lose_counter = 0;
+        game.min_rounds_before_win = 4;
+        game.lose_counter = 4;
         Ok(())
     }
 
