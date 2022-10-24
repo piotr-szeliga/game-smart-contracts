@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Token, TokenAccount};
+use anchor_spl::token::{Token};
 
 use crate::state::*;
 use crate::constants::*;
@@ -88,8 +88,9 @@ pub struct Fund<'info> {
     bump = game.bump,
   )]
   pub game: Account<'info, Game>,
+  /// CHECK:
   #[account(mut)]
-  pub game_treasury_ata: Account<'info, TokenAccount>,
+  pub game_treasury_ata: AccountInfo<'info>,
   pub token_program: Program<'info, Token>,
   pub system_program: Program<'info, System>,
 }
@@ -99,8 +100,9 @@ pub struct Play<'info>
 {
   #[account(mut)]
   pub payer: Signer<'info>,
+  /// CHECK:
   #[account(mut)]
-  pub payer_ata: Account<'info, TokenAccount>,
+  pub payer_ata: AccountInfo<'info>,
   #[account(
     mut,
     seeds = [
@@ -111,18 +113,17 @@ pub struct Play<'info>
     bump = game.bump,
   )]
   pub game: Account<'info, Game>,
+  /// CHECK:
   #[account(mut)]
-  pub game_treasury_ata: Account<'info, TokenAccount>,
+  pub game_treasury_ata: AccountInfo<'info>,
   #[account(
     mut,
     address = game.commission_wallet
   )]
   pub commission_treasury: SystemAccount<'info>,
-  #[account(
-    mut,
-    constraint = commission_treasury_ata.owner == game.commission_wallet
-  )]
-  pub commission_treasury_ata: Account<'info, TokenAccount>,
+  /// CHECK:
+  #[account(mut)]
+  pub commission_treasury_ata: AccountInfo<'info>,
   #[account(
       mut,
       seeds=[
@@ -150,18 +151,17 @@ pub struct SendToCommunityWallet<'info>
     bump = game.bump,
   )]
   pub game: Account<'info, Game>,
+  /// CHECK:
   #[account(mut)]
-  pub game_treasury_ata: Account<'info, TokenAccount>,
+  pub game_treasury_ata: AccountInfo<'info>,
   #[account(
     mut,
     constraint = game.community_wallets.iter().any(|x| x == &community_wallet.key())
   )]
   pub community_wallet: SystemAccount<'info>,
-  #[account(
-    mut,
-    constraint = community_treasury_ata.owner == community_wallet.key()
-  )]
-  pub community_treasury_ata: Account<'info, TokenAccount>,
+  /// CHECK:
+  #[account(mut)]
+  pub community_treasury_ata: AccountInfo<'info>,
   pub token_program: Program<'info, Token>,
   pub system_program: Program<'info, System>,
 }
@@ -171,8 +171,9 @@ pub struct Claim<'info>
 {
     #[account(mut)]
     pub claimer: Signer<'info>,
+    /// CHECK:
     #[account(mut)]
-    pub claimer_ata: Account<'info, TokenAccount>,
+    pub claimer_ata: AccountInfo<'info>,
     #[account(
       mut,
       seeds = [
@@ -183,8 +184,9 @@ pub struct Claim<'info>
       bump = game.bump,
     )]
     pub game: Account<'info, Game>,
+    /// CHECK:
     #[account(mut)]
-    pub game_treasury_ata: Account<'info, TokenAccount>,
+    pub game_treasury_ata: AccountInfo<'info>,
     #[account(
       mut,
       seeds=[
@@ -204,8 +206,9 @@ pub struct Withdraw<'info>
 {
     #[account(mut)]
     pub claimer: Signer<'info>,
+    /// CHECK:
     #[account(mut)]
-    pub claimer_ata: Account<'info, TokenAccount>,
+    pub claimer_ata: AccountInfo<'info>,
     #[account(
       mut,
       seeds = [
@@ -216,8 +219,9 @@ pub struct Withdraw<'info>
       bump = game.bump,
     )]
     pub game: Account<'info, Game>,
+    /// CHECK:
     #[account(mut)]
-    pub game_treasury_ata: Account<'info, TokenAccount>,
+    pub game_treasury_ata: AccountInfo<'info>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>
 }

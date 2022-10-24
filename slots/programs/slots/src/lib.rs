@@ -141,7 +141,7 @@ pub mod slots {
         let jackpot = game.jackpot;
         let win_percents = game.win_percents;
         let price = BET_PRICES[bet_no as usize];
-        let (rand, earned) = get_status(bet_no, win_percents, jackpot, game.lose_counter + 1 < game.min_rounds_before_win);
+        let (rand, earned) = get_status(bet_no, win_percents, jackpot, game.lose_counter < game.min_rounds_before_win);
         player.status = rand;
 
         let commission_amount = price.checked_mul(game.commission_fee as u64).unwrap().checked_div(10000).unwrap();
