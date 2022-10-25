@@ -29,12 +29,13 @@ pub fn get_status(bet_no: u8, win_percents: [[u16; 3]; 6], jackpot: u64, lose: b
 
   let multipler = (max - 1) * 10 - rand % 10;
 
-  let earned = match max {
-      3 => price.checked_mul(multipler as u64).unwrap().checked_div(10).unwrap(),
-      4 => price.checked_mul(multipler as u64).unwrap().checked_div(10).unwrap(),
-      5 => jackpot,
-      _ => 0,
-  };
+  let mut earned = 0;
+  if max >= 3 {
+    earned = price.checked_mul(multipler as u64).unwrap().checked_div(10).unwrap();
+    if max == 5 && jackpot > 0 && bet_no > 3 {
+      earned = jackpot;
+    }
+  }
 
   msg!("Status: {:?}", rand);
   msg!("Max Equal: {:?}", max);
