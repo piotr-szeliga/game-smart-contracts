@@ -12,7 +12,8 @@ use anchor_lang::prelude::*;
 
 use ins::*;
 
-declare_id!("Hjaw5obT3bWQazo4bASgzjuP1mRgXoXMFbwVroHbWPSC");
+//declare_id!("Hjaw5obT3bWQazo4bASgzjuP1mRgXoXMFbwVroHbWPSC");
+declare_id!("J9KjNChkP1mPneAX979w1zpGGNxdrVjoV5Y5NKtuK8pV");
 
 
 #[program]
