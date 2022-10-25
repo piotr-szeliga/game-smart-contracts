@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Token, TokenAccount};
+use anchor_spl::token::{Token};
 
 use crate::state::*;
 use crate::constants::*;
@@ -28,10 +28,11 @@ pub struct CreateGame<'info>
 }
 
 #[derive(Accounts)]
-pub struct SetCommunityWallet<'info> {
+pub struct ConfigGame<'info> {
   #[account(mut)]
   pub payer: Signer<'info>,
   #[account(
+    mut,
     seeds = [
       game.name.as_bytes(),
       GAME_SEED_PREFIX.as_bytes(),
@@ -41,7 +42,6 @@ pub struct SetCommunityWallet<'info> {
   )]
   pub game: Account<'info, Game>,
 }
-
 
 #[derive(Accounts)]
 pub struct AddPlayer<'info> {
@@ -71,14 +71,13 @@ pub struct AddPlayer<'info> {
   pub system_program: Program<'info, System>,
 }
 
-
 #[derive(Accounts)]
-pub struct Play<'info>
-{
+pub struct Fund<'info> {
   #[account(mut)]
   pub payer: Signer<'info>,
+  /// CHECK:
   #[account(mut)]
-  pub payer_ata: Account<'info, TokenAccount>,
+  pub payer_ata: AccountInfo<'info>,
   #[account(
     mut,
     seeds = [
@@ -89,18 +88,42 @@ pub struct Play<'info>
     bump = game.bump,
   )]
   pub game: Account<'info, Game>,
+  /// CHECK:
   #[account(mut)]
-  pub game_treasury_ata: Account<'info, TokenAccount>,
+  pub game_treasury_ata: AccountInfo<'info>,
+  pub token_program: Program<'info, Token>,
+  pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct Play<'info>
+{
+  #[account(mut)]
+  pub payer: Signer<'info>,
+  /// CHECK:
+  #[account(mut)]
+  pub payer_ata: AccountInfo<'info>,
   #[account(
     mut,
-    address = game.community_wallet
+    seeds = [
+      game.name.as_bytes(),
+      GAME_SEED_PREFIX.as_bytes(),
+      game.authority.as_ref(),
+    ],
+    bump = game.bump,
   )]
-  pub community_treasury: SystemAccount<'info>,
+  pub game: Account<'info, Game>,
+  /// CHECK:
+  #[account(mut)]
+  pub game_treasury_ata: AccountInfo<'info>,
   #[account(
     mut,
-    constraint = community_treasury_ata.owner == game.community_wallet
+    address = game.commission_wallet
   )]
-  pub community_treasury_ata: Account<'info, TokenAccount>,
+  pub commission_treasury: SystemAccount<'info>,
+  /// CHECK:
+  #[account(mut)]
+  pub commission_treasury_ata: AccountInfo<'info>,
   #[account(
       mut,
       seeds=[
@@ -116,12 +139,41 @@ pub struct Play<'info>
 }
 
 #[derive(Accounts)]
+pub struct SendToCommunityWallet<'info> 
+{
+  #[account(
+    mut,
+    seeds = [
+      game.name.as_bytes(),
+      GAME_SEED_PREFIX.as_bytes(),
+      game.authority.as_ref(),
+    ],
+    bump = game.bump,
+  )]
+  pub game: Account<'info, Game>,
+  /// CHECK:
+  #[account(mut)]
+  pub game_treasury_ata: AccountInfo<'info>,
+  #[account(
+    mut,
+    constraint = game.community_wallets.iter().any(|x| x == &community_wallet.key())
+  )]
+  pub community_wallet: SystemAccount<'info>,
+  /// CHECK:
+  #[account(mut)]
+  pub community_treasury_ata: AccountInfo<'info>,
+  pub token_program: Program<'info, Token>,
+  pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
 pub struct Claim<'info>
 {
     #[account(mut)]
     pub claimer: Signer<'info>,
+    /// CHECK:
     #[account(mut)]
-    pub claimer_ata: Account<'info, TokenAccount>,
+    pub claimer_ata: AccountInfo<'info>,
     #[account(
       mut,
       seeds = [
@@ -132,8 +184,9 @@ pub struct Claim<'info>
       bump = game.bump,
     )]
     pub game: Account<'info, Game>,
+    /// CHECK:
     #[account(mut)]
-    pub game_treasury_ata: Account<'info, TokenAccount>,
+    pub game_treasury_ata: AccountInfo<'info>,
     #[account(
       mut,
       seeds=[
@@ -153,8 +206,9 @@ pub struct Withdraw<'info>
 {
     #[account(mut)]
     pub claimer: Signer<'info>,
+    /// CHECK:
     #[account(mut)]
-    pub claimer_ata: Account<'info, TokenAccount>,
+    pub claimer_ata: AccountInfo<'info>,
     #[account(
       mut,
       seeds = [
@@ -165,8 +219,9 @@ pub struct Withdraw<'info>
       bump = game.bump,
     )]
     pub game: Account<'info, Game>,
+    /// CHECK:
     #[account(mut)]
-    pub game_treasury_ata: Account<'info, TokenAccount>,
+    pub game_treasury_ata: AccountInfo<'info>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>
 }
