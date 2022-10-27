@@ -85,8 +85,8 @@ pub fn withdraw_vault(ctx: Context<WithdrawVault>, spl_amount: u64, sol_amount: 
     }
 
     if sol_amount > 0 {
-        **ctx.accounts.vault_pool.try_borrow_mut_lamports()? -= sol_amount;
-        **ctx.accounts.claimer.try_borrow_mut_lamports()? += sol_amount;
+        **ctx.accounts.vault.to_account_info().try_borrow_mut_lamports()? -= sol_amount;
+        **ctx.accounts.claimer.to_account_info().try_borrow_mut_lamports()? += sol_amount;
     }
 
     Ok(())
