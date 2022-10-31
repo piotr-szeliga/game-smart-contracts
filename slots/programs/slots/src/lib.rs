@@ -14,7 +14,7 @@ use utils::*;
 use state::ErrorCode;
 use constants::*;
 
-declare_id!("3BJdzqUKD2bTTxDP7x7odQ2u4SBiHu3VncZQwmvHre34");
+declare_id!("6sE2DYexXa8oBPfGjgoCkNceHgH3xXnXD2nBz7i3NTWE");
 
 #[program]
 pub mod slots {
