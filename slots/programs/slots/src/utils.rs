@@ -22,7 +22,12 @@ pub fn get_status(bet_no: u8, win_percents: [[u16; 3]; 6], jackpot: u64, lose: b
   let mut max = rand % 2 + 1;
   rand = rand % 10000;
   for i in 0..3 {
-    if rand < win_percents[bet_no as usize][i].into() && lose == false {
+    let bn = bet_no as usize;
+    let mut low: u32 = 0;
+    if i < 2 {
+      low = win_percents[bn][i + 1].into();
+    }
+    if rand >= low && rand < win_percents[bn][i].into() && lose == false {
       max = 3 + i as u32;
     }
   }

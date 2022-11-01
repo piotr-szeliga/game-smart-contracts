@@ -50,12 +50,12 @@ pub mod slots {
         game.community_pending_balances = vec![0; len];
         game.jackpot = 14_400_000_000;        
         game.win_percents = [
-            [2500, 1500, 0],
-            [2000, 1000, 0],
-            [1500,  500, 0],
-            [1000,  250, 0],
-            [ 500,  200, 0],
-            [ 200,  100, 0],
+            [4000, 1500, 0],
+            [3000, 1000, 0],
+            [2000,  500, 0],
+            [1250,  250, 0],
+            [ 700,  200, 0],
+            [ 300,  100, 0],
         ];
         game.min_rounds_before_win = 4;
         game.lose_counter = 4;

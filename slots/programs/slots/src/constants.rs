@@ -8,7 +8,7 @@ pub const APPROVED_WALLETS: [&str; 3] = [
 ];
 
 pub const BET_PRICES: [u64; 6] = [
-      50_000_000,
+     50_000_000,
     100_000_000,
     250_000_000,
     500_000_000,
