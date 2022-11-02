@@ -128,6 +128,10 @@ pub mod slots {
         player.earned_money = 0;
         player.bump = bump;
         player.status = 0;
+        player.is_jackpot = false;
+        player.multipler = 0;
+        player.equal_count = 1;
+        player.equal_no = 0;
 
         Ok(())
     }
@@ -141,11 +145,15 @@ pub mod slots {
         let jackpot = game.jackpot;
         let win_percents = game.win_percents;
         let price = BET_PRICES[bet_no as usize];
-        let (rand, earned) = get_status(bet_no, win_percents, jackpot, game.lose_counter < game.min_rounds_before_win);
+        let (rand, earned, is_jackpot, euqal_count, equal_no, multipler) = get_status(bet_no, win_percents, jackpot, game.lose_counter < game.min_rounds_before_win);
         player.status = rand;
+        player.is_jackpot = is_jackpot;
+        player.equal_count = euqal_count;
+        player.equal_no = equal_no;
+        player.multipler = multipler;
+        msg!("Player PDA: {:?}", player.key);
 
-        let commission_amount = price.checked_mul(game.commission_fee as u64).unwrap().checked_div(10000).unwrap();
-        msg!("Commission Amount: {:?}", commission_amount);
+        let commission_amount = price.checked_mul(game.commission_fee as u64).unwrap().checked_div(10000).unwrap();        
         match game.token_type {
             false => {
                 system_program::transfer(

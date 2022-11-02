@@ -29,6 +29,11 @@ pub struct Player {
     pub earned_money: u64,
     pub key: Pubkey,
     pub status: u32,
+    pub is_win: bool,
+    pub is_jackpot: bool,
+    pub equal_no: u32,
+    pub equal_count: u32,
+    pub multipler: u32,
     pub bump: u8,
 }
 impl Player
