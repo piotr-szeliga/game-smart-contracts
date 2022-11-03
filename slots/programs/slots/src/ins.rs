@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_lang::solana_program::sysvar;
 use anchor_spl::token::{Token};
 
 use crate::state::*;
@@ -197,6 +198,9 @@ pub struct Claim<'info>
       bump = player.bump
     )]
     pub player: Account<'info, Player>,
+    /// CHECK: instruction_sysvar_account cross checking 
+    #[account(address = sysvar::instructions::ID)]
+    pub instruction_sysvar_account: AccountInfo<'info>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>
 }

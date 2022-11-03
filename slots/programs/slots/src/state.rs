@@ -46,5 +46,7 @@ pub enum ErrorCode {
     #[msg("Unauthorized wallet cannot create game")]
     UnauthorizedWallet,
     #[msg("You should bet at least 0.05 sol")]
-    MinimumPrice
+    MinimumPrice,
+    #[msg("Invalid Instruction Added")]
+    InvalidInstructionAdded,
 }

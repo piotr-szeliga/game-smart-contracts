@@ -6,18 +6,20 @@ mod utils;
 use anchor_lang::{
     prelude::*,
     system_program,
+    solana_program::sysvar::instructions::get_instruction_relative
 };
 use anchor_spl::token::{transfer, Transfer};
 
 use ins::*;
 use utils::*;
-use state::ErrorCode;
 use constants::*;
 
 declare_id!("6sE2DYexXa8oBPfGjgoCkNceHgH3xXnXD2nBz7i3NTWE");
 
 #[program]
 pub mod slots {
+    use crate::state::ErrorCode;
+
     use super::*;
 
     pub fn create_game(
@@ -263,6 +265,21 @@ pub mod slots {
     }
 
     pub fn claim(ctx: Context<Claim>) -> Result<()> {
+        let instruction_sysvar_account_info = ctx.accounts.instruction_sysvar_account.to_account_info();
+        let invalid = match get_instruction_relative(-1, &instruction_sysvar_account_info) {
+            Ok(_) => true,
+            Err(_) => false,
+        };
+        if invalid == true {
+            return Err(ErrorCode::InvalidInstructionAdded.into());
+        }
+        let invalid = match get_instruction_relative(1, &instruction_sysvar_account_info) {
+            Ok(_) => true,
+            Err(_) => false,
+        };
+        if invalid == true {
+            return Err(ErrorCode::InvalidInstructionAdded.into());
+        }
         let game = &ctx.accounts.game;
         let player = &mut ctx.accounts.player;
         
