@@ -14,7 +14,7 @@ use ins::*;
 use utils::*;
 use constants::*;
 
-declare_id!("6sE2DYexXa8oBPfGjgoCkNceHgH3xXnXD2nBz7i3NTWE");
+declare_id!("3BJdzqUKD2bTTxDP7x7odQ2u4SBiHu3VncZQwmvHre34");
 
 #[program]
 pub mod slots {
@@ -153,6 +153,8 @@ pub mod slots {
         player.equal_count = euqal_count;
         player.equal_no = equal_no;
         player.multipler = multipler;
+
+        msg!("Version: {:?}", VERSION);
         msg!("Player PDA: {:?}", player.key);
 
         let commission_amount = price.checked_mul(game.commission_fee as u64).unwrap().checked_div(10000).unwrap();        
@@ -286,6 +288,8 @@ pub mod slots {
         let amount = player.earned_money;
         player.earned_money = 0;
 
+        msg!("Version: {:?}", VERSION);
+
         if game.token_type == false {
             msg!("Amount: {:?}", amount);
             **ctx.accounts.game.to_account_info().try_borrow_mut_lamports()? -= amount;
@@ -324,6 +328,8 @@ pub mod slots {
         if index == false {
             return Err(ErrorCode::UnauthorizedWallet.into());
         }
+
+        msg!("Version: {:?}", VERSION);
 
         let game = &ctx.accounts.game;
 
