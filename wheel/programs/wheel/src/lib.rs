@@ -3,8 +3,8 @@ mod state;
 mod utils;
 mod constants;
 
-use anchor_lang::{prelude::* , system_program};
-use anchor_spl::token::{self, Token, TokenAccount, Transfer, CloseAccount, close_account, transfer};
+use anchor_lang::{prelude::*};
+use anchor_spl::token::{Transfer, CloseAccount, close_account, transfer};
 
 use crate::ins::*;
 use crate::constants::*;
@@ -22,6 +22,7 @@ pub mod wheel {
         ctx: Context<CreateGame>, 
         name: String, 
         bump: u8,
+        spl_mint: Pubkey,
         community_wallets: Vec<Pubkey>, 
         royalties: Vec<u16>,
         commission_wallet: Pubkey,
@@ -31,6 +32,7 @@ pub mod wheel {
         game.authority = *ctx.accounts.payer.key;
         game.bump = bump;
         game.name = name;
+        game.spl_mint = spl_mint;
         game.community_wallets = community_wallets;
         game.commission_wallet = commission_wallet;
         game.commission_fee = commission_fee;
@@ -65,8 +67,8 @@ pub mod wheel {
             amount,
         )?;
 
-        if token::accessor::amount(&ctx.accounts.game_ata).unwrap() == 0 {
-            anchor_spl::token::close_account(
+        if ctx.accounts.game_ata.amount == 0 {
+            close_account(
                 CpiContext::new(
                     ctx.accounts.token_program.to_account_info().clone(), 
                     CloseAccount {
@@ -106,8 +108,8 @@ pub mod wheel {
             amount,
         )?;
 
-        if token::accessor::amount(&ctx.accounts.game_ata).unwrap() == 0 {
-            anchor_spl::token::close_account(
+        if ctx.accounts.game_ata.amount == 0 {
+            close_account(
                 CpiContext::new(
                     ctx.accounts.token_program.to_account_info().clone(), 
                     CloseAccount {
@@ -201,6 +203,44 @@ pub mod wheel {
             game.community_pending_balances[index] = 0;
             game.community_balances[index] = game.community_balances[index].checked_add(amount).unwrap();
         }
+        Ok(())
+    }
+
+    pub fn play(ctx: Context<Play>) -> Result<()> {
+        let game = &ctx.accounts.game;
+        let player = &mut ctx.accounts.player;
+        let price: u64 = 50_000_000;
+
+        player.status = get_random();
+        msg!("Player PDA: {:?}", player.key);
+
+        let commission_amount = price.checked_mul(game.commission_fee as u64).unwrap().checked_div(10000).unwrap();        
+        
+        transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                Transfer {
+                    authority: ctx.accounts.payer.to_account_info().clone(),
+                    from: ctx.accounts.payer_ata.to_account_info().clone(),
+                    to: ctx.accounts.game_treasury_ata.to_account_info().clone(),
+                }
+            ),
+            price.checked_sub(commission_amount).unwrap(),
+        )?;
+        if commission_amount > 0 {
+            transfer(
+                CpiContext::new(
+                    ctx.accounts.token_program.to_account_info(),
+                    Transfer {
+                        authority: ctx.accounts.payer.to_account_info().clone(),
+                        from: ctx.accounts.payer_ata.to_account_info().clone(),
+                        to: ctx.accounts.commission_treasury_ata.to_account_info().clone(),
+                    }
+                ),
+                price.checked_sub(commission_amount).unwrap(),
+            )?;
+        }
+
         Ok(())
     }
 }

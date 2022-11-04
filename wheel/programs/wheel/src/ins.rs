@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_spl::token::{TokenAccount, Mint};
 use anchor_spl::token::{Token};
 
 use crate::state::*;
@@ -42,20 +43,21 @@ pub struct FundPrize<'info> {
   )]
   pub game: Account<'info, Game>,
 
-  /// CHECK:
-  #[account(mut)]
-  pub game_ata: AccountInfo<'info>,
+  #[account(
+    mut,
+    constraint = game_ata.mint == prize_mint.key() && game_ata.owner == game.key()
+  )]
+  pub game_ata: Account<'info, TokenAccount>,
 
-  /// CHECK:
-  #[account(mut)]
-  pub funder_ata: AccountInfo<'info>,
+  #[account(
+    mut,
+    constraint = funder_ata.mint == prize_mint.key() && funder_ata.owner == funder.key()
+  )]
+  pub funder_ata: Account<'info, TokenAccount>,
 
-  /// CHECK:
-  pub prize_mint: AccountInfo<'info>,
+  pub prize_mint: Account<'info, Mint>,
 
   pub token_program: Program<'info, Token>,
-
-  pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -63,9 +65,11 @@ pub struct WithdrawPrize<'info> {
   #[account(mut)]
   pub withdrawer: Signer<'info>,
 
-  /// CHECK:
-  #[account(mut)]
-  pub withdrawer_ata: AccountInfo<'info>,
+  #[account(
+    mut,
+    constraint = withdrawer_ata.owner == withdrawer.key() && withdrawer_ata.mint == prize_mint.key()
+  )]
+  pub withdrawer_ata: Account<'info, TokenAccount>,
 
   #[account(
     mut,
@@ -78,19 +82,22 @@ pub struct WithdrawPrize<'info> {
   )]
   pub game: Account<'info, Game>,
 
-  /// CHECK:
-  #[account(mut)]
-  pub game_ata: AccountInfo<'info>,
+  #[account(
+    mut,
+    constraint = game_ata.owner == game.key() && game_ata.mint == prize_mint.key()
+  )]
+  pub game_ata: Account<'info, TokenAccount>,
+
+  pub prize_mint: Account<'info, Mint>,
 
   pub token_program: Program<'info, Token>,
-
-  pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
 pub struct ConfigGame<'info> {
   #[account(mut)]
   pub payer: Signer<'info>,
+
   #[account(
     mut,
     seeds = [
@@ -107,6 +114,7 @@ pub struct ConfigGame<'info> {
 pub struct AddPlayer<'info> {
   #[account(mut)]
   pub payer: Signer<'info>,
+
   #[account(
     seeds = [
       game.name.as_bytes(),
@@ -116,6 +124,7 @@ pub struct AddPlayer<'info> {
     bump = game.bump,
   )]
   pub game: Account<'info, Game>,
+
   #[account(
     init,
     payer = payer,
@@ -128,6 +137,7 @@ pub struct AddPlayer<'info> {
     bump
   )]
   pub player: Account<'info, Player>,
+
   pub system_program: Program<'info, System>,
 }
 
@@ -144,17 +154,79 @@ pub struct SendToCommunityWallet<'info>
     bump = game.bump,
   )]
   pub game: Account<'info, Game>,
-  /// CHECK:
-  #[account(mut)]
-  pub game_treasury_ata: AccountInfo<'info>,
+  
+  #[account(
+    mut,
+    constraint = game_treasury_ata.mint == game.spl_mint && game_treasury_ata.owner == game.key()
+  )]
+  pub game_treasury_ata: Account<'info, TokenAccount>,
+
   #[account(
     mut,
     constraint = game.community_wallets.iter().any(|x| x == &community_wallet.key())
   )]
   pub community_wallet: SystemAccount<'info>,
-  /// CHECK:
+  
+  #[account(
+    mut,
+    constraint = community_treasury_ata.mint == game.spl_mint && community_treasury_ata.owner == community_wallet.key()
+  )]
+  pub community_treasury_ata: Account<'info, TokenAccount>,
+
+  pub token_program: Program<'info, Token>,  
+}
+
+#[derive(Accounts)]
+pub struct Play<'info>
+{
   #[account(mut)]
-  pub community_treasury_ata: AccountInfo<'info>,
+  pub payer: Signer<'info>,
+
+  #[account(
+    mut,
+    constraint = payer_ata.mint == game.spl_mint && payer_ata.owner == payer.key()
+  )]
+  pub payer_ata: Account<'info, TokenAccount>,
+
+  #[account(
+    mut,
+    seeds = [
+      game.name.as_bytes(),
+      GAME_SEED_PREFIX.as_bytes(),
+      game.authority.as_ref(),
+    ],
+    bump = game.bump,
+  )]
+  pub game: Account<'info, Game>,
+  
+  #[account(
+    mut,
+    constraint = game_treasury_ata.mint == game.spl_mint && game_treasury_ata.owner == game.key()
+  )]
+  pub game_treasury_ata: Account<'info, TokenAccount>,
+
+  #[account(
+    mut,
+    address = game.commission_wallet
+  )]
+  pub commission_treasury: SystemAccount<'info>,
+  
+  #[account(
+    mut,
+    constraint = commission_treasury_ata.mint == game.spl_mint && commission_treasury_ata.owner == commission_treasury.key()
+  )]
+  pub commission_treasury_ata: Account<'info, TokenAccount>,
+
+  #[account(
+      mut,
+      seeds=[
+          PLAYER_SEED_PREFIX.as_bytes(),
+          payer.key().as_ref(),
+          player.game.as_ref(),            
+      ],
+      bump = player.bump
+  )]
+  pub player: Account<'info, Player>,
+
   pub token_program: Program<'info, Token>,
-  pub system_program: Program<'info, System>,
 }

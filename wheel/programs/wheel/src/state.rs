@@ -6,6 +6,7 @@ pub struct Game {
   pub authority: Pubkey,
   pub name: String,
   pub bump: u8,
+  pub spl_mint: Pubkey,
   pub cells: [Cell; MAX_CELL_COUNT],
   pub royalties: Vec<u16>,
   pub community_wallets: Vec<Pubkey>,
