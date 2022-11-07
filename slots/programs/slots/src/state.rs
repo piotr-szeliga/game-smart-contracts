@@ -49,4 +49,6 @@ pub enum ErrorCode {
     MinimumPrice,
     #[msg("Invalid Instruction Added")]
     InvalidInstructionAdded,
+    #[msg("Invalid Program")]
+    InvalidProgramId
 }

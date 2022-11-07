@@ -258,6 +258,7 @@ pub mod slots {
         Ok(())
     }
 
+    #[access_control(valid_program(&ctx.accounts.instruction_sysvar_account, *ctx.program_id))]
     #[access_control(allowed_only_one(&ctx.accounts.instruction_sysvar_account))]
     pub fn claim(ctx: Context<Claim>) -> Result<()> {
         let game = &ctx.accounts.game;
@@ -409,7 +410,7 @@ pub fn valid_program(instruction_sysvar_account: &AccountInfo, program_id: Pubke
             num_instructions = index;
         }
         Err(_) => {
-            return Err(ErrorCode::InvalidInstructionAdded.into());
+            return Err(ErrorCode::InvalidProgramId.into());
         }
     }
     msg!("Num instructions {}", num_instructions);
@@ -418,7 +419,7 @@ pub fn valid_program(instruction_sysvar_account: &AccountInfo, program_id: Pubke
         let instruction = load_instruction_at_checked(index as usize, &instruction_sysvar_account)?;
         msg!("Program ID {}", instruction.program_id);
         if instruction.program_id != program_id {
-            return Err(ErrorCode::InvalidInstructionAdded.into());
+            return Err(ErrorCode::InvalidProgramId.into());
         }
     }
     Ok(())
