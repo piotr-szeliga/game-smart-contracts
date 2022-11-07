@@ -1,14 +1,14 @@
 [features]
 seeds = false
-[programs.mainnet]
-slots = "3BJdzqUKD2bTTxDP7x7odQ2u4SBiHu3VncZQwmvHre34"
+[programs.devnet]
+slots = "6sE2DYexXa8oBPfGjgoCkNceHgH3xXnXD2nBz7i3NTWE"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "mainnet"
-wallet = "~/.config/solana/SERVUJeqsyaJTuVuXAmmko6kTigJmxzTxUMSThpC2LZ.json"
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

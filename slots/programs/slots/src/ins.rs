@@ -135,6 +135,9 @@ pub struct Play<'info>
       bump = player.bump
   )]
   pub player: Account<'info, Player>,
+  /// CHECK: instruction_sysvar_account cross checking 
+  #[account(address = sysvar::instructions::ID)]
+  pub instruction_sysvar_account: AccountInfo<'info>,
   pub token_program: Program<'info, Token>,
   pub system_program: Program<'info, System>,
 }

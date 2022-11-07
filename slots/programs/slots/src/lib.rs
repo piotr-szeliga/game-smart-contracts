@@ -6,15 +6,23 @@ mod utils;
 use anchor_lang::{
     prelude::*,
     system_program,
-    solana_program::sysvar::instructions::get_instruction_relative
+    solana_program::{
+        serialize_utils::read_u16,
+        sysvar::instructions::{
+            get_instruction_relative,
+            load_current_index_checked,
+            load_instruction_at_checked,
+        }
+    }
 };
 use anchor_spl::token::{transfer, Transfer};
 
 use ins::*;
 use utils::*;
 use constants::*;
+use state::ErrorCode;
 
-declare_id!("3BJdzqUKD2bTTxDP7x7odQ2u4SBiHu3VncZQwmvHre34");
+declare_id!("6sE2DYexXa8oBPfGjgoCkNceHgH3xXnXD2nBz7i3NTWE");
 
 #[program]
 pub mod slots {
@@ -22,6 +30,7 @@ pub mod slots {
 
     use super::*;
 
+    #[access_control(authorized_admin(&ctx.accounts.payer))]
     pub fn create_game(
         ctx: Context<CreateGame>, 
         name: String, 
@@ -32,11 +41,6 @@ pub mod slots {
         commission_wallet: Pubkey,
         commission_fee: u16,
     ) -> Result<()> {
-        let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == ctx.accounts.payer.key());
-        if index == false {
-            return Err(ErrorCode::UnauthorizedWallet.into());
-        }
-
         let game = &mut ctx.accounts.game;
         game.authority = ctx.accounts.payer.key();
         game.name = name;
@@ -64,13 +68,8 @@ pub mod slots {
         Ok(())
     }
 
-
+    #[access_control(authorized_admin(&ctx.accounts.payer))]
     pub fn set_community_wallet(ctx: Context<ConfigGame>, community_wallet: Pubkey, royalty: u16) -> Result<()> {
-        let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == ctx.accounts.payer.key());
-        if index == false {
-            return Err(ErrorCode::UnauthorizedWallet.into());
-        }
-
         let game = &mut ctx.accounts.game;
         
         let index = game.community_wallets.iter().position(|x| x == &community_wallet);
@@ -97,12 +96,8 @@ pub mod slots {
         Ok(())
     }
 
+    #[access_control(authorized_admin(&ctx.accounts.payer))]
     pub fn set_commission(ctx: Context<ConfigGame>, commission_wallet: Pubkey, commission_fee: u16) -> Result<()> {
-        let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == ctx.accounts.payer.key());
-        if index == false {
-            return Err(ErrorCode::UnauthorizedWallet.into());
-        }
-
         let game = &mut ctx.accounts.game;
         game.commission_wallet = commission_wallet;
         game.commission_fee = commission_fee;
@@ -110,12 +105,8 @@ pub mod slots {
         Ok(())
     }
 
+    #[access_control(authorized_admin(&ctx.accounts.payer))]
     pub fn set_winning(ctx: Context<ConfigGame>, win_percents: [[u16; 3]; 6], jackpot: u64, min_rounds_before_win: u8) -> Result<()> {
-        let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == ctx.accounts.payer.key());
-        if index == false {
-            return Err(ErrorCode::UnauthorizedWallet.into());
-        }
-
         let game = &mut ctx.accounts.game;
         game.win_percents = win_percents;
         game.jackpot = jackpot;
@@ -138,6 +129,7 @@ pub mod slots {
         Ok(())
     }
 
+    #[access_control(valid_program(&ctx.accounts.instruction_sysvar_account, *ctx.program_id))]
     pub fn play(ctx: Context<Play>, bet_no: u8) -> Result<()> {
         if bet_no > 5 {
             return Err(ErrorCode::MinimumPrice.into());
@@ -266,22 +258,8 @@ pub mod slots {
         Ok(())
     }
 
+    #[access_control(allowed_only_one(&ctx.accounts.instruction_sysvar_account))]
     pub fn claim(ctx: Context<Claim>) -> Result<()> {
-        let instruction_sysvar_account_info = ctx.accounts.instruction_sysvar_account.to_account_info();
-        let invalid = match get_instruction_relative(-1, &instruction_sysvar_account_info) {
-            Ok(_) => true,
-            Err(_) => false,
-        };
-        if invalid == true {
-            return Err(ErrorCode::InvalidInstructionAdded.into());
-        }
-        let invalid = match get_instruction_relative(1, &instruction_sysvar_account_info) {
-            Ok(_) => true,
-            Err(_) => false,
-        };
-        if invalid == true {
-            return Err(ErrorCode::InvalidInstructionAdded.into());
-        }
         let game = &ctx.accounts.game;
         let player = &mut ctx.accounts.player;
         
@@ -323,12 +301,8 @@ pub mod slots {
         Ok(())
     }
 
+    #[access_control(authorized_admin(&ctx.accounts.claimer))]
     pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
-        let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == ctx.accounts.claimer.key());
-        if index == false {
-            return Err(ErrorCode::UnauthorizedWallet.into());
-        }
-
         msg!("Version: {:?}", VERSION);
 
         let game = &ctx.accounts.game;
@@ -396,4 +370,56 @@ pub mod slots {
 
         Ok(())
     }
+}
+
+pub fn authorized_admin(admin: &AccountInfo) -> Result<()> {
+    let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == admin.key());
+    if index == false {
+        return Err(ErrorCode::UnauthorizedWallet.into());
+    }
+    Ok(())
+}
+
+pub fn allowed_only_one(instruction_sysvar_account: &AccountInfo) -> Result<()> {
+    let invalid = match get_instruction_relative(-1, &instruction_sysvar_account) {
+        Ok(_) => true,
+        Err(_) => false,
+    };
+    if invalid == true {
+        return Err(ErrorCode::InvalidInstructionAdded.into());
+    }
+    let invalid = match get_instruction_relative(1, &instruction_sysvar_account) {
+        Ok(_) => true,
+        Err(_) => false,
+    };
+    if invalid == true {
+        return Err(ErrorCode::InvalidInstructionAdded.into());
+    }
+    Ok(())
+}
+
+pub fn valid_program(instruction_sysvar_account: &AccountInfo, program_id: Pubkey) -> Result<()> {
+    let data = instruction_sysvar_account.try_borrow_data()?;
+    let current_index = load_current_index_checked(instruction_sysvar_account.to_account_info().as_ref())?;
+    msg!("Current index {}", current_index);
+    let mut current = 0;
+    let num_instructions;
+    match read_u16(&mut current, &**data) {
+        Ok(index) => {
+            num_instructions = index;
+        }
+        Err(_) => {
+            return Err(ErrorCode::InvalidInstructionAdded.into());
+        }
+    }
+    msg!("Num instructions {}", num_instructions);
+    for index in 0..num_instructions {
+        msg!("index {}", index);
+        let instruction = load_instruction_at_checked(index as usize, &instruction_sysvar_account)?;
+        msg!("Program ID {}", instruction.program_id);
+        if instruction.program_id != program_id {
+            return Err(ErrorCode::InvalidInstructionAdded.into());
+        }
+    }
+    Ok(())
 }
