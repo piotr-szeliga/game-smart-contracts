@@ -22,7 +22,7 @@ use utils::*;
 use constants::*;
 use state::ErrorCode;
 
-declare_id!("6sE2DYexXa8oBPfGjgoCkNceHgH3xXnXD2nBz7i3NTWE");
+declare_id!("3BJdzqUKD2bTTxDP7x7odQ2u4SBiHu3VncZQwmvHre34");
 
 #[program]
 pub mod slots {
