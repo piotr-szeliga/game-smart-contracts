@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::sysvar;
-use anchor_spl::token::{Token};
+use anchor_spl::token::{Token, TokenAccount};
 
 use crate::state::*;
 use crate::constants::*;
@@ -76,9 +76,11 @@ pub struct AddPlayer<'info> {
 pub struct Fund<'info> {
   #[account(mut)]
   pub payer: Signer<'info>,
-  /// CHECK:
-  #[account(mut)]
-  pub payer_ata: AccountInfo<'info>,
+  #[account(
+    mut,
+    constraint = payer_ata.owner == payer.key() && payer_ata.mint == game.token_mint
+  )]
+  pub payer_ata: Account<'info, TokenAccount>,
   #[account(
     mut,
     seeds = [
@@ -89,11 +91,12 @@ pub struct Fund<'info> {
     bump = game.bump,
   )]
   pub game: Account<'info, Game>,
-  /// CHECK:
-  #[account(mut)]
-  pub game_treasury_ata: AccountInfo<'info>,
+  #[account(
+    mut,
+    constraint = game_treasury_ata.owner == game.key() && game_treasury_ata.mint == game.token_mint
+  )]
+  pub game_treasury_ata: Account<'info, TokenAccount>,
   pub token_program: Program<'info, Token>,
-  pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -101,9 +104,11 @@ pub struct Play<'info>
 {
   #[account(mut)]
   pub payer: Signer<'info>,
-  /// CHECK:
-  #[account(mut)]
-  pub payer_ata: AccountInfo<'info>,
+  #[account(
+    mut,
+    constraint = payer_ata.owner == payer.key() && payer_ata.mint == game.token_mint
+  )]
+  pub payer_ata: Account<'info, TokenAccount>,
   #[account(
     mut,
     seeds = [
@@ -114,17 +119,16 @@ pub struct Play<'info>
     bump = game.bump,
   )]
   pub game: Account<'info, Game>,
-  /// CHECK:
-  #[account(mut)]
-  pub game_treasury_ata: AccountInfo<'info>,
   #[account(
     mut,
-    address = game.commission_wallet
+    constraint = game_treasury_ata.owner == game.key() && game_treasury_ata.mint == game.token_mint
   )]
-  pub commission_treasury: SystemAccount<'info>,
-  /// CHECK:
-  #[account(mut)]
-  pub commission_treasury_ata: AccountInfo<'info>,
+  pub game_treasury_ata: Account<'info, TokenAccount>,
+  #[account(
+    mut,
+    constraint = commission_treasury_ata.owner == game.commission_wallet && commission_treasury_ata.mint == game.token_mint
+  )]
+  pub commission_treasury_ata: Account<'info, TokenAccount>,
   #[account(
       mut,
       seeds=[
@@ -139,7 +143,6 @@ pub struct Play<'info>
   #[account(address = sysvar::instructions::ID)]
   pub instruction_sysvar_account: AccountInfo<'info>,
   pub token_program: Program<'info, Token>,
-  pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -155,19 +158,17 @@ pub struct SendToCommunityWallet<'info>
     bump = game.bump,
   )]
   pub game: Account<'info, Game>,
-  /// CHECK:
-  #[account(mut)]
-  pub game_treasury_ata: AccountInfo<'info>,
   #[account(
     mut,
-    constraint = game.community_wallets.iter().any(|x| x == &community_wallet.key())
+    constraint = game_treasury_ata.owner == game.key() && game_treasury_ata.mint == game.token_mint
   )]
-  pub community_wallet: SystemAccount<'info>,
-  /// CHECK:
-  #[account(mut)]
-  pub community_treasury_ata: AccountInfo<'info>,
+  pub game_treasury_ata: Account<'info, TokenAccount>,  
+  #[account(
+    mut,
+    constraint = game.community_wallets.iter().any(|x| x == &community_treasury_ata.owner) && community_treasury_ata.mint == game.token_mint
+  )]
+  pub community_treasury_ata: Account<'info, TokenAccount>,
   pub token_program: Program<'info, Token>,
-  pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -175,9 +176,11 @@ pub struct Claim<'info>
 {
     #[account(mut)]
     pub claimer: Signer<'info>,
-    /// CHECK:
-    #[account(mut)]
-    pub claimer_ata: AccountInfo<'info>,
+    #[account(
+      mut,
+      constraint = claimer_ata.owner == claimer.key() && claimer_ata.mint == game.token_mint
+    )]
+    pub claimer_ata: Account<'info, TokenAccount>,
     #[account(
       mut,
       seeds = [
@@ -188,9 +191,11 @@ pub struct Claim<'info>
       bump = game.bump,
     )]
     pub game: Account<'info, Game>,
-    /// CHECK:
-    #[account(mut)]
-    pub game_treasury_ata: AccountInfo<'info>,
+    #[account(
+      mut,
+      constraint = game_treasury_ata.owner == game.key() && game_treasury_ata.mint == game.token_mint
+    )]
+    pub game_treasury_ata: Account<'info, TokenAccount>,
     #[account(
       mut,
       seeds=[
@@ -205,7 +210,6 @@ pub struct Claim<'info>
     #[account(address = sysvar::instructions::ID)]
     pub instruction_sysvar_account: AccountInfo<'info>,
     pub token_program: Program<'info, Token>,
-    pub system_program: Program<'info, System>
 }
 
 #[derive(Accounts)]
@@ -213,9 +217,11 @@ pub struct Withdraw<'info>
 {
     #[account(mut)]
     pub claimer: Signer<'info>,
-    /// CHECK:
-    #[account(mut)]
-    pub claimer_ata: AccountInfo<'info>,
+    #[account(
+      mut,
+      constraint = claimer_ata.owner == claimer.key() && claimer_ata.mint ==  game.token_mint
+    )]
+    pub claimer_ata: Account<'info, TokenAccount>,
     #[account(
       mut,
       seeds = [
@@ -226,9 +232,10 @@ pub struct Withdraw<'info>
       bump = game.bump,
     )]
     pub game: Account<'info, Game>,
-    /// CHECK:
-    #[account(mut)]
-    pub game_treasury_ata: AccountInfo<'info>,
+    #[account(
+      mut,
+      constraint = game_treasury_ata.owner == game.key()
+    )]
+    pub game_treasury_ata: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
-    pub system_program: Program<'info, System>
 }

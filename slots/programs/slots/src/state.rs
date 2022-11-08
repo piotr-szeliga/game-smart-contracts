@@ -5,7 +5,7 @@ pub struct Game {
     pub authority: Pubkey,
     pub name: String,
     pub bump: u8,
-    pub token_type: bool,
+    pub token_mint: Pubkey,
     pub royalties: Vec<u16>,
     pub community_wallets: Vec<Pubkey>,
     pub commission_wallet: Pubkey,

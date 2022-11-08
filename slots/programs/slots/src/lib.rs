@@ -5,7 +5,6 @@ mod utils;
 
 use anchor_lang::{
     prelude::*,
-    system_program,
     solana_program::{
         serialize_utils::read_u16,
         sysvar::instructions::{
@@ -22,7 +21,7 @@ use utils::*;
 use constants::*;
 use state::ErrorCode;
 
-declare_id!("3BJdzqUKD2bTTxDP7x7odQ2u4SBiHu3VncZQwmvHre34");
+declare_id!("6sE2DYexXa8oBPfGjgoCkNceHgH3xXnXD2nBz7i3NTWE");
 
 #[program]
 pub mod slots {
@@ -35,7 +34,7 @@ pub mod slots {
         ctx: Context<CreateGame>, 
         name: String, 
         bump: u8, 
-        token_type: bool, 
+        token_mint: Pubkey, 
         community_wallets: Vec<Pubkey>, 
         royalties: Vec<u16>,
         commission_wallet: Pubkey,
@@ -45,7 +44,7 @@ pub mod slots {
         game.authority = ctx.accounts.payer.key();
         game.name = name;
         game.bump = bump;
-        game.token_type = token_type;
+        game.token_mint = token_mint;
         game.community_wallets = community_wallets;
         game.commission_wallet = commission_wallet;
         game.commission_fee = commission_fee;
@@ -150,59 +149,31 @@ pub mod slots {
         msg!("Player PDA: {:?}", player.key);
 
         let commission_amount = price.checked_mul(game.commission_fee as u64).unwrap().checked_div(10000).unwrap();        
-        match game.token_type {
-            false => {
-                system_program::transfer(
-                    CpiContext::new(
-                        ctx.accounts.system_program.to_account_info(),
-                        system_program::Transfer {
-                            from: ctx.accounts.payer.to_account_info().clone(),
-                            to: ctx.accounts.game.to_account_info(),
-                        },
-                    ),
-                    price.checked_sub(commission_amount).unwrap(),
-                )?;
-                if commission_amount > 0 {
-                    system_program::transfer(
-                        CpiContext::new(
-                            ctx.accounts.system_program.to_account_info(),
-                            system_program::Transfer {
-                                from: ctx.accounts.payer.to_account_info().clone(),
-                                to: ctx.accounts.commission_treasury.to_account_info(),
-                            },
-                        ),
-                        commission_amount
-                    )?;
+        transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                Transfer {
+                    authority: ctx.accounts.payer.to_account_info().clone(),
+                    from: ctx.accounts.payer_ata.to_account_info().clone(),
+                    to: ctx.accounts.game_treasury_ata.to_account_info().clone(),
                 }
-            },
-            true => {
-                transfer(
-                    CpiContext::new(
-                        ctx.accounts.token_program.to_account_info(),
-                        Transfer {
-                            authority: ctx.accounts.payer.to_account_info().clone(),
-                            from: ctx.accounts.payer_ata.to_account_info().clone(),
-                            to: ctx.accounts.game_treasury_ata.to_account_info().clone(),
-                        }
-                    ),
-                    price.checked_sub(commission_amount).unwrap(),
-                )?;
-                if commission_amount > 0 {
-                    transfer(
-                        CpiContext::new(
-                            ctx.accounts.token_program.to_account_info(),
-                            Transfer {
-                                authority: ctx.accounts.payer.to_account_info().clone(),
-                                from: ctx.accounts.payer_ata.to_account_info().clone(),
-                                to: ctx.accounts.commission_treasury_ata.to_account_info().clone(),
-                            }
-                        ),
-                        price.checked_sub(commission_amount).unwrap(),
-                    )?;
-                }
-            }
+            ),
+            price.checked_sub(commission_amount).unwrap(),
+        )?;
+        if commission_amount > 0 {
+            transfer(
+                CpiContext::new(
+                    ctx.accounts.token_program.to_account_info(),
+                    Transfer {
+                        authority: ctx.accounts.payer.to_account_info().clone(),
+                        from: ctx.accounts.payer_ata.to_account_info().clone(),
+                        to: ctx.accounts.commission_treasury_ata.to_account_info().clone(),
+                    }
+                ),
+                commission_amount,
+            )?;
         }
-        
+
         let game = &mut ctx.accounts.game;
         game.lose_counter = game.lose_counter.checked_add(1).unwrap();
         if earned > 0 {
@@ -223,38 +194,35 @@ pub mod slots {
 
     pub fn send_to_community_wallet(ctx: Context<SendToCommunityWallet>) -> Result<()> {
         let game = &ctx.accounts.game;
-        let index = game.community_wallets.iter().position(|x| x == &ctx.accounts.community_wallet.key());
+        let index = game.community_wallets.iter().position(|x| x == &ctx.accounts.community_treasury_ata.owner);
         if let Some(index) = index {
             let amount = game.community_pending_balances[index];            
-            if game.token_type == false {
-                **ctx.accounts.game.to_account_info().try_borrow_mut_lamports()? -= amount;
-                **ctx.accounts.community_wallet.try_borrow_mut_lamports()? += amount;
-            } else {
-                let game_name = &game.name;
-                let authority = game.authority;
-                let seeds = [
-                    game_name.as_bytes(),
-                    GAME_SEED_PREFIX.as_bytes(),
-                    authority.as_ref(),
-                    &[game.bump]
-                ];
 
-                transfer(
-                    CpiContext::new(
-                        ctx.accounts.token_program.to_account_info(),
-                        Transfer {
-                            authority: ctx.accounts.game.to_account_info().clone(),
-                            from: ctx.accounts.game_treasury_ata.to_account_info().clone(),
-                            to: ctx.accounts.community_treasury_ata.to_account_info().clone(),
-                        }
-                    ).with_signer(&[&seeds[..]]),
-                    amount,
-                )?;
-            }
+            let game_name = &game.name;
+            let authority = game.authority;
+            let seeds = [
+                game_name.as_bytes(),
+                GAME_SEED_PREFIX.as_bytes(),
+                authority.as_ref(),
+                &[game.bump]
+            ];
+
+            transfer(
+                CpiContext::new(
+                    ctx.accounts.token_program.to_account_info(),
+                    Transfer {
+                        authority: ctx.accounts.game.to_account_info().clone(),
+                        from: ctx.accounts.game_treasury_ata.to_account_info().clone(),
+                        to: ctx.accounts.community_treasury_ata.to_account_info().clone(),
+                    }
+                ).with_signer(&[&seeds[..]]),
+                amount,
+            )?;
             let game = &mut ctx.accounts.game;
             game.community_pending_balances[index] = 0;
             game.community_balances[index] = game.community_balances[index].checked_add(amount).unwrap();
         }
+
         Ok(())
     }
 
@@ -269,32 +237,26 @@ pub mod slots {
 
         msg!("Version: {:?}", VERSION);
 
-        if game.token_type == false {
-            msg!("Amount: {:?}", amount);
-            **ctx.accounts.game.to_account_info().try_borrow_mut_lamports()? -= amount;
-            **ctx.accounts.claimer.to_account_info().try_borrow_mut_lamports()? += amount;
-        } else {
-            let game_name = &game.name;
-            let authority = game.authority;
-            let seeds = [
-                game_name.as_bytes(),
-                GAME_SEED_PREFIX.as_bytes(),
-                authority.as_ref(),
-                &[game.bump]
-            ];
+        let game_name = &game.name;
+        let authority = game.authority;
+        let seeds = [
+            game_name.as_bytes(),
+            GAME_SEED_PREFIX.as_bytes(),
+            authority.as_ref(),
+            &[game.bump]
+        ];
 
-            transfer(
-                CpiContext::new(
-                    ctx.accounts.token_program.to_account_info(),
-                    Transfer {
-                        authority: ctx.accounts.game.to_account_info().clone(),
-                        from: ctx.accounts.game_treasury_ata.to_account_info().clone(),
-                        to: ctx.accounts.claimer_ata.to_account_info().clone(),
-                    }
-                ).with_signer(&[&seeds[..]]),
-                amount,
-            )?;
-        }
+        transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                Transfer {
+                    authority: ctx.accounts.game.to_account_info().clone(),
+                    from: ctx.accounts.game_treasury_ata.to_account_info().clone(),
+                    to: ctx.accounts.claimer_ata.to_account_info().clone(),
+                }
+            ).with_signer(&[&seeds[..]]),
+            amount,
+        )?;
 
         let game = &mut ctx.accounts.game;
         game.main_balance = game.main_balance.checked_sub(amount).unwrap();
@@ -307,32 +269,26 @@ pub mod slots {
         msg!("Version: {:?}", VERSION);
 
         let game = &ctx.accounts.game;
+        let game_name = &game.name;
+        let authority = game.authority;
+        let seeds = [
+            game_name.as_bytes(),
+            GAME_SEED_PREFIX.as_bytes(),
+            authority.as_ref(),
+            &[game.bump]
+        ];
 
-        if game.token_type == false {
-            **ctx.accounts.game.to_account_info().try_borrow_mut_lamports()? -= amount;
-            **ctx.accounts.claimer.try_borrow_mut_lamports()? += amount;
-        } else {
-            let game_name = &game.name;
-            let authority = game.authority;
-            let seeds = [
-                game_name.as_bytes(),
-                GAME_SEED_PREFIX.as_bytes(),
-                authority.as_ref(),
-                &[game.bump]
-            ];
-
-            transfer(
-                CpiContext::new(
-                    ctx.accounts.token_program.to_account_info(),
-                    Transfer {
-                        authority: ctx.accounts.game.to_account_info().clone(),
-                        from: ctx.accounts.game_treasury_ata.to_account_info().clone(),
-                        to: ctx.accounts.claimer_ata.to_account_info().clone(),
-                    }
-                ).with_signer(&[&seeds[..]]),
-                amount,
-            )?;
-        }
+        transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                Transfer {
+                    authority: ctx.accounts.game.to_account_info().clone(),
+                    from: ctx.accounts.game_treasury_ata.to_account_info().clone(),
+                    to: ctx.accounts.claimer_ata.to_account_info().clone(),
+                }
+            ).with_signer(&[&seeds[..]]),
+            amount,
+        )?; 
      
         let game = &mut ctx.accounts.game;
         game.main_balance = game.main_balance.checked_sub(amount).unwrap();
@@ -344,30 +300,17 @@ pub mod slots {
         let game = &mut ctx.accounts.game;
         game.main_balance = game.main_balance.checked_add(amount).unwrap();
 
-        if game.token_type == false {
-            system_program::transfer(
-                CpiContext::new(
-                    ctx.accounts.system_program.to_account_info(),
-                    system_program::Transfer {
-                        from: ctx.accounts.payer.to_account_info().clone(),
-                        to: ctx.accounts.game.to_account_info(),
-                    },
-                ),
-                amount,
-            )?;
-        } else {
-            transfer(
-                CpiContext::new(
-                    ctx.accounts.token_program.to_account_info(),
-                    Transfer {
-                        authority: ctx.accounts.payer.to_account_info().clone(),
-                        from: ctx.accounts.payer_ata.to_account_info().clone(),
-                        to: ctx.accounts.game_treasury_ata.to_account_info().clone(),
-                    }
-                ),
-                amount,
-            )?;
-        }
+        transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                Transfer {
+                    authority: ctx.accounts.payer.to_account_info().clone(),
+                    from: ctx.accounts.payer_ata.to_account_info().clone(),
+                    to: ctx.accounts.game_treasury_ata.to_account_info().clone(),
+                }
+            ),
+            amount,
+        )?;
 
         Ok(())
     }
@@ -414,11 +357,17 @@ pub fn valid_program(instruction_sysvar_account: &AccountInfo, program_id: Pubke
         }
     }
     msg!("Num instructions {}", num_instructions);
+    let valid_program_ids = &[
+        program_id,
+        Pubkey::default(),
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL".parse::<Pubkey>().unwrap(),
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA".parse::<Pubkey>().unwrap(),
+    ];
     for index in 0..num_instructions {
         msg!("index {}", index);
         let instruction = load_instruction_at_checked(index as usize, &instruction_sysvar_account)?;
         msg!("Program ID {}", instruction.program_id);
-        if instruction.program_id != program_id {
+        if valid_program_ids.iter().any(|x| x == &instruction.program_id) == false {
             return Err(ErrorCode::InvalidProgramId.into());
         }
     }
