@@ -227,7 +227,7 @@ pub mod slots {
     }
 
     #[access_control(valid_program(&ctx.accounts.instruction_sysvar_account, *ctx.program_id))]
-    #[access_control(allowed_only_one(&ctx.accounts.instruction_sysvar_account))]
+    #[access_control(prevent_prefix_instruction(&ctx.accounts.instruction_sysvar_account))]
     pub fn claim(ctx: Context<Claim>) -> Result<()> {
         let game = &ctx.accounts.game;
         let player = &mut ctx.accounts.player;
@@ -324,7 +324,7 @@ pub fn authorized_admin(admin: &AccountInfo) -> Result<()> {
     Ok(())
 }
 
-pub fn allowed_only_one(instruction_sysvar_account: &AccountInfo) -> Result<()> {
+pub fn prevent_prefix_instruction(instruction_sysvar_account: &AccountInfo) -> Result<()> {
     let invalid = match get_instruction_relative(-1, &instruction_sysvar_account) {
         Ok(_) => true,
         Err(_) => false,
@@ -332,13 +332,13 @@ pub fn allowed_only_one(instruction_sysvar_account: &AccountInfo) -> Result<()> 
     if invalid == true {
         return Err(ErrorCode::InvalidInstructionAdded.into());
     }
-    let invalid = match get_instruction_relative(1, &instruction_sysvar_account) {
-        Ok(_) => true,
-        Err(_) => false,
-    };
-    if invalid == true {
-        return Err(ErrorCode::InvalidInstructionAdded.into());
-    }
+    // let invalid = match get_instruction_relative(1, &instruction_sysvar_account) {
+    //     Ok(_) => true,
+    //     Err(_) => false,
+    // };
+    // if invalid == true {
+    //     return Err(ErrorCode::InvalidInstructionAdded.into());
+    // }
     Ok(())
 }
 
