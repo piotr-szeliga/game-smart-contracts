@@ -49,7 +49,7 @@ pub fn get_status(bet_no: u8, win_percents: [[u16; 3]; 6], jackpot: u64, lose: b
   msg!("Equal Count: {:?}", equal_count);
   msg!("Equal No: {:?}", equal_no);
   msg!("Is Jackpot: {:?}", is_jackpot);
-  msg!("Multipler: {:?}", multipler);
+  msg!("Multiplier: {:?}", multipler);
   msg!("Earned: {:?}", earned);
 
   return (rand, earned, is_jackpot, equal_count, equal_no, multipler);

@@ -21,7 +21,7 @@ use utils::*;
 use constants::*;
 use state::ErrorCode;
 
-declare_id!("6sE2DYexXa8oBPfGjgoCkNceHgH3xXnXD2nBz7i3NTWE");
+declare_id!("3BJdzqUKD2bTTxDP7x7odQ2u4SBiHu3VncZQwmvHre34");
 
 #[program]
 pub mod slots {
@@ -160,7 +160,9 @@ pub mod slots {
             ),
             price.checked_sub(commission_amount).unwrap(),
         )?;
-        if commission_amount > 0 {
+
+        if commission_amount > 0
+        {
             transfer(
                 CpiContext::new(
                     ctx.accounts.token_program.to_account_info(),
@@ -179,6 +181,7 @@ pub mod slots {
         if earned > 0 {
             game.lose_counter = 0;
         }
+
         game.main_balance = game.main_balance.checked_add(price).unwrap().checked_sub(commission_amount).unwrap();
         let len = game.royalties.len();
         for i in 0..len {
