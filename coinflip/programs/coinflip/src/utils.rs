@@ -33,7 +33,7 @@ pub fn get_status(bet_amount: u8, bet_number: u8, win_percents: [u16; 6]) -> (u3
   msg!("Random: {:?}", rand);
   msg!("Bet Price: {:?}", BET_PRICES[bn]);
   msg!("Bet Number: {:?}", bet_number);
-  msg!("Earned: {:?}", earned);
+  msg!("Reward: {:?}", earned);
 
   return (rand, earned);
 }
