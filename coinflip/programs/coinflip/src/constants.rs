@@ -1,11 +1,10 @@
-pub const VERSION: &str = "v1";
+pub const VERSION: &str = "v4";
 pub const GAME_SEED_PREFIX: &str = "coinflip_game_pda";
 pub const PLAYER_SEED_PREFIX: &str = "player_pda";
 
-pub const APPROVED_WALLETS: [&str; 3] = [
+pub const APPROVED_WALLETS: [&str; 2] = [
   "SERVUJeqsyaJTuVuXAmmko6kTigJmxzTxUMSThpC2LZ",
-  "EF5qxGB1AirUH4ENw1niV1ewiNHzH2fWs7naQQYF2dc",
-  "3qWq2ehELrVJrTg2JKKERm67cN6vYjm1EyhCEzfQ6jMd",
+  "EF5qxGB1AirUH4ENw1niV1ewiNHzH2fWs7naQQYF2dc"
 ];
 
 pub const BET_PRICES: [u64; 6] = [
