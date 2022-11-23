@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::sysvar;
 use anchor_spl::token::{Token, TokenAccount};
 
 use crate::state::*;
@@ -76,7 +75,7 @@ pub struct Withdraw<'info>
 pub struct Claim<'info>
 {
     #[account(mut)]
-    pub claimer: SystemAccount<'info>,
+    pub claimer: Signer<'info>,
     #[account(mut, address = game.backend_wallet)]
     pub backend: Signer<'info>,
     #[account(
@@ -99,9 +98,6 @@ pub struct Claim<'info>
       constraint = game_treasury_ata.owner == game.key() && game_treasury_ata.mint == game.token_mint
     )]
     pub game_treasury_ata: Account<'info, TokenAccount>,    
-    /// CHECK: instruction_sysvar_account cross checking 
-    #[account(address = sysvar::instructions::ID)]
-    pub instruction_sysvar_account: AccountInfo<'info>,
     pub token_program: Program<'info, Token>,
 }
 
