@@ -76,7 +76,7 @@ pub struct Withdraw<'info>
 pub struct Claim<'info>
 {
     #[account(mut)]
-    pub claimer: Signer<'info>,
+    pub claimer: SystemAccount<'info>,
     #[account(mut, address = game.backend_wallet)]
     pub backend: Signer<'info>,
     #[account(
@@ -109,8 +109,6 @@ pub struct Claim<'info>
 pub struct Fund<'info> {
   #[account(mut)]
   pub payer: Signer<'info>,
-  #[account(mut, address = game.backend_wallet)]
-  pub backend: Signer<'info>,
   #[account(
     mut,
     constraint = payer_ata.owner == payer.key() && payer_ata.mint == game.token_mint
