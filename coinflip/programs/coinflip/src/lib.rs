@@ -33,14 +33,23 @@ pub mod coinflip {
         name: String, 
         bump: u8, 
         token_mint: Pubkey,
+        community_wallets: Vec<Pubkey>, 
+        royalties: Vec<u16>,
+        commission_wallet: Pubkey,
+        commission_fee: u16,
     ) -> Result<()> {
         let game = &mut ctx.accounts.game;
         game.authority = ctx.accounts.payer.key();
         game.name = name;
         game.bump = bump;
         game.token_mint = token_mint;
-        game.royalty_wallet = ROYALTY_WALLET.parse::<Pubkey>().unwrap();
-        game.royalty_fee = ROYALTY_FEE;
+        game.community_wallets = community_wallets;
+        game.commission_wallet = commission_wallet;
+        game.commission_fee = commission_fee;
+        let len = royalties.len();
+        game.community_balances = vec![0; len]; 
+        game.community_pending_balances = vec![0; len];
+        game.royalties = royalties;
         game.main_balance = 0;
         game.win_percents = [
             9500,
@@ -55,10 +64,38 @@ pub mod coinflip {
     }
 
     #[access_control(authorized_admin(&ctx.accounts.payer))]
-    pub fn set_royalty(ctx: Context<ConfigGame>, royalty_wallet: Pubkey, royalty_fee: u16) -> Result<()> {
+    pub fn set_community_wallet(ctx: Context<ConfigGame>, community_wallet: Pubkey, royalty: u16) -> Result<()> {
         let game = &mut ctx.accounts.game;
-        game.royalty_wallet = royalty_wallet;
-        game.royalty_fee = royalty_fee;
+        
+        let index = game.community_wallets.iter().position(|x| x == &community_wallet);
+        if let Some(index) = index {
+            game.royalties[index] = royalty;
+            if royalty == 10001 {
+                game.royalties.remove(index);
+                game.community_balances.remove(index);
+                game.community_wallets.remove(index);
+                game.community_pending_balances.remove(index);
+                msg!("Removed");
+            } else {
+                msg!("Updated");
+                msg!("New Royalty: {:?}", royalty);
+            }
+        } else {
+            game.community_wallets.push(community_wallet);
+            game.royalties.push(royalty);
+            game.community_balances.push(0);
+            game.community_pending_balances.push(0);
+            msg!("New Added");
+        }
+        msg!("Community Wallet: {:?}", community_wallet);
+        Ok(())
+    }
+
+    #[access_control(authorized_admin(&ctx.accounts.payer))]
+    pub fn set_commission(ctx: Context<ConfigGame>, commission_wallet: Pubkey, commission_fee: u16) -> Result<()> {
+        let game = &mut ctx.accounts.game;
+        game.commission_wallet = commission_wallet;
+        game.commission_fee = commission_fee;
 
         Ok(())
     }
@@ -105,7 +142,7 @@ pub mod coinflip {
         msg!("Version: {:?}", VERSION);
         msg!("Player PDA: {:?}", player.key);
 
-        let royalty_amount = price.checked_mul(game.royalty_fee as u64).unwrap().checked_div(10000).unwrap();
+        let commission_amount = price.checked_mul(game.commission_fee as u64).unwrap().checked_div(10000).unwrap();        
         transfer(
             CpiContext::new(
                 ctx.accounts.token_program.to_account_info(),
@@ -115,30 +152,71 @@ pub mod coinflip {
                     to: ctx.accounts.game_treasury_ata.to_account_info().clone(),
                 }
             ),
-            price.checked_sub(royalty_amount).unwrap(),
+            price.checked_sub(commission_amount).unwrap(),
         )?;
-        if royalty_amount > 0 {
+        if commission_amount > 0 {
             transfer(
                 CpiContext::new(
                     ctx.accounts.token_program.to_account_info(),
                     Transfer {
                         authority: ctx.accounts.payer.to_account_info().clone(),
                         from: ctx.accounts.payer_ata.to_account_info().clone(),
-                        to: ctx.accounts.royalty_treasury_ata.to_account_info().clone(),
+                        to: ctx.accounts.commission_treasury_ata.to_account_info().clone(),
                     }
                 ),
-                royalty_amount,
+                commission_amount,
             )?;
         }
 
         let game = &mut ctx.accounts.game;
         game.total_round = game.total_round.checked_add(1).unwrap();
-        game.main_balance = game.main_balance.checked_add(price).unwrap().checked_sub(royalty_amount).unwrap();
+        game.main_balance = game.main_balance.checked_add(price).unwrap().checked_sub(commission_amount).unwrap();
+        let len = game.royalties.len();
+        for i in 0..len {
+            let royalty = game.royalties[i];
+            let royalty_amount = price.checked_mul(royalty as u64).unwrap().checked_div(10000).unwrap();
+            game.community_pending_balances[i] = game.community_pending_balances[i].checked_add(royalty_amount).unwrap();
+            game.main_balance = game.main_balance.checked_sub(royalty_amount).unwrap();
+        }
         player.earned_money = player.earned_money.checked_add(earned).unwrap();
         
         Ok(())
     }
 
+    pub fn send_to_community_wallet(ctx: Context<SendToCommunityWallet>) -> Result<()> {
+        let game = &ctx.accounts.game;
+        let index = game.community_wallets.iter().position(|x| x == &ctx.accounts.community_treasury_ata.owner);
+        if let Some(index) = index {
+            let amount = game.community_pending_balances[index];            
+
+            let game_name = &game.name;
+            let authority = game.authority;
+            let seeds = [
+                game_name.as_bytes(),
+                GAME_SEED_PREFIX.as_bytes(),
+                authority.as_ref(),
+                &[game.bump]
+            ];
+
+            transfer(
+                CpiContext::new(
+                    ctx.accounts.token_program.to_account_info(),
+                    Transfer {
+                        authority: ctx.accounts.game.to_account_info().clone(),
+                        from: ctx.accounts.game_treasury_ata.to_account_info().clone(),
+                        to: ctx.accounts.community_treasury_ata.to_account_info().clone(),
+                    }
+                ).with_signer(&[&seeds[..]]),
+                amount,
+            )?;
+            let game = &mut ctx.accounts.game;
+            game.community_pending_balances[index] = 0;
+            game.community_balances[index] = game.community_balances[index].checked_add(amount).unwrap();
+        }
+
+        Ok(())
+    }
+    
     #[access_control(valid_program(&ctx.accounts.instruction_sysvar_account, *ctx.program_id))]
     #[access_control(prevent_prefix_instruction(&ctx.accounts.instruction_sysvar_account))]
     pub fn claim(ctx: Context<Claim>) -> Result<()> {

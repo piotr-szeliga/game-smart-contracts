@@ -126,9 +126,9 @@ pub struct Play<'info>
   pub game_treasury_ata: Account<'info, TokenAccount>,
   #[account(
     mut,
-    constraint = royalty_treasury_ata.owner == game.royalty_wallet && royalty_treasury_ata.mint == game.token_mint
+    constraint = commission_treasury_ata.owner == game.commission_wallet && commission_treasury_ata.mint == game.token_mint
   )]
-  pub royalty_treasury_ata: Account<'info, TokenAccount>,
+  pub commission_treasury_ata: Account<'info, TokenAccount>,
   #[account(
       mut,
       seeds=[
@@ -186,6 +186,31 @@ pub struct Claim<'info>
     pub token_program: Program<'info, Token>,
 }
 
+#[derive(Accounts)]
+pub struct SendToCommunityWallet<'info> 
+{
+  #[account(
+    mut,
+    seeds = [
+      game.name.as_bytes(),
+      GAME_SEED_PREFIX.as_bytes(),
+      game.authority.as_ref(),
+    ],
+    bump = game.bump,
+  )]
+  pub game: Account<'info, Game>,
+  #[account(
+    mut,
+    constraint = game_treasury_ata.owner == game.key() && game_treasury_ata.mint == game.token_mint
+  )]
+  pub game_treasury_ata: Account<'info, TokenAccount>,  
+  #[account(
+    mut,
+    constraint = game.community_wallets.iter().any(|x| x == &community_treasury_ata.owner) && community_treasury_ata.mint == game.token_mint
+  )]
+  pub community_treasury_ata: Account<'info, TokenAccount>,
+  pub token_program: Program<'info, Token>,
+}
 #[derive(Accounts)]
 pub struct Withdraw<'info>
 {

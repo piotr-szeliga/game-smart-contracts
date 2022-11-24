@@ -16,6 +16,3 @@ pub const BET_PRICES: [u64; 6] = [
   1_000_000_000,
   2_000_000_000,
 ];
-
-pub const ROYALTY_WALLET: &str = "SERVUJeqsyaJTuVuXAmmko6kTigJmxzTxUMSThpC2LZ";
-pub const ROYALTY_FEE: u16 = 300; // 3%
