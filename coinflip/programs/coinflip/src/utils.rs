@@ -12,7 +12,7 @@ pub fn now() -> u64 {
 }
 
 pub fn get_random() -> u32 {
-  let timestamp = now() / 10;
+  let timestamp = now();
   let hash = hash(&timestamp.to_be_bytes());
   let buf: [u8; 32] = Hash::to_bytes(hash);
   let slice: [u8; 4] = [buf[10], buf[12], buf[8], buf[16]];
