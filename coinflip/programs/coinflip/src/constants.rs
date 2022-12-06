@@ -1,4 +1,4 @@
-pub const VERSION: &str = "v4";
+pub const VERSION: &str = "v5";
 pub const GAME_SEED_PREFIX: &str = "coinflip_game_pda";
 pub const PLAYER_SEED_PREFIX: &str = "player_pda";
 
