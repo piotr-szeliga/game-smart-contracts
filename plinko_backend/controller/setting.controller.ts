@@ -14,7 +14,7 @@ export const getAdminSettings = (req: Request, res: Response) => {
 export const setSettings = (req: Request, res: Response) => {
     const { multiplier, chance } = req.body;
     const settingsContent = JSON.stringify({ multiplier, chance });
-    fs.writeFile("../settings.json", settingsContent, (err) => {
+    fs.writeFile("./settings.json", settingsContent, (err) => {
         if (err) {
             console.log(err);
             return res.status(500).json("Failed to save settings");

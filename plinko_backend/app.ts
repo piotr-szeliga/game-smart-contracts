@@ -1,16 +1,18 @@
 import express from "./config/express";
+import { getPlayStatus } from "./controller/game.controller";
 import { getSettings, setSettings, getAdminSettings } from "./controller/setting.controller";
 import { getClaimTransaction, sendCalimTransaction, sendDepositTransaction } from "./controller/transaction.controller";
-import { authorized, isAdmin } from "./middleware/auth.middleware";
+import { authorizedAdmin, authorizedPlayer } from "./middleware/auth.middleware";
 // const { Keypair } = require('@solana/web3.js');
 // const bs58 = require('bs58');
 
-express.post('/transaction/deposit/:clientKey', authorized, sendDepositTransaction);
-express.get('/transaction/claim/:clientKey', getClaimTransaction);
-express.post('/transaction/claim/:clientKey', authorized, sendCalimTransaction);
-express.get('/settings/admin', authorized, isAdmin, getAdminSettings);
-express.get('/settings', getSettings);
-express.post('/settings', authorized, isAdmin, setSettings);
+express.post('/transaction/deposit/:clientKey', authorizedPlayer, sendDepositTransaction);
+express.get('/transaction/claim/:clientKey', authorizedPlayer, getClaimTransaction);
+express.post('/transaction/claim/:clientKey', authorizedPlayer, sendCalimTransaction);
+express.get('/settings/admin', authorizedAdmin, getAdminSettings);
+express.post('/settings/admin', authorizedAdmin, setSettings);
+express.get('/settings', authorizedPlayer, getSettings);
+express.post('/game', authorizedPlayer, getPlayStatus);
 
 // const kp = Keypair.generate();
 // console.log(kp.publicKey.toString());

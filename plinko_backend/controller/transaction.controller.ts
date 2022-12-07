@@ -12,10 +12,9 @@ import {
 
 import { AnchorProvider, Wallet, Program, setProvider, BN } from "@project-serum/anchor";
 import { bs58 } from "@project-serum/anchor/dist/cjs/utils/bytes";
-import { Plinko, IDL } from '../idl/plinko';
 
-const plinko_idl = require("../idl/plinko.json");
-const programId = plinko_idl.metadata.address;
+const Plinko = require("../idl/plinko.json");
+const programId = Plinko.metadata.address;
 const connection = new Connection(clusterApiUrl("devnet"));
 const backendKp = Keypair.fromSecretKey(
   bs58.decode(process.env.BACKEND_SECRET_KEY || '')
@@ -26,7 +25,7 @@ const provider = new AnchorProvider(
   AnchorProvider.defaultOptions()
 );
 setProvider(provider);
-const program = new Program(IDL, programId, provider) as Program<Plinko>;
+const program = new Program(Plinko, programId, provider);
 
 export const getClaimTransaction = async (req: Request, res: Response) => {
   const { clientKey } = req.params;
