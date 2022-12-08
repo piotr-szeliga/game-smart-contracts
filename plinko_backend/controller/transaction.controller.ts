@@ -28,7 +28,7 @@ setProvider(provider);
 const program = new Program(Plinko, programId, provider);
 
 export const getClaimTransaction = async (req: Request, res: Response) => {
-  const { clientKey } = req.params;
+  const { clientKey, tokenId } = req.params;
   const claimer = new PublicKey(clientKey);
   
   // get claim amount from DB

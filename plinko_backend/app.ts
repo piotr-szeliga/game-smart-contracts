@@ -1,5 +1,5 @@
 import express from "./config/express";
-import { getPlayStatus } from "./controller/game.controller";
+import { getBalances, play } from "./controller/game.controller";
 import { getSettings, setSettings, getAdminSettings } from "./controller/setting.controller";
 import { getClaimTransaction, sendCalimTransaction, sendDepositTransaction } from "./controller/transaction.controller";
 import { authorizedAdmin, authorizedPlayer } from "./middleware/auth.middleware";
@@ -12,7 +12,8 @@ express.post('/transaction/claim/:clientKey', authorizedPlayer, sendCalimTransac
 express.get('/settings/admin', authorizedAdmin, getAdminSettings);
 express.post('/settings/admin', authorizedAdmin, setSettings);
 express.get('/settings', authorizedPlayer, getSettings);
-express.post('/game/play', authorizedPlayer, getPlayStatus);
+express.post('/game/play', authorizedPlayer, play);
+express.get('/game/balances', authorizedPlayer, getBalances);
 
 // const kp = Keypair.generate();
 // console.log(kp.publicKey.toString());
