@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { getPayload } from '../middleware/auth.middleware';
 const settings = require('../settings.json');
 
 const getLineIndex = (lines: number) => {
@@ -10,13 +11,19 @@ const random = () => {
 }
 
 export const getPlayStatus = (req: Request, res: Response) => {
-    const { wallet, lines, risk, betValue, ballCount } = req.body;
+    const { lines, risk, betValue, ballCount } = req.body;
+    
+    const payload = getPayload(req);
+    if (!payload) return res.status(402).json('Unauthorized Wallet');
+
+    const { wallet } = payload;
+    console.log(wallet);
     // Get Balance of Wallet from DB
     let balance = 100;
 
     let lineIndex = getLineIndex(lines);
     let maxBallCount = balance / betValue;
-    if (maxBallCount < ballCount) {
+    if (maxBallCount > ballCount) {
         maxBallCount = ballCount;
     }
 
@@ -33,10 +40,10 @@ export const getPlayStatus = (req: Request, res: Response) => {
     });
 
     for (let i = 0; i < maxBallCount; i++) {
-        let target = 0;
-        for (let j = 0; j < lines; j++) {            
-            let rand = random();
-            if (chance[j] > rand && rand > (j ? chance[j] : 0)) {
+        let target = lines / 2;
+        for (let j = 0; j < lines; j++) {
+            let rand = random();            
+            if (chance[j] > rand && rand > (j ? chance[j - 1] : 0)) {
                 target = j;
                 break;
             }

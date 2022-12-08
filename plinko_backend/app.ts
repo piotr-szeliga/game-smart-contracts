@@ -12,7 +12,7 @@ express.post('/transaction/claim/:clientKey', authorizedPlayer, sendCalimTransac
 express.get('/settings/admin', authorizedAdmin, getAdminSettings);
 express.post('/settings/admin', authorizedAdmin, setSettings);
 express.get('/settings', authorizedPlayer, getSettings);
-express.post('/game', authorizedPlayer, getPlayStatus);
+express.post('/game/play', authorizedPlayer, getPlayStatus);
 
 // const kp = Keypair.generate();
 // console.log(kp.publicKey.toString());
