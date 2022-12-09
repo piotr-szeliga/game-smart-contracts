@@ -46,7 +46,7 @@ export async function getCreateAtaInstruction(provider: AnchorProvider, ata: Pub
 
 export function signMessage(message: string) {
   const signature = nacl.sign.detached(new Uint8Array(Buffer.from(message)), backendKp.secretKey);
-  return { message, signature};
+  return { message, signature, wallet: backendKp.publicKey.toString()};
 }
 
 
