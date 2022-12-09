@@ -22,15 +22,12 @@ pub mod plinko {
         ctx: Context<CreateGame>, 
         name: String, 
         bump: u8, 
-        token_mint: Pubkey,
         backend_wallet: Pubkey,
     ) -> Result<()> {
         let game = &mut ctx.accounts.game;
         game.authority = ctx.accounts.payer.key();
         game.name = name;
         game.bump = bump;
-        game.token_mint = token_mint;
-        game.main_balance = 0;
         game.backend_wallet = backend_wallet;
         Ok(())
     }
@@ -67,17 +64,11 @@ pub mod plinko {
             ).with_signer(&[&seeds[..]]),
             amount,
         )?; 
-     
-        let game = &mut ctx.accounts.game;
-        game.main_balance = game.main_balance.checked_sub(amount).unwrap();
 
         Ok(())
     }
 
     pub fn fund(ctx: Context<Fund>, amount: u64) -> Result<()> {
-        let game = &mut ctx.accounts.game;
-        game.main_balance = game.main_balance.checked_add(amount).unwrap();
-
         transfer(
             CpiContext::new(
                 ctx.accounts.token_program.to_account_info(),
@@ -119,9 +110,6 @@ pub mod plinko {
             amount,
         )?;
 
-        let game = &mut ctx.accounts.game;
-        game.main_balance = game.main_balance.checked_sub(amount).unwrap();
-        
         Ok(())
     }
 }

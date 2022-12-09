@@ -5,8 +5,6 @@ pub struct Game {
     pub authority: Pubkey,
     pub name: String,
     pub bump: u8,
-    pub token_mint: Pubkey,
-    pub main_balance: u64,
     pub backend_wallet: Pubkey,
 }
 impl Game

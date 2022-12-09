@@ -50,7 +50,7 @@ pub struct Withdraw<'info>
     pub claimer: Signer<'info>,
     #[account(
       mut,
-      constraint = claimer_ata.owner == claimer.key() && claimer_ata.mint ==  game.token_mint
+      constraint = claimer_ata.owner == claimer.key() && claimer_ata.mint ==  game_treasury_ata.mint
     )]
     pub claimer_ata: Account<'info, TokenAccount>,
     #[account(
@@ -80,7 +80,7 @@ pub struct Claim<'info>
     pub backend: Signer<'info>,
     #[account(
       mut,
-      constraint = claimer_ata.owner == claimer.key() && claimer_ata.mint == game.token_mint
+      constraint = claimer_ata.owner == claimer.key() && claimer_ata.mint == game_treasury_ata.mint
     )]
     pub claimer_ata: Account<'info, TokenAccount>,
     #[account(
@@ -95,7 +95,7 @@ pub struct Claim<'info>
     pub game: Account<'info, Game>,
     #[account(
       mut,
-      constraint = game_treasury_ata.owner == game.key() && game_treasury_ata.mint == game.token_mint
+      constraint = game_treasury_ata.owner == game.key()
     )]
     pub game_treasury_ata: Account<'info, TokenAccount>,    
     pub token_program: Program<'info, Token>,
@@ -107,7 +107,7 @@ pub struct Fund<'info> {
   pub payer: Signer<'info>,
   #[account(
     mut,
-    constraint = payer_ata.owner == payer.key() && payer_ata.mint == game.token_mint
+    constraint = payer_ata.owner == payer.key() && payer_ata.mint == game_treasury_ata.mint
   )]
   pub payer_ata: Account<'info, TokenAccount>,
   #[account(
@@ -122,7 +122,7 @@ pub struct Fund<'info> {
   pub game: Account<'info, Game>,
   #[account(
     mut,
-    constraint = game_treasury_ata.owner == game.key() && game_treasury_ata.mint == game.token_mint
+    constraint = game_treasury_ata.owner == game.key()
   )]
   pub game_treasury_ata: Account<'info, TokenAccount>,
   pub token_program: Program<'info, Token>,
