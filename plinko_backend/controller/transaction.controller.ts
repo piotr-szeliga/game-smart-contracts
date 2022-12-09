@@ -1,6 +1,7 @@
 import { createCloseAccountInstruction, NATIVE_MINT, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { Request, Response } from 'express';
-import { getAta, getCreateAtaInstruction, getGameAddress, game_name, game_owner } from './utils';
+import { getAta, getCreateAtaInstruction, getGameAddress, game_name, game_owner, backendKp, sendRequest } from './utils';
+import { getPayload } from '../middleware/auth.middleware';
 import {
   Connection,
   clusterApiUrl,
@@ -11,14 +12,10 @@ import {
 } from"@solana/web3.js";
 
 import { AnchorProvider, Wallet, Program, setProvider, BN } from "@project-serum/anchor";
-import { bs58 } from "@project-serum/anchor/dist/cjs/utils/bytes";
 
 const Plinko = require("../idl/plinko.json");
 const programId = Plinko.metadata.address;
 const connection = new Connection(clusterApiUrl("devnet"));
-const backendKp = Keypair.fromSecretKey(
-  bs58.decode(process.env.BACKEND_SECRET_KEY || '')
-);
 const provider = new AnchorProvider(
   connection,
   new Wallet(backendKp),
@@ -28,21 +25,35 @@ setProvider(provider);
 const program = new Program(Plinko, programId, provider);
 
 export const getClaimTransaction = async (req: Request, res: Response) => {
-  const { clientKey, tokenId } = req.params;
-  const claimer = new PublicKey(clientKey);
+  const payload = getPayload(req);
+  if (!payload) return;
+
+  const { wallet } = payload;
+  const { tokenMint, amount } = req.params;
+  const claimer = new PublicKey(wallet);
   
   // get claim amount from DB
-  const claimAmount = 0.1; 
-
+  const player = await sendRequest(`https://api.servica.io/extorio/apis/blinko`, {
+    endpoint: 'getPlayer',
+    gameName: 'blinko',
+    walletAddress: wallet,
+    tokenSPLAddress: tokenMint
+  }); 
+  if (!player) {
+    return res.status(500).json("There's no balance");
+  }
+  // console.log(player.balance, typeof player.balance);
+  
+  const claimAmount = !amount ? player.balance : (amount > player.balance ? player.balance : amount);
   const [game] = await getGameAddress(program.programId, game_name, game_owner);
   const gameData = await program.account.game.fetchNullable(game);
   if (!gameData) return res.status(500).json({ error: "Cannot get game data" });
-  const mint = gameData.tokenMint;
+  const mint = new PublicKey(tokenMint);
 
   const transaction = new Transaction();
 
-  const claimerAta = await getAta(mint, provider.wallet.publicKey);
-  const instruction = await getCreateAtaInstruction(provider, claimerAta, mint, provider.wallet.publicKey);
+  const claimerAta = await getAta(mint, claimer);
+  const instruction = await getCreateAtaInstruction(provider, claimerAta, mint, claimer);
   if (instruction) transaction.add(instruction);
   const gameTreasuryAta = await getAta(mint, game, true);
   transaction.add(
@@ -64,19 +75,24 @@ export const getClaimTransaction = async (req: Request, res: Response) => {
   transaction.feePayer = claimer;
   transaction.recentBlockhash = (await program.provider.connection.getLatestBlockhash("confirmed")).blockhash;
 
-  console.log("Transaction made by BE:", transaction);
+  // console.log("Transaction made by BE:", transaction);
   transaction.partialSign(backendKp);
-  console.log("Partial Signed Transaction by BE Keypair:", transaction);
+  // console.log("Partial Signed Transaction by BE Keypair:", transaction);
   let serializedBuffer = transaction.serialize({ requireAllSignatures: false }).toString("base64");
 
   return res.json(serializedBuffer);
 };
 
 export const sendCalimTransaction = async (req: Request, res: Response) => {
-  const { clientKey } = req.params;
+  const payload = getPayload(req);
+  if (!payload) return;
+
+  const { wallet } = payload;
+  const { tokenMint } = req.params;
+
   const { serializedBuffer } = req.body;
   const recoveredTx = Transaction.from(Buffer.from(serializedBuffer, "base64"));
-  const txSignature = await program.provider.connection.sendRawTransaction(recoveredTx.serialize());
+  const txSignature = await program.provider.connection.sendRawTransaction(recoveredTx.serialize(), { skipPreflight: true });
   await program.provider.connection.confirmTransaction(txSignature, "confirmed");
   console.log(txSignature);
   // Get claim amount from Transacction
@@ -85,16 +101,38 @@ export const sendCalimTransaction = async (req: Request, res: Response) => {
   const amountBytes = claimInstruction.data.slice(8).reverse();
   const amount = new BN(amountBytes);
   console.log("Claim amount: ", amount.toString());
-  // Decrease clientKey's amount in DB
+  // Decrease wallet's tokeMint amount in DB
+  const player = await sendRequest(`https://api.servica.io/extorio/apis/blinko`, {
+    endpoint: 'getPlayer',
+    gameName: 'blinko',
+    walletAddress: wallet,
+    tokenSPLAddress: tokenMint
+  }); 
+  if (!player) {
+    return res.status(500).json("There's no balance");
+  }
+  const balance = player.balance - amount.toNumber() / LAMPORTS_PER_SOL;
+  await sendRequest(`https://api.servica.io/extorio/apis/blinko`, {
+    endpoint: 'updatePlayer',
+    gameName: 'blinko',
+    walletAddress: wallet,
+    tokenSPLAddress: tokenMint,
+    balance
+  }); 
 
-  return res.json({ txSignature, claimAmount: amount })
+  return res.json({ txSignature, claimAmount: amount.toString() })
 }
 
 export const sendDepositTransaction = async (req: Request, res: Response) => {
-  const { clientKey } = req.params;
+  const payload = getPayload(req);
+  if (!payload) return;
+
+  const { wallet } = payload;
+  const { tokenMint } = req.params;
+
   const { serializedBuffer } = req.body;
   const recoveredTx = Transaction.from(Buffer.from(serializedBuffer, "base64"));
-  const txSignature = await program.provider.connection.sendRawTransaction(recoveredTx.serialize());
+  const txSignature = await program.provider.connection.sendRawTransaction(recoveredTx.serialize(), { skipPreflight: false });
   await program.provider.connection.confirmTransaction(txSignature, "confirmed");
   console.log(txSignature);
   // Get deposit amount from Transacction
@@ -103,7 +141,24 @@ export const sendDepositTransaction = async (req: Request, res: Response) => {
   const amountBytes = claimInstruction.data.slice(8).reverse();
   const amount = new BN(amountBytes);
   console.log("Deposit amount: ", amount.toString());
-  // Increase clientKey's amount in DB
+  // Increase wallet's tokeMint amount in DB
+  const player = await sendRequest(`https://api.servica.io/extorio/apis/blinko`, {
+    endpoint: 'getPlayer',
+    gameName: 'blinko',
+    walletAddress: wallet,
+    tokenSPLAddress: tokenMint
+  }); 
+  if (!player) {
+    return res.status(500).json("There's no balance");
+  }
+  const balance = player.balance + amount.toNumber() / LAMPORTS_PER_SOL;
+  await sendRequest(`https://api.servica.io/extorio/apis/blinko`, {
+    endpoint: 'updatePlayer',
+    gameName: 'blinko',
+    walletAddress: wallet,
+    tokenSPLAddress: tokenMint,
+    balance
+  }); 
 
-  return res.json({ txSignature, depositAmount: amount })
+  return res.json({ txSignature, depositAmount: amount.toString() })
 }

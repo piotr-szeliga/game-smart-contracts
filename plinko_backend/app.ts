@@ -6,9 +6,9 @@ import { authorizedAdmin, authorizedPlayer } from "./middleware/auth.middleware"
 // const { Keypair } = require('@solana/web3.js');
 // const bs58 = require('bs58');
 
-express.post('/transaction/deposit/:clientKey', authorizedPlayer, sendDepositTransaction);
-express.get('/transaction/claim/:clientKey', authorizedPlayer, getClaimTransaction);
-express.post('/transaction/claim/:clientKey', authorizedPlayer, sendCalimTransaction);
+express.post('/transaction/deposit/:tokenMint', authorizedPlayer, sendDepositTransaction);
+express.get('/transaction/claim/:tokenMint', authorizedPlayer, getClaimTransaction);
+express.post('/transaction/claim/:tokenMint', authorizedPlayer, sendCalimTransaction);
 express.get('/settings/admin', authorizedAdmin, getAdminSettings);
 express.post('/settings/admin', authorizedAdmin, setSettings);
 express.get('/settings', authorizedPlayer, getSettings);
