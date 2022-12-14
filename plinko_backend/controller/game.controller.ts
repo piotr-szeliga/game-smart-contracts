@@ -76,7 +76,7 @@ export const play = async (req: Request, res: Response) => {
     return res.json(result);
 }
 
-export const getBalances = (req: Request, res: Response) => {
+export const getBalances = async (req: Request, res: Response) => {
     const payload = getPayload(req);
     if (!payload) return res.status(402).json('Unauthorized Wallet');
 
@@ -84,5 +84,15 @@ export const getBalances = (req: Request, res: Response) => {
     console.log(wallet);
 
     // Get balances from DB
-    
+    const { data } = await sendRequest(`https://api.servica.io/extorio/apis/blinko`, {
+        endpoint: 'getPlayer',
+        gameName: 'blinko',
+        walletAddress: wallet
+    });
+    const balances = data.map((token: { tokenSPLAddress: any; balance: any; }) => {
+        const { tokenSPLAddress, balance } = token;
+        return { tokenSPLAddress, balance }
+    });
+
+    return res.json(balances);
 }
