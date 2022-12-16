@@ -1,0 +1,1 @@
+pub const AUCTION_SEED: &str = "Auction";
