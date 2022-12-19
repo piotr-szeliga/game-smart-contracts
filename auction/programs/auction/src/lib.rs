@@ -10,13 +10,18 @@ use crate::constants::*;
 use crate::state::*;
 use crate::ins::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("73YJ31M6KX8FVH5g9mYEy7aHd3YYNFUsSP6EZCFe8iXo");
 
 #[program]
 pub mod auction {
     use super::*;
 
-    pub fn create_auction(ctx: Context<CreateAuction>, 
+    pub fn test(ctx: Context<Test>) -> Result<()> {
+        Ok(())
+    }
+
+    pub fn create_auction(
+        ctx: Context<CreateAuction>, 
         auction_name: String, 
         min_bid_price: u64, 
         auction_duration: u64
@@ -118,4 +123,9 @@ pub mod auction {
 
         Ok(())
     }
+}
+
+#[derive(Accounts)]
+pub struct Test {
+
 }

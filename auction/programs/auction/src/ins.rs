@@ -25,32 +25,32 @@ pub struct CreateAuction<'info>
     )]
     pub auction: Account<'info, Auction>,
 
-    #[account(
-        mut,
-        associated_token::mint = nft_mint,
-        associated_token::authority = creator,
-    )]
-    pub creator_nft_ata: Account<'info, TokenAccount>,
+    // #[account(
+    //     mut,
+    //     associated_token::mint = nft_mint,
+    //     associated_token::authority = creator,
+    // )]
+    // pub creator_nft_ata: Account<'info, TokenAccount>,
 
     pub nft_mint: Account<'info, Mint>,
 
-    #[account(
-        init_if_needed,
-        payer = creator,
-        associated_token::mint = nft_mint,
-        associated_token::authority = auction,
-    )]
-    pub auction_nft_ata: Account<'info, TokenAccount>,
+    // #[account(
+    //     init_if_needed,
+    //     payer = creator,
+    //     associated_token::mint = nft_mint,
+    //     associated_token::authority = auction,
+    // )]
+    // pub auction_nft_ata: Account<'info, TokenAccount>,
 
     pub spl_token_mint: Account<'info, Mint>,
 
-    #[account(
-        init_if_needed,
-        payer = creator,
-        associated_token::mint = spl_token_mint,
-        associated_token::authority = auction,
-    )]
-    pub auction_token_ata: Account<'info, TokenAccount>,
+    // #[account(
+    //     init_if_needed,
+    //     payer = creator,
+    //     associated_token::mint = spl_token_mint,
+    //     associated_token::authority = auction,
+    // )]
+    // pub auction_token_ata: Account<'info, TokenAccount>,
     
     pub system_program: Program<'info, System>,
 
