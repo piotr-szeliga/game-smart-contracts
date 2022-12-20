@@ -1,1 +1,1 @@
-pub const AUCTION_SEED: &str = "Auction";
+pub const AUCTION_SEED: &str = "auction";

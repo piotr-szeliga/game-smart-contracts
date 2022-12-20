@@ -25,32 +25,23 @@ pub struct CreateAuction<'info>
     )]
     pub auction: Account<'info, Auction>,
 
-    // #[account(
-    //     mut,
-    //     associated_token::mint = nft_mint,
-    //     associated_token::authority = creator,
-    // )]
-    // pub creator_nft_ata: Account<'info, TokenAccount>,
+    #[account(
+        mut,
+        associated_token::mint = nft_mint,
+        associated_token::authority = creator,
+    )]
+    pub creator_nft_ata: Account<'info, TokenAccount>,
 
+    #[account(mut)]
     pub nft_mint: Account<'info, Mint>,
 
-    // #[account(
-    //     init_if_needed,
-    //     payer = creator,
-    //     associated_token::mint = nft_mint,
-    //     associated_token::authority = auction,
-    // )]
-    // pub auction_nft_ata: Account<'info, TokenAccount>,
-
-    pub spl_token_mint: Account<'info, Mint>,
-
-    // #[account(
-    //     init_if_needed,
-    //     payer = creator,
-    //     associated_token::mint = spl_token_mint,
-    //     associated_token::authority = auction,
-    // )]
-    // pub auction_token_ata: Account<'info, TokenAccount>,
+    #[account(
+        init_if_needed,
+        payer = creator,
+        associated_token::mint = nft_mint,
+        associated_token::authority = auction,
+    )]
+    pub auction_nft_ata: Account<'info, TokenAccount>,
     
     pub system_program: Program<'info, System>,
 
@@ -59,6 +50,24 @@ pub struct CreateAuction<'info>
     pub associated_token_program: Program<'info, AssociatedToken>,
 
     pub rent: Sysvar<'info, Rent>,
+}
+
+#[derive(Accounts)]
+pub struct UpdateAuction<'info> 
+{
+    #[account(mut, address = auction.creator)]
+    pub creator: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [
+            AUCTION_SEED.as_bytes(),
+            auction.name.as_bytes(),
+            auction.creator.as_ref(),
+        ], 
+        bump = auction.bump,
+    )]
+    pub auction: Account<'info, Auction>,
 }
 
 #[derive(Accounts)]
@@ -78,34 +87,47 @@ pub struct Bid<'info>
     )]
     pub auction: Account<'info, Auction>,
 
+    #[account(mut, address = auction.spl_token_mint)]
+    pub spl_token_mint: Account<'info, Mint>,
+
     #[account(
-        mut,
-        associated_token::mint = auction.spl_token_mint,
+        init_if_needed,
+        payer = bidder,
+        associated_token::mint = spl_token_mint,
         associated_token::authority = auction,
     )]
-    pub auction_token_ata: Account<'info, TokenAccount>,
+    pub auction_token_ata: Box<Account<'info, TokenAccount>>,
 
     #[account(
         mut,
-        associated_token::mint = auction.spl_token_mint,
+        associated_token::mint = spl_token_mint,
         associated_token::authority = bidder,
     )]
     pub bidder_ata: Account<'info, TokenAccount>,
 
+    #[account(address = auction.last_bidder)]
     pub last_bidder: SystemAccount<'info>,
 
     #[account(
-        mut,
-        associated_token::mint = auction.spl_token_mint,
+        init_if_needed,
+        payer = bidder,
+        associated_token::mint = spl_token_mint,
         associated_token::authority = last_bidder,
     )]
     pub last_bidder_ata: Account<'info, TokenAccount>,
 
     pub token_program: Program<'info, Token>,
+
+    pub system_program: Program<'info, System>,
+
+    pub associated_token_program: Program<'info, AssociatedToken>,
+
+    pub rent: Sysvar<'info, Rent>,
 }
 
 #[derive(Accounts)]
-pub struct TransferToWinner<'info> {
+pub struct TransferToWinner<'info> 
+{
     #[account(mut, address = auction.creator)]
     pub creator: Signer<'info>,
 
@@ -122,12 +144,12 @@ pub struct TransferToWinner<'info> {
 
     #[account(
         mut,
-        associated_token::mint = auction.nft_mint,
+        associated_token::mint = nft_mint,
         associated_token::authority = auction,
     )]
     pub auction_nft_ata: Account<'info, TokenAccount>,
 
-    #[account(address = auction.nft_mint)]
+    #[account(mut, address = auction.nft_mint)]
     pub nft_mint: Account<'info, Mint>,
 
     #[account(address = auction.last_bidder)]
@@ -148,4 +170,38 @@ pub struct TransferToWinner<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
 
     pub rent: Sysvar<'info, Rent>,
+}
+
+#[derive(Accounts)]
+pub struct WithdrawToken<'info> 
+{
+    #[account(mut, address = auction.creator)]
+    pub creator: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [
+            AUCTION_SEED.as_bytes(),
+            auction.name.as_bytes(),
+            auction.creator.as_ref(),
+        ], 
+        bump = auction.bump,
+    )]
+    pub auction: Account<'info, Auction>,
+
+    #[account(
+        mut,
+        associated_token::mint = auction.spl_token_mint,
+        associated_token::authority = auction,
+    )]
+    pub auction_token_ata: Box<Account<'info, TokenAccount>>,
+
+    #[account(
+        mut,
+        associated_token::mint = auction.spl_token_mint,
+        associated_token::authority = creator,
+    )]
+    pub creator_token_ata: Box<Account<'info, TokenAccount>>,
+ 
+    pub token_program: Program<'info, Token>,
 }

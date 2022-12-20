@@ -9,7 +9,7 @@ pub struct Auction
 
     pub min_bid_price: u64,
 
-    pub aution_started_time: u64,
+    pub auction_started_time: u64,
 
     pub auction_finish_time: u64,
 
