@@ -2,7 +2,7 @@
 seeds = false
 skip-lint = false
 [programs.devnet]
-auction = "ENURxCXe8YXZ5fn1zgwuQquFdN1o19N6huTWPfkBBBzW"
+auction = "3AQ3XWGLWcWQ8BFf8VHKV2pz6YSimtAjaSbvHgZCsV5X"
 
 [registry]
 url = "https://api.apr.dev"

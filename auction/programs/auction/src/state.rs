@@ -19,6 +19,8 @@ pub struct Auction
 
     pub last_bidder: Pubkey,
 
+    pub transfered_to_winner: bool,
+
     pub bump: u8,
 }
 
@@ -34,4 +36,8 @@ pub enum CustomError {
     AuctionFinished,
     #[msg("Auction is not finished yet")]
     AuctionNotFinished,
+    #[msg("Transfer to winner first")]
+    TransferedToWinner,
+    #[msg("Unathorized Wallet")]
+    UnauthorizedWallet,
 }

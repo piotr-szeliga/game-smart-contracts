@@ -10,7 +10,7 @@ use crate::constants::*;
 use crate::state::*;
 use crate::ins::*;
 
-declare_id!("ENURxCXe8YXZ5fn1zgwuQquFdN1o19N6huTWPfkBBBzW");
+declare_id!("3AQ3XWGLWcWQ8BFf8VHKV2pz6YSimtAjaSbvHgZCsV5X");
 
 #[program]
 pub mod auction {
@@ -34,6 +34,7 @@ pub mod auction {
         auction.auction_started_time = now;
         auction.auction_finish_time = now.checked_add(auction_duration).unwrap();
         auction.last_bidder = auction.creator;
+        auction.transfered_to_winner = false;
         auction.bump = *ctx.bumps.get(AUCTION_SEED).unwrap();
 
         let cpi_context = CpiContext::new(
@@ -112,6 +113,7 @@ pub mod auction {
         Ok(())
     }
 
+    #[access_control(authorized_admin(&ctx.accounts.signer, &ctx.accounts.auction))]
     pub fn transfer_to_winner(ctx: Context<TransferToWinner>) -> Result<()> {
         let auction = &ctx.accounts.auction;
         // let now: u64 = Clock::get().unwrap().unix_timestamp.try_into().unwrap();
@@ -140,11 +142,15 @@ pub mod auction {
 
         transfer(cpi_context, 1)?;
 
+        let auction = &mut ctx.accounts.auction;
+        auction.transfered_to_winner = true;
         Ok(())
     }
 
     pub fn withdraw_token(ctx: Context<WithdrawToken>) -> Result<()> {
         let auction = &ctx.accounts.auction;
+
+        require!(auction.transfered_to_winner, CustomError::TransferedToWinner);
 
         let name = &auction.name;
         let creator = auction.creator;
@@ -171,4 +177,14 @@ pub mod auction {
 
         Ok(())
     }
+}
+
+pub fn authorized_admin(signer: &AccountInfo, auction: &Account<Auction>) -> Result<()> {
+    if signer.key() != auction.creator {
+        let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == signer.key());
+        if index == false {
+            return Err(CustomError::UnauthorizedWallet.into());
+        }
+    }
+    Ok(())
 }

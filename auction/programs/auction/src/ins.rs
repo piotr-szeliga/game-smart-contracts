@@ -128,8 +128,8 @@ pub struct Bid<'info>
 #[derive(Accounts)]
 pub struct TransferToWinner<'info> 
 {
-    #[account(mut, address = auction.creator)]
-    pub creator: Signer<'info>,
+    #[account(mut)]
+    pub signer: Signer<'info>,
 
     #[account(
         mut,
@@ -157,7 +157,7 @@ pub struct TransferToWinner<'info>
 
     #[account(
         init_if_needed,
-        payer = creator,
+        payer = signer,
         associated_token::mint = nft_mint,
         associated_token::authority = winner,
     )]
