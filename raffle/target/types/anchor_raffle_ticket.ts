@@ -759,6 +759,10 @@ export type AnchorRaffleTicket = {
             "type": "bool"
           },
           {
+            "name": "isFinalized",
+            "type": "bool"
+          },
+          {
             "name": "buyers",
             "type": {
               "vec": {
@@ -875,6 +879,11 @@ export type AnchorRaffleTicket = {
       "code": 6007,
       "name": "ExceedMaxWithdrawAmount",
       "msg": "Cannot withdraw more than 10,000"
+    },
+    {
+      "code": 6008,
+      "name": "RaffleFinalized",
+      "msg": "Raffle already finalized."
     }
   ]
 };
@@ -1640,6 +1649,10 @@ export const IDL: AnchorRaffleTicket = {
             "type": "bool"
           },
           {
+            "name": "isFinalized",
+            "type": "bool"
+          },
+          {
             "name": "buyers",
             "type": {
               "vec": {
@@ -1756,6 +1769,11 @@ export const IDL: AnchorRaffleTicket = {
       "code": 6007,
       "name": "ExceedMaxWithdrawAmount",
       "msg": "Cannot withdraw more than 10,000"
+    },
+    {
+      "code": 6008,
+      "name": "RaffleFinalized",
+      "msg": "Raffle already finalized."
     }
   ]
 };

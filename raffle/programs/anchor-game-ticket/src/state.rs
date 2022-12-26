@@ -33,6 +33,7 @@ pub struct Raffle
     pub owner: Pubkey,
     pub nft_mint_address: Pubkey,
     pub store_buyers: bool,
+    pub is_finalized: bool,
     pub buyers: Vec<Buyer>,
 }
 
@@ -83,4 +84,6 @@ pub enum ErrorCode
     NotAuthorizedAdmin,
     #[msg("Cannot withdraw more than 10,000")] // 0x1777 - 6007
     ExceedMaxWithdrawAmount,
+    #[msg("Raffle already finalized.")] // 0x1778 - 6008
+    RaffleFinalized
 }

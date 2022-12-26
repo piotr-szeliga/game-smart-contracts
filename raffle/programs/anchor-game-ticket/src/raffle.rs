@@ -246,6 +246,13 @@ pub fn withdraw_from_pda(ctx: Context<WithdrawFromPDA>, amount: u64) -> Result<(
 
 pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Result<()> 
 {
+    /* Transfer raffle winnings minus royalties */
+    let raffle = &mut ctx.accounts.raffle;
+
+    require!(raffle.is_finalized == false, ErrorCode::RaffleFinalized);
+
+    raffle.is_finalized = true;
+
     /* Transfer NFT to winner only if 'winner_nft_ata' is set */
     if ctx.accounts.winner_nft_ata.key() != Pubkey::default()
     {
@@ -262,8 +269,7 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
         )?;
     }
 
-    /* Transfer raffle winnings minus royalties */
-    let raffle = &ctx.accounts.raffle;
+    
 
     // Total raffle bank balance
     let raffle_bank_balance = raffle.price_per_ticket.checked_mul(raffle.sold_tickets as u64).unwrap();
