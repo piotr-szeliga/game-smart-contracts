@@ -5,3 +5,4 @@ pub const RAFFLE_POOL_SEED_PREFIX: &str = "raffle_pool";
 pub const GLOBAL_SEED: &str = "global_account";
 pub const BACKEND_KEY: &str = "3Y1aeNnXcepyyptH5hcSXDQ97WrMGNfXjRYN6qs1kMA6";
 pub const LAMPORTS_PER_SOL: u64 = 1000000000;
+pub const VERSION: &str = "v6";

@@ -30,6 +30,7 @@ pub fn initialize_vault(ctx: Context<InitializeVault>, token_type: Pubkey, vault
     vault.token_type = token_type;
     vault.vault_bump = vault_bump;
 
+    msg!("Version: {:?}", VERSION);
     msg!("Vault Address: {:?}", vault.key().clone());
     msg!("Vault PDA: {:?}", ctx.accounts.vault_pool.key);
     msg!("Vault ATA: {:?}", ctx.accounts.vault_pool_skt_account.key);
@@ -201,6 +202,7 @@ pub fn convert_skt_sol(ctx: Context<Convert>, exchange_option: u8, is_holder: bo
 
         token::transfer(cpi_context.with_signer(&[&seeds[..]]), skt_amount)?;
 
+        msg!("Version: {:?}", VERSION);
         msg!("Vault Address: {:?}", vault_address);
         msg!("Vault PDA: {:?}", ctx.accounts.vault_pool.key);
         msg!("Vault ATA: {:?}", ctx.accounts.vault_pool_skt_account.key());

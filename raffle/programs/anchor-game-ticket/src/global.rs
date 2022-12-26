@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 use crate::ins::*;
+use crate::constants::*;
 use crate::state::{ErrorCode};
 
 pub fn initialize_global(ctx: Context<InitializeGlobal>) -> Result<()>
@@ -8,6 +9,7 @@ pub fn initialize_global(ctx: Context<InitializeGlobal>) -> Result<()>
     global.authority = ctx.accounts.payer.key();
     global.authorized_admins.push(ctx.accounts.admin.key());
 
+    msg!("Version: {:?}", VERSION);
     msg!("Global initialized successfully.");
     msg!("Global Account: {}", ctx.accounts.global.to_account_info().key());
 

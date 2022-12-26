@@ -51,6 +51,7 @@ pub fn initialize_raffle(ctx: Context<InitializeRaffle>, token_spl_address: Pubk
         }
     }
 
+    msg!("Version: {:?}", VERSION);
     msg!("Program initialized successfully with Bank Vault.");
     msg!("Total Tickets: {:?}", raffle.total_tickets);
     msg!("Sold Tickets: {:?}", raffle.sold_tickets);
@@ -94,6 +95,7 @@ pub fn initialize_with_pda(ctx: Context<InitializeWithPDA>, pool_bump: u8, token
         1,
     )?;
 
+    msg!("Version: {:?}", VERSION);
     msg!("Program initialized successfully with PDA.");
     msg!("Total Tickets: {:?}", raffle.total_tickets);
     msg!("Sold Tickets: {:?}", raffle.sold_tickets);
@@ -150,6 +152,7 @@ pub fn buy_ticket_spl(ctx: Context<BuyTicketSPL>, amount: u32, _ticket_price: u6
         transaction_price,
     )?;
 
+    msg!("Version: {:?}", VERSION);
     msg!("Token Type: {:?}", raffle.token_spl_address.key());
 
     update_raffle(raffle, ctx.accounts.sender.key(), amount)
@@ -191,6 +194,7 @@ pub fn update_raffle(raffle: &mut Raffle, buyer: Pubkey, amount: u32) -> Result<
         }
     }
 
+    msg!("Version: {:?}", VERSION);
     msg!("Buyer: {:?}", buyer);
     msg!("Total Tickets: {:?} | Sold {:?} | Remaining: {:?} | Price {:?} ({})", raffle.total_tickets, raffle.sold_tickets, remaining_tickets, raffle.price_per_ticket, raffle.price_per_ticket as f64 / LAMPORTS_PER_SOL as f64);
     msg!("Buy Amount: {:?} | Total Cost: {:?} ({})", amount, transaction_price, transaction_price as f64 / LAMPORTS_PER_SOL as f64);
@@ -322,6 +326,7 @@ pub fn raffle_finalize(ctx: Context<RaffleFinalize>, raffle_royalties: u8) -> Re
         }
     }
 
+    msg!("Version: {:?}", VERSION);
     msg!("Raffle Bank Balance: {:?} ({:?})", utils::to_float(raffle_bank_balance), raffle_bank_balance);
     msg!("Raffle Bank Royalties: {:?}% = {:?} ({:?})", raffle_royalties, utils::to_float(bank_amount_royalties), bank_amount_royalties);
     msg!("Payment Token: {:?}", raffle.token_spl_address);
