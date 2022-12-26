@@ -113,11 +113,11 @@ pub mod auction {
         Ok(())
     }
 
-    #[access_control(authorized_admin(&ctx.accounts.signer, &ctx.accounts.auction))]
+    #[access_control(authorized_admin(&ctx.accounts.signer))]
     pub fn transfer_to_winner(ctx: Context<TransferToWinner>) -> Result<()> {
         let auction = &ctx.accounts.auction;
-        // let now: u64 = Clock::get().unwrap().unix_timestamp.try_into().unwrap();
-        // require!(now > auction.auction_finish_time, CustomError::AuctionNotFinished);
+        let now: u64 = Clock::get().unwrap().unix_timestamp.try_into().unwrap();
+        require!(now > auction.auction_finish_time, CustomError::AuctionNotFinished);
 
         let name = &auction.name;
         let creator = auction.creator;
@@ -179,12 +179,10 @@ pub mod auction {
     }
 }
 
-pub fn authorized_admin(signer: &AccountInfo, auction: &Account<Auction>) -> Result<()> {
-    if signer.key() != auction.creator {
-        let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == signer.key());
-        if index == false {
-            return Err(CustomError::UnauthorizedWallet.into());
-        }
+pub fn authorized_admin(signer: &AccountInfo) -> Result<()> {
+    let index = APPROVED_WALLETS.iter().any(|x| x.parse::<Pubkey>().unwrap() == signer.key());
+    if index == false {
+        return Err(CustomError::UnauthorizedWallet.into());
     }
     Ok(())
 }
