@@ -31,8 +31,8 @@ impl PlayerState {
         let rand_acc = crate::misc::get_account_data(prev_round_acc)?;
         match current_state(&rand_acc) {
             CurrentState::Alive => Ok(()),
-            CurrentState::Dead => Err(crate::Error::PlayerDead.into()),
-            CurrentState::Playing => Err(crate::Error::TheCylinderIsStillSpinning.into()),
+            CurrentState::Dead => Err(CustomError::PlayerDead.into()),
+            CurrentState::Playing => Err(CustomError::TheCylinderIsStillSpinning.into()),
         }
     }
 }
@@ -64,12 +64,12 @@ pub fn current_state(randomness: &Randomness) -> CurrentState {
 /// Decides whether player is dead or alive.
 fn is_dead(randomness: &[u8; 64]) -> bool {
     // use only first 8 bytes for simplicyty
-    let value = randomness[0..size_of::<u64>()].try_into().unwrap();
+    let value = randomness[0..std::mem::size_of::<u64>()].try_into().unwrap();
     u64::from_le_bytes(value) % 6 == 0
 }
 
 #[error_code]
-pub enum Error {
+pub enum CustomError {
     #[msg("The player is already dead")]
     PlayerDead,
     #[msg("Unable to serialize a randomness request")]

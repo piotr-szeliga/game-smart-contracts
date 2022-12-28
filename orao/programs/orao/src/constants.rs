@@ -1,1 +1,1 @@
-pub const PLAYER_STATE_ACCOUNT_SEED: &str = "random-test";
+pub const PLAYER_STATE_ACCOUNT_SEED: &[u8] = b"orao-test";

@@ -1,20 +1,22 @@
 mod ins;
+mod misc;
 mod state;
 mod constants;
 
 use anchor_lang::prelude::*;
 use crate::ins::*;
+use crate::state::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("5YycSXWBQwXTciqF4VB638u7HB6AcJvGGWSH4H9F5Xxy");
 
 #[program]
 pub mod orao {
     use super::*;
 
-    pub fn spin_and_pull_the_trigger(ctx: Context<SpinAndPullTheTrigger>) -> Result<()> {
+    pub fn spin_and_pull_the_trigger(ctx: Context<SpinAndPullTheTrigger>, force: [u8; 32]) -> Result<()> {
         // Zero seed is illegal in VRF
         if force == [0_u8; 32] {
-            return Err(Error::YouMustSpinTheCylinder.into());
+            return Err(CustomError::YouMustSpinTheCylinder.into());
         }
 
         let player_state = &mut ctx.accounts.player_state;
