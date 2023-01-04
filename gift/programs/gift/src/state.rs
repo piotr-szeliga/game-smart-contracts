@@ -17,3 +17,16 @@ pub struct Gift
 
     pub bump: u8,
 }
+
+impl Gift {
+    pub const LEN: usize = std::mem::size_of::<Gift>();
+}
+
+#[error_code]
+pub enum ErrorCode
+{
+    #[msg("Mint Failed")]
+    MintFailed,
+    #[msg("Metadata Create Failed")]
+    MetadataCreateFailed,
+}
