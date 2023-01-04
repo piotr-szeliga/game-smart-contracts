@@ -49,5 +49,5 @@ pub enum ErrorCode {
     #[msg("Invalid Instruction Added")]
     InvalidInstructionAdded,
     #[msg("Invalid Program")]
-    InvalidProgramId
+    InvalidProgramId,
 }

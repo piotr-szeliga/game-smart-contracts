@@ -108,7 +108,7 @@ pub struct Play<'info>
     mut,
     constraint = payer_ata.owner == payer.key() && payer_ata.mint == game.token_mint
   )]
-  pub payer_ata: Account<'info, TokenAccount>,
+  pub payer_ata: Box<Account<'info, TokenAccount>>,
   #[account(
     mut,
     seeds = [
@@ -123,12 +123,12 @@ pub struct Play<'info>
     mut,
     constraint = game_treasury_ata.owner == game.key() && game_treasury_ata.mint == game.token_mint
   )]
-  pub game_treasury_ata: Account<'info, TokenAccount>,
+  pub game_treasury_ata: Box<Account<'info, TokenAccount>>,
   #[account(
     mut,
     constraint = commission_treasury_ata.owner == game.commission_wallet && commission_treasury_ata.mint == game.token_mint
   )]
-  pub commission_treasury_ata: Account<'info, TokenAccount>,
+  pub commission_treasury_ata: Box<Account<'info, TokenAccount>>,
   #[account(
       mut,
       seeds=[
@@ -143,6 +143,9 @@ pub struct Play<'info>
   #[account(address = sysvar::instructions::ID)]
   pub instruction_sysvar_account: AccountInfo<'info>,
   pub token_program: Program<'info, Token>,
+  /// CHECK:
+  #[account(address = sysvar::slot_hashes::id())]
+  pub recent_slothashes: UncheckedAccount<'info>,
 }
 
 #[derive(Accounts)]

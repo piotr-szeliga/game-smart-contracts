@@ -21,7 +21,7 @@ use utils::*;
 use constants::*;
 use state::ErrorCode;
 
-declare_id!("75Jrbo4F3tTbM7Kd84HC3NXpFCYjGCJohsjhKvNzMh2X");
+declare_id!("HLWBicFTMHUTzuxydDB2JKGvReuaKsD2UHh7AiP5oyRe");
 
 #[program]
 pub mod coinflip {
@@ -52,12 +52,12 @@ pub mod coinflip {
         game.royalties = royalties;
         game.main_balance = 0;
         game.win_percents = [
-            9500,
-            9500,
-            8000,
-            8000,
-            5000,
-            3333,
+            4750,
+            4750,
+            4000,
+            4000,
+            2500,
+            1667,
         ];
         game.total_round = 0;
         Ok(())
@@ -132,7 +132,7 @@ pub mod coinflip {
         let player = &mut ctx.accounts.player;
         let win_percents = game.win_percents;
         let price = BET_PRICES[bet_amount as usize];
-        let (rand, earned) = get_status(bet_amount, bet_number, win_percents);
+        let (rand, earned) = get_status(bet_amount, &ctx.accounts.recent_slothashes, win_percents);
         player.rand = rand;
         player.bet_amount = bet_amount;
         player.bet_number = bet_number;

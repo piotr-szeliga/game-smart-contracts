@@ -4,7 +4,7 @@ pub const PLAYER_SEED_PREFIX: &str = "player_pda";
 
 pub const APPROVED_WALLETS: [&str; 2] = [
   "SERVUJeqsyaJTuVuXAmmko6kTigJmxzTxUMSThpC2LZ",
-  "EF5qxGB1AirUH4ENw1niV1ewiNHzH2fWs7naQQYF2dc"
+  "3qWq2ehELrVJrTg2JKKERm67cN6vYjm1EyhCEzfQ6jMd"
 ];
 
 pub const BET_PRICES: [u64; 6] = [
