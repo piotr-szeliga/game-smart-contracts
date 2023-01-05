@@ -30,7 +30,7 @@ pub mod gift {
         gift.token_amount = token_amount;
         gift.nft_mint = ctx.accounts.nft_mint.key();
         gift.destination_address = ctx.accounts.target.key();
-        gift.redeamed = false;
+        gift.redeemed = false;
 
         let cpi_context = CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
@@ -109,10 +109,10 @@ pub mod gift {
         Ok(())
     }
 
-    pub fn redeam(ctx: Context<Redeam>) -> Result<()> {
+    pub fn redeem(ctx: Context<Redeem>) -> Result<()> {
         let gift = &ctx.accounts.gift;
 
-        require!(gift.redeamed == false, ErrorCode::AlreadyRedeamed);
+        require!(gift.redeemed == false, ErrorCode::AlreadyRedeemed);
         
         let cpi_context = CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
@@ -147,7 +147,7 @@ pub mod gift {
         transfer(cpi_context, gift.token_amount)?;
 
         let gift = &mut ctx.accounts.gift;
-        gift.redeamed = true;
+        gift.redeemed = true;
 
         Ok(())
     }

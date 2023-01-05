@@ -13,7 +13,7 @@ pub struct Gift
     
     pub nft_mint: Pubkey,
 
-    pub redeamed: bool,
+    pub redeemed: bool,
 
     pub bump: u8,
 }
@@ -29,6 +29,6 @@ pub enum ErrorCode
     MintFailed,
     #[msg("Metadata Create Failed")]
     MetadataCreateFailed,
-    #[msg("Already Redeamed")]
-    AlreadyRedeamed,
+    #[msg("Already Redeemed")]
+    AlreadyRedeemed,
 }

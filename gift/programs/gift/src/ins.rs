@@ -73,7 +73,7 @@ pub struct CreateGift<'info>
 }
 
 #[derive(Accounts)]
-pub struct Redeam<'info>
+pub struct Redeem<'info>
 {
     #[account(mut)]
     pub target: Signer<'info>,
