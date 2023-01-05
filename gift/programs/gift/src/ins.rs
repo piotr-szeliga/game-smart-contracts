@@ -17,7 +17,7 @@ pub struct CreateGift<'info>
     pub target: SystemAccount<'info>,
 
     #[account(mut)]
-    pub nft_mint: Signer<'info>,
+    pub nft_mint: Box<Account<'info, Mint>>,
 
     /// CHECK:
     #[account(mut)]
@@ -86,7 +86,7 @@ pub struct Redeam<'info>
         associated_token::mint = nft_mint,  
         associated_token::authority = target    
     )]  
-    pub target_nft_mint: Box<Account<'info, TokenAccount>>,
+    pub target_nft_ata: Box<Account<'info, TokenAccount>>,
 
     #[account(
         mut,

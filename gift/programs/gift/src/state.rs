@@ -29,4 +29,6 @@ pub enum ErrorCode
     MintFailed,
     #[msg("Metadata Create Failed")]
     MetadataCreateFailed,
+    #[msg("Already Redeamed")]
+    AlreadyRedeamed,
 }

@@ -5,7 +5,7 @@ use anchor_lang::{
     prelude::*,
     solana_program::program::invoke
 };
-use anchor_spl::token::{MintTo, mint_to, Transfer,  transfer};
+use anchor_spl::token::{MintTo, mint_to, Transfer,  transfer, Burn, burn};
 use mpl_token_metadata::{
     instruction::create_metadata_accounts_v2,
     state::Creator,
@@ -63,7 +63,6 @@ pub mod gift {
             ctx.accounts.token_metadata_program.to_account_info(),
             ctx.accounts.metadata.to_account_info(),
             ctx.accounts.nft_mint.to_account_info(),
-            ctx.accounts.gift.to_account_info(), // mint authority
             ctx.accounts.creator.to_account_info(), // payer
             ctx.accounts.rent.to_account_info(),
             ctx.accounts.token_program.to_account_info(),
@@ -87,9 +86,9 @@ pub mod gift {
                 ctx.accounts.token_metadata_program.key(),
                 ctx.accounts.metadata.key(),
                 ctx.accounts.nft_mint.key(),
-                ctx.accounts.gift.key(), // mint authority
+                ctx.accounts.creator.key(), // mint authority
                 ctx.accounts.creator.key(), // payer
-                ctx.accounts.gift.key(), // update authority
+                ctx.accounts.creator.key(), // update authority
                 name,
                 symbol,
                 uri,
@@ -111,10 +110,45 @@ pub mod gift {
     }
 
     pub fn redeam(ctx: Context<Redeam>) -> Result<()> {
-        let gift = &mut ctx.accounts.gift;
+        let gift = &ctx.accounts.gift;
 
-        gift.redeamed = true;
+        require!(gift.redeamed == false, ErrorCode::AlreadyRedeamed);
         
+        let cpi_context = CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            Burn {
+                mint: ctx.accounts.nft_mint.to_account_info(),
+                from: ctx.accounts.target_nft_ata.to_account_info(),
+                authority: ctx.accounts.target.to_account_info(),
+            }
+        );
+
+        burn(cpi_context, 1)?;
+
+        let nft_mint = gift.nft_mint;
+        let bump = gift.bump;
+        let seeds = [
+            b"gift".as_ref(),
+            nft_mint.as_ref(),
+            &[bump]
+        ];
+        let signer = &[&seeds[..]];
+
+        let cpi_context = CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.gift_token_ata.to_account_info(),
+                to: ctx.accounts.target_token_ata.to_account_info(),
+                authority: ctx.accounts.gift.to_account_info(),
+            },
+            signer
+        );
+
+        transfer(cpi_context, gift.token_amount)?;
+
+        let gift = &mut ctx.accounts.gift;
+        gift.redeamed = true;
+
         Ok(())
     }
 }
