@@ -10,6 +10,7 @@ use mpl_token_metadata::{
     instruction::create_metadata_accounts_v2,
     state::Creator,
 };
+use anchor_lang::solana_program::clock::Clock;
 
 use crate::ins::*;
 use crate::state::{ErrorCode};
@@ -21,8 +22,32 @@ declare_id!("4NtgP5gmSJFPoifmXS1Fw1zHGvwhguRNhzT5jP7u3U6A");
 pub mod gift {
     use super::*;
 
+    pub fn initialize_global(ctx: Context<InitializeGlobal>, name: String, expiration_period: u64, gate_token_mint: Pubkey, gate_token_amount: u64) -> Result<()> {
+        let global = &mut ctx.accounts.global;
+
+        global.bump = *ctx.bumps.get("global").unwrap();
+        global.authority = ctx.accounts.authority.key();
+        global.gate_token_mint = gate_token_mint;
+        global.gate_token_amount = gate_token_amount;
+        global.name = name;
+        global.expiration_period = expiration_period;
+
+        Ok(())
+    }
+
+    pub fn update_global(ctx: Context<UpdateGlobal>, expiration_period: u64, gate_token_mint: Pubkey, gate_token_amount: u64) -> Result<()> {
+        let global = &mut ctx.accounts.global;
+
+        global.expiration_period = expiration_period;
+        global.gate_token_mint = gate_token_mint;
+        global.gate_token_amount = gate_token_amount;
+
+        Ok(())
+    }
+
     pub fn create_gift(ctx: Context<CreateGift>, token_amount: u64, name: String, symbol: String, uri: String) -> Result<()> {
         let gift = &mut ctx.accounts.gift;
+        let global = &ctx.accounts.global;
 
         gift.bump = *ctx.bumps.get("gift").unwrap();
         gift.creator = ctx.accounts.creator.key();
@@ -30,6 +55,15 @@ pub mod gift {
         gift.token_amount = token_amount;
         gift.nft_mint = ctx.accounts.nft_mint.key();
         gift.destination_address = ctx.accounts.target.key();
+        let now: u64 = Clock::get().unwrap().unix_timestamp.try_into().unwrap();
+        gift.expiration_time = now.checked_add(global.expiration_period).unwrap();
+        gift.gate_token_amount = global.gate_token_amount;
+        gift.gate_token_mint = global.gate_token_mint;
+        if global.gate_token_amount == 0 {
+            gift.gate_token_amount = 0;
+            gift.gate_token_mint = gift.nft_mint;
+        } 
+        
         gift.redeemed = false;
 
         let cpi_context = CpiContext::new(
@@ -112,7 +146,10 @@ pub mod gift {
     pub fn redeem(ctx: Context<Redeem>) -> Result<()> {
         let gift = &ctx.accounts.gift;
 
+        let now: u64 = Clock::get().unwrap().unix_timestamp.try_into().unwrap();
+        require!(gift.expiration_time > now, ErrorCode::Expired);
         require!(gift.redeemed == false, ErrorCode::AlreadyRedeemed);
+        require!(ctx.accounts.gate_token_ata.amount >= gift.gate_token_amount, ErrorCode::InvalidHolder);
         
         let cpi_context = CpiContext::new(
             ctx.accounts.token_program.to_account_info(),

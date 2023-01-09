@@ -6,6 +6,47 @@ use anchor_spl::{
 
 use crate::state::*;
 
+#[derive(Accounts)]
+#[instruction(name: String)]
+pub struct InitializeGlobal<'info>
+{
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
+    #[account(
+        init,
+        payer = authority,
+        space = Global::LEN + 8,
+        seeds = [
+            b"global".as_ref(),
+            name.as_ref(),
+            authority.key().as_ref()
+        ],
+        bump
+    )]
+    pub global: Account<'info, Global>,
+
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct UpdateGlobal<'info>
+{
+    #[account(mut, address = global.authority)]
+    pub authority: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [
+            b"global".as_ref(),
+            global.name.as_ref(),
+            authority.key().as_ref()
+        ],
+        bump = global.bump
+    )]
+    pub global: Account<'info, Global>,
+}
+
 
 #[derive(Accounts)]
 pub struct CreateGift<'info> 
@@ -34,6 +75,16 @@ pub struct CreateGift<'info>
         bump
     )]
     pub gift: Box<Account<'info, Gift>>,
+
+    #[account(
+        seeds = [
+            b"global".as_ref(),
+            global.name.as_ref(),
+            global.authority.key().as_ref()
+        ],
+        bump = global.bump
+    )]
+    pub global: Box<Account<'info, Global>>,
 
     #[account(mut)]
     pub spl_token_mint: Box<Account<'info, Mint>>,
@@ -98,6 +149,12 @@ pub struct Redeem<'info>
     )]
     pub gift: Box<Account<'info, Gift>>,
 
+    #[account(
+        associated_token::mint = gift.gate_token_mint,
+        associated_token::authority = target,
+    )]
+    pub gate_token_ata: Box<Account<'info, TokenAccount>>,
+
     #[account(mut, address = gift.spl_token_mint)]
     pub spl_token_mint: Box<Account<'info, Mint>>,
 
@@ -122,5 +179,6 @@ pub struct Redeem<'info>
 
     pub associated_token_program: Program<'info, AssociatedToken>,
 
+ 
     pub rent: Sysvar<'info, Rent>,
 }
