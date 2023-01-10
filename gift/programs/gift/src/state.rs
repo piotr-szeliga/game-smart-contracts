@@ -31,6 +31,8 @@ pub struct Gift
 
     pub gate_token_amount: u64,
 
+    pub verified_creators: Vec<Pubkey>,
+
     pub destination_address: Pubkey,
 
     pub token_amount: u64,
@@ -45,7 +47,7 @@ pub struct Gift
 }
 
 impl Gift {
-    pub const LEN: usize = std::mem::size_of::<Gift>();
+    pub const LEN: usize = std::mem::size_of::<Gift>() + 32 * 10;
 }
 
 #[error_code]

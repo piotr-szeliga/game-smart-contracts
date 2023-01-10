@@ -8,7 +8,7 @@ use anchor_lang::{
 use anchor_spl::token::{MintTo, mint_to, Transfer,  transfer, Burn, burn};
 use mpl_token_metadata::{
     instruction::create_metadata_accounts_v2,
-    state::Creator,
+    state::{Creator},
 };
 use anchor_lang::solana_program::clock::Clock;
 
@@ -45,9 +45,18 @@ pub mod gift {
         Ok(())
     }
 
-    pub fn create_gift(ctx: Context<CreateGift>, token_amount: u64, name: String, symbol: String, uri: String) -> Result<()> {
+    pub fn create_gift(
+        ctx: Context<CreateGift>, 
+        token_amount: u64, 
+        name: String, 
+        symbol: String, 
+        uri: String, 
+        expiration_period: u64,
+        gate_token_amount: u64, 
+        gate_token_mint: Pubkey, 
+        verified_creators: Vec<Pubkey>
+    ) -> Result<()> {
         let gift = &mut ctx.accounts.gift;
-        let global = &ctx.accounts.global;
 
         gift.bump = *ctx.bumps.get("gift").unwrap();
         gift.creator = ctx.accounts.creator.key();
@@ -56,14 +65,14 @@ pub mod gift {
         gift.nft_mint = ctx.accounts.nft_mint.key();
         gift.destination_address = ctx.accounts.target.key();
         let now: u64 = Clock::get().unwrap().unix_timestamp.try_into().unwrap();
-        gift.expiration_time = now.checked_add(global.expiration_period).unwrap();
-        gift.gate_token_amount = global.gate_token_amount;
-        gift.gate_token_mint = global.gate_token_mint;
-        if global.gate_token_amount == 0 {
+        gift.expiration_time = now.checked_add(expiration_period).unwrap();
+        gift.gate_token_amount = gate_token_amount;
+        gift.gate_token_mint = gate_token_mint;
+        if gate_token_amount == 0 {
             gift.gate_token_amount = 0;
             gift.gate_token_mint = gift.nft_mint;
-        } 
-        
+        }
+        gift.verified_creators = verified_creators;
         gift.redeemed = false;
 
         let cpi_context = CpiContext::new(
@@ -150,6 +159,11 @@ pub mod gift {
         require!(gift.expiration_time > now, ErrorCode::Expired);
         require!(gift.redeemed == false, ErrorCode::AlreadyRedeemed);
         require!(ctx.accounts.gate_token_ata.amount >= gift.gate_token_amount, ErrorCode::InvalidHolder);
+
+        let gate_nft_metadata = spl_token_metadata::state::Metadata::from_account_info(&ctx.accounts.gate_nft_metadata)?;
+        let creator = gate_nft_metadata.data.creators.unwrap()[0].address.key();
+        let verified = gift.verified_creators.iter().any(|x| x == &creator);
+        require!(verified, ErrorCode::InvalidHolder);
         
         let cpi_context = CpiContext::new(
             ctx.accounts.token_program.to_account_info(),

@@ -3,7 +3,7 @@ use anchor_spl::{
     token::{Mint, TokenAccount, Token},
     associated_token::AssociatedToken,
 };
-
+use mpl_token_metadata::pda::{PREFIX, EDITION};
 use crate::state::*;
 
 #[derive(Accounts)]
@@ -61,8 +61,17 @@ pub struct CreateGift<'info>
     pub nft_mint: Box<Account<'info, Mint>>,
 
     /// CHECK:
-    #[account(mut)]
-    pub metadata: UncheckedAccount<'info>,
+    #[account(
+        mut,
+        seeds = [
+            PREFIX.as_bytes(),
+            mpl_token_metadata::ID.as_ref(),
+            nft_mint.key().as_ref(),
+        ],
+        bump,
+        seeds::program = mpl_token_metadata::ID
+    )]
+    pub metadata: AccountInfo<'info>,
 
     #[account(
         init,
@@ -75,16 +84,6 @@ pub struct CreateGift<'info>
         bump
     )]
     pub gift: Box<Account<'info, Gift>>,
-
-    #[account(
-        seeds = [
-            b"global".as_ref(),
-            global.name.as_ref(),
-            global.authority.key().as_ref()
-        ],
-        bump = global.bump
-    )]
-    pub global: Box<Account<'info, Global>>,
 
     #[account(mut)]
     pub spl_token_mint: Box<Account<'info, Mint>>,
@@ -112,7 +111,8 @@ pub struct CreateGift<'info>
     pub target_nft_ata: Box<Account<'info, TokenAccount>>,
 
     /// CHECK:
-    pub token_metadata_program: UncheckedAccount<'info>,
+    #[account(address = mpl_token_metadata::ID)]
+    pub token_metadata_program: AccountInfo<'info>,
 
     pub system_program: Program<'info, System>,
 
@@ -134,8 +134,8 @@ pub struct Redeem<'info>
 
     #[account(  
         mut,    
-        associated_token::mint = nft_mint,  
-        associated_token::authority = target    
+        associated_token::mint = nft_mint,
+        associated_token::authority = target
     )]  
     pub target_nft_ata: Box<Account<'info, TokenAccount>>,
 
@@ -154,6 +154,27 @@ pub struct Redeem<'info>
         associated_token::authority = target,
     )]
     pub gate_token_ata: Box<Account<'info, TokenAccount>>,
+
+    pub gate_nft_mint: Box<Account<'info, Mint>>,
+
+    /// CHECK:
+    #[account(
+        mut,
+        seeds = [
+            PREFIX.as_bytes(),
+            mpl_token_metadata::ID.as_ref(),
+            gate_nft_mint.key().as_ref(),
+        ],
+        bump,
+        seeds::program = mpl_token_metadata::ID
+    )]
+    pub gate_nft_metadata: AccountInfo<'info>,
+
+    #[account(
+        associated_token::mint = gate_nft_mint,
+        associated_token::authority = target
+    )]
+    pub gate_nft_ata: Box<Account<'info, TokenAccount>>,
 
     #[account(mut, address = gift.spl_token_mint)]
     pub spl_token_mint: Box<Account<'info, Mint>>,
@@ -178,7 +199,6 @@ pub struct Redeem<'info>
     pub token_program: Program<'info, Token>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
-
  
     pub rent: Sysvar<'info, Rent>,
 }
