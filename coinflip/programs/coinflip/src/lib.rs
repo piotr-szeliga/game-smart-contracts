@@ -21,7 +21,7 @@ use utils::*;
 use constants::*;
 use state::ErrorCode;
 
-declare_id!("HLWBicFTMHUTzuxydDB2JKGvReuaKsD2UHh7AiP5oyRe");
+declare_id!("75Jrbo4F3tTbM7Kd84HC3NXpFCYjGCJohsjhKvNzMh2X");
 
 #[program]
 pub mod coinflip {
