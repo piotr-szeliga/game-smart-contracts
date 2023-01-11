@@ -7,48 +7,6 @@ use mpl_token_metadata::pda::{PREFIX, EDITION};
 use crate::state::*;
 
 #[derive(Accounts)]
-#[instruction(name: String)]
-pub struct InitializeGlobal<'info>
-{
-    #[account(mut)]
-    pub authority: Signer<'info>,
-
-    #[account(
-        init,
-        payer = authority,
-        space = Global::LEN + 8,
-        seeds = [
-            b"global".as_ref(),
-            name.as_ref(),
-            authority.key().as_ref()
-        ],
-        bump
-    )]
-    pub global: Account<'info, Global>,
-
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-pub struct UpdateGlobal<'info>
-{
-    #[account(mut, address = global.authority)]
-    pub authority: Signer<'info>,
-
-    #[account(
-        mut,
-        seeds = [
-            b"global".as_ref(),
-            global.name.as_ref(),
-            authority.key().as_ref()
-        ],
-        bump = global.bump
-    )]
-    pub global: Account<'info, Global>,
-}
-
-
-#[derive(Accounts)]
 pub struct CreateGift<'info> 
 {
     #[account(mut)]

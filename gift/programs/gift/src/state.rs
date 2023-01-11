@@ -1,26 +1,6 @@
 use anchor_lang::prelude::*;
 
 #[account]
-pub struct Global
-{
-    pub name: String,
-
-    pub authority: Pubkey,
-
-    pub expiration_period: u64,
-
-    pub gate_token_mint: Pubkey,
-
-    pub gate_token_amount: u64,
-
-    pub bump: u8,
-}
-
-impl Global {
-    pub const LEN: usize = std::mem::size_of::<Global>();
-}
-
-#[account]
 pub struct Gift 
 {
     pub creator: Pubkey,

@@ -22,36 +22,13 @@ declare_id!("4NtgP5gmSJFPoifmXS1Fw1zHGvwhguRNhzT5jP7u3U6A");
 pub mod gift {
     use super::*;
 
-    pub fn initialize_global(ctx: Context<InitializeGlobal>, name: String, expiration_period: u64, gate_token_mint: Pubkey, gate_token_amount: u64) -> Result<()> {
-        let global = &mut ctx.accounts.global;
-
-        global.bump = *ctx.bumps.get("global").unwrap();
-        global.authority = ctx.accounts.authority.key();
-        global.gate_token_mint = gate_token_mint;
-        global.gate_token_amount = gate_token_amount;
-        global.name = name;
-        global.expiration_period = expiration_period;
-
-        Ok(())
-    }
-
-    pub fn update_global(ctx: Context<UpdateGlobal>, expiration_period: u64, gate_token_mint: Pubkey, gate_token_amount: u64) -> Result<()> {
-        let global = &mut ctx.accounts.global;
-
-        global.expiration_period = expiration_period;
-        global.gate_token_mint = gate_token_mint;
-        global.gate_token_amount = gate_token_amount;
-
-        Ok(())
-    }
-
     pub fn create_gift(
         ctx: Context<CreateGift>, 
         token_amount: u64, 
         name: String, 
         symbol: String, 
         uri: String, 
-        expiration_period: u64,
+        expiration_time: u64,
         gate_token_amount: u64, 
         gate_token_mint: Pubkey, 
         verified_creators: Vec<Pubkey>
@@ -64,8 +41,7 @@ pub mod gift {
         gift.token_amount = token_amount;
         gift.nft_mint = ctx.accounts.nft_mint.key();
         gift.destination_address = ctx.accounts.target.key();
-        let now: u64 = Clock::get().unwrap().unix_timestamp.try_into().unwrap();
-        gift.expiration_time = now.checked_add(expiration_period).unwrap();
+        gift.expiration_time = expiration_time;
         gift.gate_token_amount = gate_token_amount;
         gift.gate_token_mint = gate_token_mint;
         if gate_token_amount == 0 {
@@ -163,7 +139,7 @@ pub mod gift {
         let gate_nft_metadata = spl_token_metadata::state::Metadata::from_account_info(&ctx.accounts.gate_nft_metadata)?;
         let creator = gate_nft_metadata.data.creators.unwrap()[0].address.key();
         let verified = gift.verified_creators.iter().any(|x| x == &creator);
-        require!(verified, ErrorCode::InvalidHolder);
+        require!(verified || gift.verified_creators.len() == 0, ErrorCode::InvalidHolder);
         
         let cpi_context = CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
