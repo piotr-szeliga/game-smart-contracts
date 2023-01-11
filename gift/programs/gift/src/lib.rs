@@ -66,7 +66,7 @@ pub mod gift {
             MintTo {
                 mint: ctx.accounts.nft_mint.to_account_info(),
                 to: ctx.accounts.target_nft_ata.to_account_info(),
-                authority: ctx.accounts.target.to_account_info(),
+                authority: ctx.accounts.creator.to_account_info(),
             }
         );
         let result =  mint_to(cpi_context, 1);
