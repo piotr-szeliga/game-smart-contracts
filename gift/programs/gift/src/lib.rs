@@ -35,6 +35,9 @@ pub mod gift {
     ) -> Result<()> {
         let gift = &mut ctx.accounts.gift;
 
+        let now: u64 = Clock::get().unwrap().unix_timestamp.try_into().unwrap();
+        // require!(expiration_time > now + 8 * 3600, ErrorCode::ExpireMinTime);
+
         gift.bump = *ctx.bumps.get("gift").unwrap();
         gift.creator = ctx.accounts.creator.key();
         gift.spl_token_mint = ctx.accounts.spl_token_mint.key();
@@ -50,6 +53,7 @@ pub mod gift {
         }
         gift.verified_creators = verified_creators;
         gift.redeemed = false;
+        gift.burned = false;
 
         let cpi_context = CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
@@ -175,6 +179,53 @@ pub mod gift {
 
         let gift = &mut ctx.accounts.gift;
         gift.redeemed = true;
+
+        Ok(())
+    }
+
+    pub fn burn_gift(ctx: Context<BurnGift>) -> Result<()> {
+        let gift = &ctx.accounts.gift;
+
+        let now: u64 = Clock::get().unwrap().unix_timestamp.try_into().unwrap();
+        require!(gift.expiration_time < now, ErrorCode::NotExpired);
+        require!(gift.redeemed == false, ErrorCode::AlreadyRedeemed);
+        
+        let nft_mint = gift.nft_mint;
+        let bump = gift.bump;
+        let seeds = [
+            b"gift".as_ref(),
+            nft_mint.as_ref(),
+            &[bump]
+        ];
+        let signer = &[&seeds[..]];
+
+        let cpi_context = CpiContext::new_with_signer(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.gift_token_ata.to_account_info(),
+                to: ctx.accounts.target_token_ata.to_account_info(),
+                authority: ctx.accounts.gift.to_account_info(),
+            },
+            signer
+        );
+
+        transfer(cpi_context, gift.token_amount)?;
+
+        let gift = &mut ctx.accounts.gift;
+        gift.redeemed = false;
+        gift.burned = true;
+
+        Ok(())
+    }
+
+    pub fn close_pda(ctx: Context<ClosePda>) -> Result<()> {
+        let dest_account_info = ctx.accounts.signer.to_account_info();
+        let source_account_info = ctx.accounts.pda.to_account_info();
+        let dest_starting_lamports = dest_account_info.lamports();
+        **dest_account_info.lamports.borrow_mut() = dest_starting_lamports
+            .checked_add(source_account_info.lamports())
+            .unwrap();
+        **source_account_info.lamports.borrow_mut() = 0;
 
         Ok(())
     }

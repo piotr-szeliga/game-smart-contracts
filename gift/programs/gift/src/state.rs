@@ -23,6 +23,8 @@ pub struct Gift
 
     pub redeemed: bool,
 
+    pub burned: bool,
+
     pub bump: u8,
 }
 
@@ -41,6 +43,10 @@ pub enum ErrorCode
     AlreadyRedeemed,
     #[msg("Time Expired")]
     Expired,
+    #[msg("Time Not Expired")]
+    NotExpired,
     #[msg("Invalid Gate Token Holder")]
     InvalidHolder,
+    #[msg("Expire time should be at least 8hrs")]
+    ExpireMinTime,
 }
