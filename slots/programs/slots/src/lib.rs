@@ -21,7 +21,7 @@ use utils::*;
 use constants::*;
 use state::ErrorCode;
 
-declare_id!("3BJdzqUKD2bTTxDP7x7odQ2u4SBiHu3VncZQwmvHre34");
+declare_id!("6sE2DYexXa8oBPfGjgoCkNceHgH3xXnXD2nBz7i3NTWE");
 
 #[program]
 pub mod slots {
@@ -53,14 +53,22 @@ pub mod slots {
         game.main_balance = 0;
         game.community_balances = vec![0; len]; 
         game.community_pending_balances = vec![0; len];
-        game.jackpot = 14_400_000_000;        
-        game.win_percents = [
-            [4000, 1500, 0],
-            [3000, 1000, 0],
-            [2000,  500, 0],
-            [1250,  250, 0],
-            [ 700,  200, 0],
-            [ 300,  100, 0],
+        game.jackpot = 14_400_000_000;  
+        game.bet_prices = vec![
+            50_000_000,
+           100_000_000,
+           250_000_000,
+           500_000_000,
+         1_000_000_000,
+         2_000_000_000,
+       ];      
+        game.win_percents = vec![
+            vec![4000, 1500, 0],
+            vec![3000, 1000, 0],
+            vec![2000,  500, 0],
+            vec![1250,  250, 0],
+            vec![ 700,  200, 0],
+            vec![ 300,  100, 0],
         ];
         game.min_rounds_before_win = 4;
         game.lose_counter = 4;
@@ -105,8 +113,9 @@ pub mod slots {
     }
 
     #[access_control(authorized_admin(&ctx.accounts.payer))]
-    pub fn set_winning(ctx: Context<ConfigGame>, win_percents: [[u16; 3]; 6], jackpot: u64, min_rounds_before_win: u8) -> Result<()> {
+    pub fn set_winning(ctx: Context<ConfigGame>, bet_prices: Vec<u64>, win_percents: Vec<Vec<u16>>, jackpot: u64, min_rounds_before_win: u8) -> Result<()> {
         let game = &mut ctx.accounts.game;
+        game.bet_prices = bet_prices;
         game.win_percents = win_percents;
         game.jackpot = jackpot;
         game.min_rounds_before_win = min_rounds_before_win;
@@ -129,26 +138,65 @@ pub mod slots {
     }
 
     #[access_control(valid_program(&ctx.accounts.instruction_sysvar_account, *ctx.program_id))]
-    pub fn play(ctx: Context<Play>, bet_no: u8) -> Result<()> {
+    pub fn play(ctx: Context<Play>, bet_no: u8, number_of_play: u16) -> Result<()> {
         if bet_no > 5 {
             return Err(ErrorCode::MinimumPrice.into());
         }
         let game = &ctx.accounts.game;
         let player = &mut ctx.accounts.player;
         let jackpot = game.jackpot;
-        let win_percents = game.win_percents;
-        let price = BET_PRICES[bet_no as usize];
-        let (rand, earned, is_jackpot, euqal_count, equal_no, multipler) = get_status(bet_no, win_percents, jackpot, game.lose_counter < game.min_rounds_before_win);
-        player.status = rand;
-        player.is_jackpot = is_jackpot;
-        player.equal_count = euqal_count;
-        player.equal_no = equal_no;
-        player.multipler = multipler;
+        let win_percents = &game.win_percents;
+        let bet_prices = &game.bet_prices;
+        let price = bet_prices[bet_no as usize];
+        let total_price = price.checked_mul(number_of_play as u64).unwrap();
+        let mut lose_counter = game.lose_counter;
+        // player.status = rand;
+        // player.is_jackpot = is_jackpot;
+        // player.equal_count = euqal_count;
+        // player.equal_no = equal_no;
+        // player.multipler = multipler;
 
         msg!("Version: {:?}", VERSION);
         msg!("Player PDA: {:?}", player.key);
 
-        let commission_amount = price.checked_mul(game.commission_fee as u64).unwrap().checked_div(10000).unwrap();        
+        let mut rand_vec: Vec<u32> = vec![];
+        let mut earned_vec: Vec<u64> = vec![];
+        let mut is_jackpot_vec: Vec<bool> = vec![];
+        let mut equal_count_vec: Vec<u32> = vec![];
+        let mut equal_no_vec: Vec<u32> = vec![];
+        let mut multipler_vec: Vec<u32> = vec![];
+        for i in 0..number_of_play {
+            let (rand, earned, is_jackpot, equal_count, equal_no, multipler) = get_status(
+                i as u64,
+                bet_no, 
+                bet_prices, 
+                win_percents, 
+                jackpot, 
+                lose_counter < game.min_rounds_before_win
+            );
+            rand_vec.push(rand);
+            earned_vec.push(earned);
+            is_jackpot_vec.push(is_jackpot);
+            equal_count_vec.push(equal_count);
+            equal_no_vec.push(equal_no);
+            multipler_vec.push(multipler);
+            lose_counter = lose_counter.checked_add(1).unwrap();
+            if earned > 0 {
+                lose_counter = 0;
+            }
+            player.earned_money = player.earned_money.checked_add(earned).unwrap();
+        }
+
+        msg!("Rand: {:?}", rand_vec);
+        msg!("Equal Count: {:?}", equal_count_vec);
+        msg!("Equal No: {:?}", equal_no_vec);
+        msg!("Is Jackpot: {:?}", is_jackpot_vec);
+        msg!("Multiplier: {:?}", multipler_vec);
+        msg!("Earned: {:?}", earned_vec);
+
+        msg!("Total Earned: {:?}", player.earned_money);
+
+        let commission_amount = total_price.checked_mul(game.commission_fee as u64).unwrap().checked_div(10000).unwrap();        
         transfer(
             CpiContext::new(
                 ctx.accounts.token_program.to_account_info(),
@@ -158,7 +206,7 @@ pub mod slots {
                     to: ctx.accounts.game_treasury_ata.to_account_info().clone(),
                 }
             ),
-            price.checked_sub(commission_amount).unwrap(),
+            total_price.checked_sub(commission_amount).unwrap(),
         )?;
 
         if commission_amount > 0
@@ -177,20 +225,16 @@ pub mod slots {
         }
 
         let game = &mut ctx.accounts.game;
-        game.lose_counter = game.lose_counter.checked_add(1).unwrap();
-        if earned > 0 {
-            game.lose_counter = 0;
-        }
-
-        game.main_balance = game.main_balance.checked_add(price).unwrap().checked_sub(commission_amount).unwrap();
+        
+        game.lose_counter = lose_counter;
+        game.main_balance = game.main_balance.checked_add(total_price).unwrap().checked_sub(commission_amount).unwrap();
         let len = game.royalties.len();
         for i in 0..len {
             let royalty = game.royalties[i];
-            let royalty_amount = price.checked_mul(royalty as u64).unwrap().checked_div(10000).unwrap();
+            let royalty_amount = total_price.checked_mul(royalty as u64).unwrap().checked_div(10000).unwrap();
             game.community_pending_balances[i] = game.community_pending_balances[i].checked_add(royalty_amount).unwrap();
             game.main_balance = game.main_balance.checked_sub(royalty_amount).unwrap();
-        }
-        player.earned_money = player.earned_money.checked_add(earned).unwrap();
+        }        
         
         Ok(())
     }

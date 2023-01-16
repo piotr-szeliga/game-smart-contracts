@@ -7,21 +7,22 @@ use anchor_lang::{
 };
 use crate::constants::*;
 
-pub fn get_random() -> u32 {
-  let slot = clock::Clock::get().unwrap().unix_timestamp as u64;
+pub fn get_random(index: u64) -> u32 {
+  let mut slot = clock::Clock::get().unwrap().unix_timestamp as u64;
+  slot = slot.checked_add(index).unwrap();
   let hash = hash(&slot.to_be_bytes());
   let buf: [u8; 32] = Hash::to_bytes(hash);
   let slice: [u8; 4] = [buf[10], buf[12], buf[8], buf[16]];
   u32::from_be_bytes(slice)  
 }
 
-pub fn get_status(bet_no: u8, win_percents: [[u16; 3]; 6], jackpot: u64, lose: bool) -> (u32, u64, bool, u32, u32, u32) {
-  let mut rand = get_random();
-  let price = BET_PRICES[bet_no as usize];
+pub fn get_status(index: u64, bet_no: u8, bet_prices: &Vec<u64>, win_percents: &Vec<Vec<u16>>, jackpot: u64, lose: bool) -> (u32, u64, bool, u32, u32, u32) {
+  let mut rand = get_random(index);
+  let bn = bet_no as usize;
+  let price = bet_prices[bn];
   
   let mut equal_count = rand % 2 + 1;
   rand = rand % 10000;
-  let bn = bet_no as usize;
   for i in 0..3 {
     let mut low: u32 = 0;
     if i < 2 {
@@ -44,13 +45,13 @@ pub fn get_status(bet_no: u8, win_percents: [[u16; 3]; 6], jackpot: u64, lose: b
     }
   }
 
-  msg!("Status: {:?}", rand);
-  msg!("Bet Price: {:?}", BET_PRICES[bn]);
-  msg!("Equal Count: {:?}", equal_count);
-  msg!("Equal No: {:?}", equal_no);
-  msg!("Is Jackpot: {:?}", is_jackpot);
-  msg!("Multiplier: {:?}", multipler);
-  msg!("Earned: {:?}", earned);
+  // msg!("Status: {:?}", rand);
+  // msg!("Bet Price: {:?}", price);
+  // msg!("Equal Count: {:?}", equal_count);
+  // msg!("Equal No: {:?}", equal_no);
+  // msg!("Is Jackpot: {:?}", is_jackpot);
+  // msg!("Multiplier: {:?}", multipler);
+  // msg!("Earned: {:?}", earned);
 
   return (rand, earned, is_jackpot, equal_count, equal_no, multipler);
 }

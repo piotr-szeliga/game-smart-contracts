@@ -1,13 +1,13 @@
 [features]
 seeds = false
-[programs.mainnet]
+[programs.devnet]
 slots = "3BJdzqUKD2bTTxDP7x7odQ2u4SBiHu3VncZQwmvHre34"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "mainnet"
+cluster = "devnet"
 wallet = "~/.config/solana/SERVUJeqsyaJTuVuXAmmko6kTigJmxzTxUMSThpC2LZ.json"
 
 [scripts]

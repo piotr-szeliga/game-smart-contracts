@@ -14,13 +14,14 @@ pub struct Game {
     pub community_balances: Vec<u64>,
     pub community_pending_balances: Vec<u64>,
     pub jackpot: u64,
-    pub win_percents: [[u16; 3]; 6],
+    pub win_percents: Vec<Vec<u16>>,
+    pub bet_prices: Vec<u64>,
     pub min_rounds_before_win: u8,
     pub lose_counter: u8,
 }
 impl Game
 {
-    pub const LEN: usize =  std::mem::size_of::<Game>() + 50 * 5;
+    pub const LEN: usize =  std::mem::size_of::<Game>() + 50 * 5 + 18 * 10;
 }
 
 #[account]
