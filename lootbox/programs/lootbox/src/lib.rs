@@ -22,7 +22,7 @@ use anchor_lang::{
 use anchor_spl::token::{transfer, Transfer};
 
 
-declare_id!("GYgwXYtWi4HUd7d5eAKr62nDK1LqiGaqeJFTPy5XrGYP");
+declare_id!("A6woh5LgWEmPnQmR4rz3XyxAVs5VdNbHKqgKN3aaNjR3");
 
 #[program]
 pub mod lootbox {
@@ -207,7 +207,7 @@ pub mod lootbox {
                     ctx.accounts.token_program.to_account_info(),
                     Transfer {
                         authority: ctx.accounts.player.to_account_info().clone(),
-                        from: ctx.accounts.player.to_account_info().clone(),
+                        from: ctx.accounts.player_ata.to_account_info().clone(),
                         to: ctx.accounts.claimer_ata.to_account_info().clone(),
                     }
                 ).with_signer(&[&seeds[..]]),

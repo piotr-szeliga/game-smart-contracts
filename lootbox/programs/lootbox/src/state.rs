@@ -13,7 +13,7 @@ pub struct Lootbox {
 
 impl Lootbox
 {
-    pub const LEN: usize =  std::mem::size_of::<Lootbox>();
+    pub const LEN: usize =  std::mem::size_of::<Lootbox>() + 100;
 }
 
 #[account]
