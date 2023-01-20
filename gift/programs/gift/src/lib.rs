@@ -52,6 +52,8 @@ pub mod gift {
             gift.gate_token_mint = gift.nft_mint;
         }
         gift.verified_creators = verified_creators;
+        gift.redeemed_time = 0;
+        gift.created_time = now;
         gift.redeemed = false;
         gift.burned = false;
 
@@ -179,6 +181,7 @@ pub mod gift {
 
         let gift = &mut ctx.accounts.gift;
         gift.redeemed = true;
+        gift.redeemed_time = now;
 
         Ok(())
     }
@@ -214,6 +217,7 @@ pub mod gift {
         let gift = &mut ctx.accounts.gift;
         gift.redeemed = false;
         gift.burned = true;
+        gift.redeemed_time = now;
 
         Ok(())
     }

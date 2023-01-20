@@ -21,6 +21,10 @@ pub struct Gift
 
     pub expiration_time: u64,
 
+    pub created_time: u64,
+
+    pub redeemed_time: u64,
+
     pub redeemed: bool,
 
     pub burned: bool,
