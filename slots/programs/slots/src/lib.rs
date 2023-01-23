@@ -39,6 +39,7 @@ pub mod slots {
         royalties: Vec<u16>,
         commission_wallet: Pubkey,
         commission_fee: u16,
+        bet_prices: Vec<u64>,
     ) -> Result<()> {
         let game = &mut ctx.accounts.game;
         game.authority = ctx.accounts.payer.key();
@@ -54,14 +55,7 @@ pub mod slots {
         game.community_balances = vec![0; len]; 
         game.community_pending_balances = vec![0; len];
         game.jackpot = 14_400_000_000;  
-        game.bet_prices = vec![
-            50_000_000,
-           100_000_000,
-           250_000_000,
-           500_000_000,
-         1_000_000_000,
-         2_000_000_000,
-       ];      
+        game.bet_prices = bet_prices;      
         game.win_percents = vec![
             vec![4000, 1500, 0],
             vec![3000, 1000, 0],
